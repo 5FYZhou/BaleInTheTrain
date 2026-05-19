@@ -1,0 +1,26 @@
+# ===== C++ / CMake =====
+build/
+bin/
+*.exe
+*.out
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+*.so
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+*.cmake
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
