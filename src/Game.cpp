@@ -48,6 +48,17 @@ void Game::Logic(){
 
 void Game::HandleInput(){
     MouseState mouse = input.GetMouseState(window);
+    InputCommand cmd = input.GetCommand();
+    switch (cmd)
+    {
+    case InputCommand::Mouse0Down:
+        // 处理鼠标左键按下
+        break;
+    case InputCommand::MoveLeft:
+        // 玩家向左移动
+    default:
+        break;
+    }
 }
 
 void Game::Draw(){

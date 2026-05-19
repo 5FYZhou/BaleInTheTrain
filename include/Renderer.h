@@ -9,16 +9,8 @@ using namespace sf;
 class Renderer {
 private:
     ResourceManager& rm;
-    int curGridSize;
-    sf::Vector2f gridStartPos;
 	std::optional<sf::Sprite>  sBackground, sTiles, sButtons, sNum, sTimer, sCounter, sGameOver;       //	创建精灵对象
 public:
-    Renderer(ResourceManager& rm, int& g);
+    Renderer(ResourceManager& rm);
     void Init();
-    void DrawBackground(RenderWindow& window, int index = 0);
-    void DrawGrid(RenderWindow& window, const Scene& grid);
-    void DrawButton(RenderWindow& window, const Vector2i& LeftCorner, const int& detaX, const std::vector<Button_my>& btns);
-    void DrawScore(RenderWindow& window, int score);
-    void DrawTimer(RenderWindow& window, float time);
-    void DrawGameEnd(RenderWindow& window, bool win);
 };
