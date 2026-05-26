@@ -16,7 +16,7 @@ Game::Game(): renderer(rm){
 	window.create(sf::VideoMode({
             static_cast<unsigned int>(windowWidth),
             static_cast<unsigned int>(windowHeight)
-        }), L"MineSweeper", WindowStyle);
+        }), L"BaleInTheTrain", WindowStyle);
     
     // 初始化计时器
     timeSystem = TimeSystem();
@@ -56,13 +56,26 @@ void Game::HandleInput(){
         break;
     case InputCommand::MoveLeft:
         // 玩家向左移动
+        //player.Move(-1);
+        break;
+    case InputCommand::MoveRight:
+        //player.Move(1);
+        break;
     default:
         break;
+    }
+
+    if(input.KeyDown(MoveLeft)){
+        player.Move(-1);
+    }
+    else if(input.KeyDown(MoveRight)){
+        player.Move(1);
     }
 }
 
 void Game::Draw(){
     window.clear();
-    // renderer.Draw();
+    renderer.DrawPlayer(window, player.GetPos());
+    renderer.DrawCard(window, scene.GetCardsInOneScene(0));
     window.display();
 }

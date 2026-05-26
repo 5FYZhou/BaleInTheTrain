@@ -24,6 +24,8 @@ class ResourceManager{
                 {TextureType::NUM, { "/num.jpg"}},
                 {TextureType::TIMER, { "/jishiqi.jpg"}},
                 {TextureType::COUNTER, { "/jishuqi.jpg"}},
+                {TextureType::Player, { "/jishuqi.jpg"}},
+                {TextureType::Card, { "/gameover.jpg"}},
                 {TextureType::GAMEOVER, { "/gameover.jpg"}}
             };
             soundPath = {

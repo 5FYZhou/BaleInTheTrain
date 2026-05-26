@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "Scene.h"
 #include "ResourceManager.h"
+#include "Player.h"
 #include <windows.h>
 #include <string>
 #include <unordered_map>
@@ -27,6 +28,9 @@ private:
     Renderer renderer;
     Input input;
     TimeSystem timeSystem;
+
+    Player player;
+    Scene scene;
 
     void Init();
     void Logic();
