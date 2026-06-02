@@ -2,19 +2,64 @@
 
 #include "Constants.h"
 #include "ResourceManager.h"
+#include "Player.h"
+#include "UIManager.h"
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
+#include <optional>
+#include <vector>
+
 using namespace sf;
 
 class Renderer {
 private:
     ResourceManager& rm;
-	std::optional<sf::Sprite>  sBackground, sTiles, sButtons, sNum, sTimer, 
-        sPlayer, sCard, 
-        sCounter, sGameOver;       //	创建精灵对象
+    UIManager& uiManager;
+    
+    // Background sprites - using pointers to avoid default constructor issue
+    sf::Sprite* menuBackground = nullptr;
+    sf::Sprite* gameBackground = nullptr;
+    sf::Sprite* title = nullptr;
+
+    // Menu buttons
+    Button* startButton = nullptr;
+    Button* settingsButton = nullptr;
+    Button* exitButton = nullptr;
+
+    // Fade overlay
+    sf::RectangleShape fadeOverlay;
+
+    // Window dimensions
+    unsigned int windowWidth = 1920;
+    unsigned int windowHeight = 1080;
+
+    // Helper methods
+    sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
+    void scaleToWindow(sf::Sprite& sprite);
+    Button makeCenteredButton(const sf::Texture& texture, float centerY);
+
 public:
-    Renderer(ResourceManager& rm);
+    Renderer(ResourceManager& rm, UIManager& ui);
+    ~Renderer();
+
     void Init();
-    void DrawPlayer(RenderWindow& window, sf::Vector2f pos);
-    void DrawCard(RenderWindow& window, std::vector<sf::Vector2f> poss);
+    
+    // Main drawing methods
+    void DrawMenu(sf::RenderWindow& window);
+    void DrawGame(sf::RenderWindow& window, const Player& player);
+    void DrawSettings(sf::RenderWindow& window);
+    void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
+
+    // Getters for button bounds
+    const Button& GetStartButton() const { return *startButton; }
+    const Button& GetSettingsButton() const { return *settingsButton; }
+    const Button& GetExitButton() const { return *exitButton; }
+
+    // Window size
+    unsigned int GetWindowWidth() const { return windowWidth; }
+    unsigned int GetWindowHeight() const { return windowHeight; }
+    void SetWindowSize(unsigned int w, unsigned int h) {
+        windowWidth = w;
+        windowHeight = h;
+    }
 };

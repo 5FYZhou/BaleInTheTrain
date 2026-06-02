@@ -1,8 +1,7 @@
 #include "Scene.h"
 
-Scene::Scene(){
-    cardsInEachScene = {
-        {{100,100}, {500,500}, {1000,1000}},
-        {}
-    };
+Scene::Scene() {
+    // Initialize carriage system
+    currentScene = SceneType::Menu;
+    currentCarriage = 0;
 }
