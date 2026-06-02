@@ -1,16 +1,18 @@
-# ===== C++ / CMake =====
 build/
+code/build/
 bin/
 *.exe
-*.out
-*.obj
+*.dll
 *.o
+*.obj
 *.a
 *.lib
-*.dll
+*.pdb
+*.ilk
+*.log
+*.out
 *.so
 
-# CMake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -18,9 +20,8 @@ compile_commands.json
 Makefile
 *.cmake
 
-# VSCode
+.vs/
 .vscode/
 
-# OS
 .DS_Store
 Thumbs.db
