@@ -55,7 +55,8 @@ class ResourceManager{
                 {TextureType::TIMER, { }},
                 {TextureType::COUNTER, { }},
                 {TextureType::Player, { "/Balestand.png", "/Baleleft.png", "/Baleright.png" }},
-                {TextureType::Card, { }},
+                {TextureType::Card, { "/cardframe.png" }},
+                {TextureType::Star, { "/星星.png" }},
                 {TextureType::GAMEOVER, { }},
                 // New textures for Bale in the Train
                 {TextureType::MenuBackground, { "/开始界面.png"}},

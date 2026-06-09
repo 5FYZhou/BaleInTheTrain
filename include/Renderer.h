@@ -21,11 +21,6 @@ private:
     sf::Sprite* gameBackground = nullptr;
     sf::Sprite* title = nullptr;
 
-    // Menu buttons
-    Button* startButton = nullptr;
-    Button* settingsButton = nullptr;
-    Button* exitButton = nullptr;
-
     // Fade overlay
     sf::RectangleShape fadeOverlay;
 
@@ -36,7 +31,7 @@ private:
     // Helper methods
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
     void scaleToWindow(sf::Sprite& sprite);
-    Button makeCenteredButton(const sf::Texture& texture, float centerY);
+    //Button makeCenteredButton(const sf::Texture& texture, float centerY);
 
 public:
     Renderer(ResourceManager& rm, UIManager& ui);
@@ -49,11 +44,7 @@ public:
     void DrawGame(sf::RenderWindow& window, const Player& player);
     void DrawSettings(sf::RenderWindow& window);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
-
-    // Getters for button bounds
-    const Button& GetStartButton() const { return *startButton; }
-    const Button& GetSettingsButton() const { return *settingsButton; }
-    const Button& GetExitButton() const { return *exitButton; }
+    void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, int index = 0);
 
     // Window size
     unsigned int GetWindowWidth() const { return windowWidth; }

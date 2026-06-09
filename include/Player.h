@@ -15,6 +15,7 @@ private:
     bool isMoving = false;
     float frameSpeed = 0.0625f;        // Frames per second for walking animation
     int textureIndex = 0;
+    int frameCount;
 
     // Texture references (Player does not own sprites)
     float height = 454.f;       // Player sprite height in pixels
@@ -24,6 +25,7 @@ public:
     Player();
     ~Player();
 
+    void Init(int fc);
     // Getters
     sf::Vector2f GetFeet() const { return feet; }
     sf::Vector2f GetPos() const { return sf::Vector2f(feet.x, feet.y - height); }
@@ -50,7 +52,4 @@ public:
     void UpdateFrame(float dt);
     void ResetToStand() { walkTimer = 0.f; textureIndex = 0; }
     void UpdateWalkTimer(float dt) { walkTimer += dt; }
-
-    // Physics helpers
-    void UpdateSpritePosition();
 };

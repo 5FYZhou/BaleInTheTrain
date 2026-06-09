@@ -11,9 +11,6 @@ Renderer::~Renderer() {
     delete menuBackground;
     delete gameBackground;
     delete title;
-    delete startButton;
-    delete settingsButton;
-    delete exitButton;
 }
 
 sf::Sprite Renderer::makeSprite(const sf::Texture& texture, sf::Vector2f position) {
@@ -31,7 +28,7 @@ void Renderer::scaleToWindow(sf::Sprite& sprite) {
     );
     sprite.setScale(scale);
 }
-
+/*
 Button Renderer::makeCenteredButton(const sf::Texture& texture, float centerY) {
     sf::Sprite sprite(texture);
     const auto size = texture.getSize();
@@ -41,7 +38,7 @@ Button Renderer::makeCenteredButton(const sf::Texture& texture, float centerY) {
     });
 
     return {sprite, sprite.getGlobalBounds()};
-}
+}*/
 
 void Renderer::Init() {
     // Load and setup menu background
@@ -61,16 +58,6 @@ void Renderer::Init() {
     title = new sf::Sprite(titleTex);
     title->setPosition({580.f, 85.f});
 
-    // Setup menu buttons
-    auto& startBtnTex = const_cast<sf::Texture&>(rm.getTexture(TextureType::StartButton));
-    startButton = new Button(makeCenteredButton(startBtnTex, 590.f));
-
-    auto& settingsBtnTex = const_cast<sf::Texture&>(rm.getTexture(TextureType::SettingsButton));
-    settingsButton = new Button(makeCenteredButton(settingsBtnTex, 745.f));
-
-    auto& exitBtnTex = const_cast<sf::Texture&>(rm.getTexture(TextureType::ExitButton));
-    exitButton = new Button(makeCenteredButton(exitBtnTex, 900.f));
-
     // Setup fade overlay
     fadeOverlay.setSize(sf::Vector2f(static_cast<float>(windowWidth), static_cast<float>(windowHeight)));
     fadeOverlay.setFillColor(sf::Color(0, 0, 0, 0));
@@ -79,9 +66,9 @@ void Renderer::Init() {
 void Renderer::DrawMenu(sf::RenderWindow& window) {
     window.draw(*menuBackground);
     window.draw(*title);
-    window.draw(startButton->sprite);
-    window.draw(settingsButton->sprite);
-    window.draw(exitButton->sprite);
+    //window.draw(startButton->sprite);
+    //window.draw(settingsButton->sprite);
+    //window.draw(exitButton->sprite);
 }
 
 void Renderer::DrawGame(sf::RenderWindow& window, const Player& player) {
@@ -145,4 +132,10 @@ void Renderer::DrawSettings(sf::RenderWindow& window) {
 void Renderer::DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha) {
     fadeOverlay.setFillColor(sf::Color(0, 0, 0, alpha));
     window.draw(fadeOverlay);
+}
+
+void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, int index) {
+    sf::Sprite sprite(rm.getTexture(type, index));
+    sprite.setPosition(position);
+    window.draw(sprite);
 }
