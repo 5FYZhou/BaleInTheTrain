@@ -5,7 +5,7 @@ project(BaleInTheTrain LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
+find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
 
 add_executable(BaleInTheTrain
     src/main.cpp
@@ -15,6 +15,7 @@ target_link_libraries(BaleInTheTrain
     SFML::Graphics
     SFML::Window
     SFML::System
+    SFML::Audio
 )
 
 if(WIN32)
