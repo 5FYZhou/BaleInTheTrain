@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <filesystem>
 using namespace sf;
 #include "Constants.h"
 
@@ -13,20 +14,62 @@ class ResourceManager{
 
         std::unordered_map<TextureType, std::vector<std::string>> texturePath;
         std::unordered_map<SoundType, std::string> soundPath;
+        std::filesystem::path assetRoot;
+
+        std::filesystem::path FindAssetRoot() const {
+            const std::vector<std::filesystem::path> candidates = {
+                std::filesystem::current_path(),
+                std::filesystem::current_path() / "..",
+                std::filesystem::current_path() / ".." / "..",
+                std::filesystem::current_path() / ".." / ".." / ".."
+            };
+
+            for (const auto& candidate : candidates) {
+                const auto path = std::filesystem::weakly_canonical(candidate / "assets");
+                if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+                    return path;
+                }
+            }
+
+            return std::filesystem::path(DATA_TEXTURE_FILE_PATH);
+        }
+
+        std::string ResolveTexturePath(const std::string& path) const {
+            std::filesystem::path relative = path;
+            if (!relative.empty() && (relative.string()[0] == '/' || relative.string()[0] == '\\')) {
+                relative = relative.string().substr(1);
+            }
+            return (assetRoot / relative).string();
+        }
     public:
         ResourceManager() {
+            assetRoot = FindAssetRoot();
+            std::cout << "ResourceManager asset root: " << assetRoot.string() << std::endl;
             texturePath = {
                 {TextureType::BACKGROUND, 
-                    { "/BK01.jpg", "/BK02.jpg", "/BK03.jpg", "/BK04.jpg", "/BK05.jpg", "/BK06.jpg", "/BK07.jpg"}},
+                    { }},
                 {TextureType::GRID, 
-                    { "/Game1.jpg", "/Game2.jpg", "/Game3.jpg", "/Game4.jpg", "/Game5.jpg", "/Game6.jpg"}},
-                {TextureType::BUTTONS, { "/button.jpg"}},
-                {TextureType::NUM, { "/num.jpg"}},
-                {TextureType::TIMER, { "/jishiqi.jpg"}},
-                {TextureType::COUNTER, { "/jishuqi.jpg"}},
-                {TextureType::Player, { "/jishuqi.jpg"}},
-                {TextureType::Card, { "/gameover.jpg"}},
-                {TextureType::GAMEOVER, { "/gameover.jpg"}}
+                    { }},
+                {TextureType::BUTTONS, { }},
+                {TextureType::NUM, { }},
+                {TextureType::TIMER, { }},
+                {TextureType::COUNTER, { }},
+                {TextureType::Player, { "/Balestand.png", "/Baleleft.png", "/Baleright.png" }},
+                {TextureType::Card, { }},
+                {TextureType::GAMEOVER, { }},
+                // New textures for Bale in the Train
+                {TextureType::MenuBackground, { "/开始界面.png"}},
+                {TextureType::StartButton, { "/开始游戏选项.png"}},
+                {TextureType::ExitButton, { "/退出游戏选项.png"}},
+                {TextureType::SettingsButton, { "/设置选项.png"}},
+                {TextureType::GameBackground, { "/游戏背景.png"}},
+                {TextureType::StatusBox, { "/状态框.png"}},
+                {TextureType::Potion1, { "/药剂1.png"}},
+                {TextureType::Potion2, { "/药剂2.png"}},
+                {TextureType::Potion3, { "/药剂3.png"}},
+                {TextureType::Cube, { "/魔方.png"}},
+                {TextureType::SettingsIcon, { "/设置.png"}},
+                {TextureType::Title, { "/标题.png"}}
             };
             soundPath = {
                 {SoundType::SOUND_EXPLODE, "/bomb.wav"},
@@ -57,30 +100,42 @@ class ResourceManager{
         }
 
         bool loadAllResources() {
+            bool success = true;
             for (const auto& [type, paths] : texturePath) {
                 for (const auto& path : paths) {
-                    if (!loadTexture(type, DATA_TEXTURE_FILE_PATH + path)) {
-                        return false;
+                    const std::string resolved = ResolveTexturePath(path);
+                    if (!loadTexture(type, resolved)) {
+                        success = false;
                     }
                 }
             }
-            for (const auto& [type, path] : soundPath) {
-                if (!loadSound(type, DATA_AUDIO_FILE_PATH + path)) {
-                    return false;
-                }
-            }
-            return true;
+            return success;
         }
 
         const Texture& getTexture(TextureType type, size_t index = 0) const {
-            return textures.at(type)[index];
+            auto found = textures.find(type);
+            if (found == textures.end() || index >= found->second.size()) {
+                std::cerr << "ResourceManager::getTexture missing texture for type "
+                          << static_cast<int>(type) << " index " << index << std::endl;
+                static Texture emptyTexture;
+                return emptyTexture;
+            }
+            return found->second[index];
         }
 
         const SoundBuffer& getSound(SoundType type) const {
-            return soundBuffers.at(type);
+            auto found = soundBuffers.find(type);
+            if (found == soundBuffers.end()) {
+                std::cerr << "ResourceManager::getSound missing sound for type "
+                          << static_cast<int>(type) << std::endl;
+                static SoundBuffer emptySound;
+                return emptySound;
+            }
+            return found->second;
         }
 
         const int getTextureCount(TextureType type) const {
-            return textures.at(type).size();
+            auto found = textures.find(type);
+            return found == textures.end() ? 0 : static_cast<int>(found->second.size());
         }
     };
