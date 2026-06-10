@@ -1,0 +1,107 @@
+#pragma once
+
+#include <SFML/Graphics.hpp>
+#include "Constants.h"
+#include "ResourceManager.h"
+
+class Panel {
+protected:
+    bool visible = false;
+    std::vector<GameEvent>& events;
+
+public:
+    Panel(std::vector<GameEvent>& e) : events(e){}
+    virtual ~Panel() = default;
+
+    virtual void Update(float dt) {}
+    //virtual void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos) {}
+
+    virtual bool HandleMousePressed(const sf::Vector2f& mousePos){ return false; }
+
+    virtual void Open() { visible = true; }
+    virtual void Close() { visible = false; }
+
+    bool IsVisible() const {
+        return visible;
+    }
+};
+
+enum class SliderTarget
+{
+    None,
+    Music,
+    Sfx
+};
+
+class SettingPanel : public Panel{
+private:
+    float musicVolume = DEFAULT_MUSIC_VOLUME;
+    float sfxVolume = DEFAULT_SFX_VOLUME;
+
+    SliderTarget draggingSlider = SliderTarget::None;
+
+    sf::Font* font = nullptr;
+
+    float SliderValueFromX(float x, float left, float width) const;
+
+    void DrawSlider(sf::RenderWindow& window, const std::string& label,
+        float value, sf::Vector2f pos);
+
+public:
+    std::optional<sf::Sprite> panel, closeButton;
+
+    SettingPanel(std::vector<GameEvent>& e) : Panel(e){}
+    ~SettingPanel(){ delete font; }
+
+    void Init(ResourceManager& rm, sf::Font* uiFont);
+
+    void Draw(sf::RenderWindow& window) ;
+
+    bool HandleMousePressed(const sf::Vector2f& mousePos);
+
+    void HandleMouseMoved(const sf::Vector2f& mousePos);
+
+    void HandleMouseReleased();
+
+    void Close() override {
+        visible = false;
+        draggingSlider = SliderTarget::None;
+    }
+
+    float GetMusicVolume() const{
+        return musicVolume;
+    }
+
+    float GetSfxVolume() const{
+        return sfxVolume;
+    }
+
+    void SetMusicVolume(float v);
+    void SetSfxVolume(float v);
+};
+
+class BackpackPanel : public Panel {
+private:
+    ResourceManager* rm = nullptr;
+
+    std::vector<CardView> cards;
+
+    sf::Font* font = nullptr;
+    bool hasFont = false;
+
+    sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
+
+public:
+    std::optional<sf::Sprite> background, backButton;
+
+    BackpackPanel(std::vector<GameEvent>& e) : Panel(e) {}
+    void Init(ResourceManager& resource, sf::Font* uiFont);
+
+    void SetCards(const std::vector<CardType>& c);
+
+    bool HandleMousePressed(const sf::Vector2f& mousePos);
+
+    void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
+
+    const std::vector<CardView>& GetCards() const { return cards; }
+};

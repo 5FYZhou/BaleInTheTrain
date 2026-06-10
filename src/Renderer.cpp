@@ -85,7 +85,7 @@ void Renderer::DrawGame(sf::RenderWindow& window, const Player& player) {
     const float scale = player.GetWalkTimer() >= 0.f ? (player.GetIsMoving() ? 1.f : 1.f) : 1.f;
     const float scaleY = player.GetHeight() / static_cast<float>(size.y);
     p.setOrigin(sf::Vector2f(static_cast<float>(size.x) * 0.5f, static_cast<float>(size.y)));
-    p.setScale(sf::Vector2f(scaleY * static_cast<float>(player.GetFacing()), scaleY));
+    p.setScale(sf::Vector2f(scaleY * static_cast<float>(-player.GetFacing()), scaleY));
     p.setPosition(player.GetFeet());
     window.draw(p);
 
@@ -134,8 +134,9 @@ void Renderer::DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha) {
     window.draw(fadeOverlay);
 }
 
-void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, int index) {
+void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, sf::Vector2f scale, int index) {
     sf::Sprite sprite(rm.getTexture(type, index));
     sprite.setPosition(position);
+    sprite.setScale(scale);
     window.draw(sprite);
 }

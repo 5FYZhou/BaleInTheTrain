@@ -1,14 +1,16 @@
 #pragma once
 
+#include "AudioManager.h"
 #include "Constants.h"
-#include "TimeSystem.h"
-#include "Renderer.h"
+#include "DialogManager.h"
 #include "Input.h"
-#include "SceneManager.h"
-#include "ResourceManager.h"
 #include "Player.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
+#include "SceneManager.h"
+#include "TimeSystem.h"
 #include "UIManager.h"
-#include <windows.h>
+#include <SFML/Graphics.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -26,34 +28,35 @@ private:
     unsigned int windowWidth = 1920;
     unsigned int windowHeight = 1080;
     RenderWindow window;
+    sf::Vector2i mousePosMove;
 
     GameState gameState = GameState::MENU;
 
-    // Game systems
     ResourceManager rm;
     Renderer renderer;
     Input input;
     TimeSystem timeSystem;
     UIManager uiMgr;
     SceneManager sceneMgr;
-
-    // Game objects
+    AudioManager audioMgr;
+    DialogManager dialogMgr;
+    
     Player player;
-    //std::vector<::GameEvent> gameEvents;
+    std::vector<CardType> cardsOnPlayer;
 
-    // Main loop methods
     void Init();
     void Logic(float dt);
     void HandleInput(float dt);
     void ProcessEvents();
-    void UpdatePlayer(float dt);
+    void HandleEvents(const GameEvent& event);
     void Draw();
 
-    // Saved game interface
     GameData GetGameData() const {
         GameData data;
         return data;
     }
+
     void SetGameData(const GameData& data) {
+        (void)data;
     }
 };
