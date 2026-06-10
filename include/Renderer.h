@@ -44,7 +44,8 @@ public:
     void DrawGame(sf::RenderWindow& window, const Player& player);
     void DrawSettings(sf::RenderWindow& window);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
-    void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, int index = 0);
+    void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
+        , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
 
     // Window size
     unsigned int GetWindowWidth() const { return windowWidth; }

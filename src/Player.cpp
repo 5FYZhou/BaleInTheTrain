@@ -12,6 +12,7 @@ Player::~Player() {
 void Player::Init(int fc){
     frameCount = fc;
     SetFeet({PlayerStartX, PlayerGroundY});
+    SetFacing(1);
     SetHeight(PlayerHeight);
     SetSpeed(430.f);
     //player.SetFrame(PlayerFrame::Stand);

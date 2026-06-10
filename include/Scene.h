@@ -20,13 +20,26 @@ struct SceneInteractable {
     TextureType texture;
     sf::Vector2f position;
     sf::Vector2f size;
+    sf::Vector2f scale;
     sf::FloatRect bounds = sf::FloatRect({0.f, 0.f}, {0.f, 0.f});
     EventType eventType = EventType::None;
     ItemType itemType = ItemType::Button;
     SceneInteractable(TextureType tex, sf::Vector2f pos, sf::Vector2f sz, EventType e, ItemType i = ItemType::Button)
         : texture(tex), position(pos), size(sz), eventType(e), itemType(i) {
-        bounds = sf::FloatRect(position, size);
-        }
+        scale = {1.f, 1.f};
+        UpdateBounds();
+    }
+    SceneInteractable(TextureType tex, sf::Vector2f pos, sf::Vector2f sz, sf::Vector2f sc, EventType e, ItemType i = ItemType::Button)
+        : texture(tex), position(pos), size(sz), scale(sc), eventType(e), itemType(i) {
+        UpdateBounds();
+    }
+    void UpdateBounds(){
+        sf::Vector2f scaledSize = {
+            size.x * scale.x,
+            size.y * scale.y
+        };
+    bounds = sf::FloatRect(position, scaledSize);
+    }
 };
 
 class Scene {
@@ -88,7 +101,10 @@ public:
         for (const auto& item : itemInScene[idx]) {
             interactables.push_back({ TextureType::Star, item.pos, {90, 109}, EventType::ItemClicked, item.type });
         }
+        interactables.push_back({TextureType::Backpack, {1695.f, 25.f}, {179, 190}, {0.45f, 0.45f}, EventType::OpenBackpackIcon});
+        interactables.push_back({TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings});
     }
+
     void ProcessInput(const sf::Vector2f& mousePos) override {
         for (size_t i = 0; i < interactables.size(); ++i) {
             const auto& item = interactables[i];
