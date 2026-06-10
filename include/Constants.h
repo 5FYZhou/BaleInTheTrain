@@ -121,7 +121,7 @@ enum class PileType{
 inline constexpr int WINDOW_WIDTH = 1920;
 inline constexpr int WINDOW_HEIGHT = 1080;
 inline constexpr int CARD_WIDTH = 60;
-inline constexpr int CAsRD_HEIGHT = 36;
+inline constexpr int CARD_HEIGHT = 36;
 inline const std::string SAVE_FILE_NAME = "data/GameData.txt";
 inline const std::string DATA_TEXTURE_FILE_PATH = "./assets";
 inline const std::string DATA_AUDIO_FILE_PATH = "./audios";
