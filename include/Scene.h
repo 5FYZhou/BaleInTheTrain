@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Constants.h"
+#include "Enemy.h"
 #include <vector>
 #include <functional>
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 struct Item{
     sf::Vector2f pos;
@@ -16,10 +18,10 @@ inline const std::vector<std::vector<Item>> itemInScene = {
     { {{100.f, 300.f}, ItemType::Strike}, {{200.f, 300.f}, ItemType::Strike}, {{150.f, 400.f}, ItemType::Defend}, {{150.f, 200.f}, ItemType::Key} }
 };
 
-inline const std::vector<std::tuple<int, sf::Vector2f, sf::Vector2f>> enemyInScene = {
-    { 0, { 1500, 500 }, { 213, 377 } },
-    { 1, { 1500, 500 }, { 184, 376 } },
-    { 2, { 1500, 500 }, { 176, 294 } }
+inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
+    { EnemyType::Train_attendant, { 1500, 500 } },
+    { EnemyType::LightMonster, { 1500, 500 } },
+    { EnemyType::TicketMonster, { 1500, 500 } }
 };
 
 struct SceneInteractable {
@@ -72,6 +74,8 @@ public:
     }
     SceneType GetType() const { return type; }
     TextureType GetBgTextrue() const { return bgTex; }
+    virtual const Enemy* GetEnemy() const{ return nullptr; }
+    virtual Enemy* GetEnemy() { return nullptr; }
 
     virtual void ProcessInput(const sf::Vector2f& mousePos) = 0;
 
@@ -111,14 +115,17 @@ public:
 class GameScene : public Scene {
 private:
     int idx;
-    int enemyIdx;
-    sf::Vector2f enemyPos;
-    sf::FloatRect enemyCollider;
+    Enemy enemy;
 public:
-    GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i) { 
+    GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i), 
+     enemy(enemyInScene[idx].first, enemyInScene[idx].second) { 
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
     }
+    
+    const Enemy* GetEnemy() const override { return &enemy; }
+    Enemy* GetEnemy() override { return &enemy; }
+    
     void BuildInteractables() override {
         interactables.clear();
         for (const auto& item : itemInScene[idx]) {
@@ -126,16 +133,17 @@ public:
         }
         interactables.push_back({TextureType::BackpackIcon, {1695.f, 25.f}, {179, 190}, {0.45f, 0.45f}, EventType::OpenBackpackIcon});
         interactables.push_back({TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings});
-
-        enemyIdx = std::get<0>(enemyInScene[idx]);
-        enemyPos = std::get<1>(enemyInScene[idx]);
-        sf::Vector2f enemySize = std::get<2>(enemyInScene[idx]);
-        enemyCollider = sf::FloatRect(enemyPos, enemySize);
-        interactables.push_back({enemyTexMap.at(static_cast<EnemyType>(enemyIdx)),
-             enemyPos, enemySize, EventType::None});
     }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
+        if(enemy.bound.contains(mousePos)){
+            GameEvent event;
+            event.type = EventType::BeginBattle;
+            event.val = static_cast<int>(enemy.id);
+            events.push_back(event);
+            // 因为要进入战斗场景了，不再处理当前场景的点击
+            return;
+        }
         for (size_t i = 0; i < interactables.size(); ++i) {
             const auto& item = interactables[i];
             if (!item.clickable || item.eventType == EventType::None) {
@@ -150,14 +158,30 @@ public:
             }
         }
     }
+
+    void Update(float dt) override{
+        enemy.Update(dt);
+    }
 };
 
 class BattleScene : public Scene {
+private:
+    Enemy* enemy = nullptr;
 public:
-    BattleScene(std::vector<GameEvent>& e, int i) : Scene(e) { 
+    BattleScene(std::vector<GameEvent>& e) : Scene(e) { 
         type = SceneType::Battle; 
         bgTex = TextureType::GameBackground;
     }
+    ~BattleScene(){ delete enemy; }
+
+    void SetEnemy(Enemy* e) {
+        if(!e){
+            std::cout<<"BattleScene:nullptr set"<<std::endl;
+            return;
+        }
+        enemy = e; 
+    }
+    const Enemy* GetEnemy() const override { return enemy; }
     void BuildInteractables() override {
         interactables.clear();
     }
@@ -176,6 +200,9 @@ public:
                 events.push_back(event);
             }
         }
+    }
+    void Update(float dt) override{
+        enemy->Update(dt);
     }
 };
 

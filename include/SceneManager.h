@@ -15,6 +15,7 @@ private:
     GameScene gameScene1{events, 0};
     GameScene gameScene2{events, 1};
     GameScene gameScene3{events, 2};
+    BattleScene battleScene{events};
     int gameSceneIdx = 0;
 
     Scene* curScene;
@@ -29,6 +30,7 @@ private:
     static constexpr float RightExitX = 1710.f;    // Player exit on right
     static constexpr float LeftEntryX = 275.f;     // Entry position from left
     static constexpr float RightEntryX = 1645.f;   // Entry position from right
+    static constexpr float BattleX = 275.f;   // Entry position of BattleScene
 
     void StartFadeOut() {
         fadeState = FadeState::FadeOut;
@@ -76,7 +78,13 @@ public:
             }
             events.push_back({EventType::ResetPlayerPos, playerX});
             break;
+        case SceneType::Battle:
+            battleScene.SetEnemy(curScene->GetEnemy());
+            curScene = &battleScene;
+            events.push_back({EventType::ResetPlayerPos, BattleX});
+            break;
         default:
+            std::cout<<"SceneMgr:undefined load scene type"<<std::endl;
             break;
         }
         //pendingScene = type;
@@ -104,6 +112,7 @@ public:
     }
 
     void Update(float dt) {
+        curScene->Update(dt);
         if (fadeState == FadeState::FadeOut) {
             fadeAlpha += FadeSpeed * dt;
             if (fadeAlpha >= 255.f) {

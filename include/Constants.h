@@ -80,7 +80,8 @@ enum class EventType {
     MusicVolumeChange, SfxVolumeChange, 
     ResetPlayerPos,
     ItemClicked,
-    GenericAction
+    GenericAction,
+    BeginBattle
 };
 
 struct GameEvent {

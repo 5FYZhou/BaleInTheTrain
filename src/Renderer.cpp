@@ -163,6 +163,13 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
         sprite.setScale(item.scale);
         window.draw(sprite);
     }
+
+    const auto& e = scene.GetEnemy();
+    if(e){
+        sf::Sprite es(rm.getTexture(enemyTexMap.at(e->id), e->frameIndex));
+        es.setPosition(e->position);
+        window.draw(es);
+    }
 }
 
 void Renderer::DrawUI(sf::RenderWindow& window){

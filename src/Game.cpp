@@ -218,6 +218,9 @@ void Game::HandleEvents(const GameEvent& event){
             // TODO: 处理游戏场景中的交互物品点击事件
             std::cout<< "hitItem:"<<event.val<<std::endl;
             break;
+        case EventType::BeginBattle:
+            sceneMgr.LoadScene(SceneType::Battle);
+            std::cout<<"Event:beginBattle"<<std::endl;
         default:
             break;
         }
@@ -231,10 +234,13 @@ void Game::Draw() {
     // 绘制场景
     renderer.DrawScene(window, sceneMgr.GetScene());
     
+    if(currentScene != SceneType::Menu){
+        renderer.DrawPlayer(window, player);
+    }
+    
     if (currentScene == SceneType::Menu) {
         //renderer.DrawMenu(window);
     } else if (currentScene == SceneType::Game) {
-        renderer.DrawPlayer(window, player);
         renderer.DrawDialog(window, dialogMgr);
         renderer.DrawCardRewards(window, cardsOnPlayer, dialogMgr.GetRewardAlpha());
         if (dialogMgr.IsMovementHintVisible()) {
