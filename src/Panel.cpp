@@ -1,6 +1,7 @@
 #include "Panel.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont)
 {
@@ -180,7 +181,7 @@ void BackpackPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     background->setPosition({0.f, 0.f});
 
     //backButton.emplace(sf::Sprite(resource.getTexture(TextureType::BackButton)));
-    backButton->setPosition({50.f, 55.f});
+    backButton->setPosition({1700.f, 900.f});
     backButton->setScale({0.7f, 0.7f});
 
     //veil = sf::Sprite();    // 遮罩初始化
@@ -256,10 +257,110 @@ void BackpackPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos)
 
     if (hasFont) {
         sf::Text titleText(*font); 
-        titleText.setString("backpack"); 
-        titleText.setCharacterSize(50); 
+        titleText.setString("Backpack"); 
+        titleText.setCharacterSize(60); 
+        titleText.setFillColor(sf::Color::Black); 
+        titleText.setPosition({780.f, 250.f}); 
+        window.draw(titleText);
+    }
+}
+
+
+
+
+
+void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
+    rm = &resource;
+    font = uiFont;
+    hasFont = (font != nullptr);
+
+    //backButton.emplace(sf::Sprite(resource.getTexture(TextureType::BackButton)));
+    backButton->setPosition({1700.f, 900.f});
+    backButton->setScale({0.7f, 0.7f});
+
+    //veil = sf::Sprite();    // 遮罩初始化
+    veil.setSize({1920.f, 1080.f});
+    veil.setFillColor(sf::Color(0, 0, 0, 100));
+}
+
+void DiscardPilePanel::SetCards(const std::vector<PileType>& c)
+{
+    cards.clear();
+
+    // 每种牌对应的行号
+    std::unordered_map<PileType, int> rowMap;
+
+    // 每行当前已有多少张牌
+    std::unordered_map<PileType, int> colMap;
+
+    int nextRow = 0;
+
+    for(const auto& type : c)
+    {
+        // 第一次遇到该类型，分配新行
+        if(rowMap.find(type) == rowMap.end())
+        {
+            rowMap[type] = nextRow++;
+        }
+
+        int row = rowMap[type];
+        int col = colMap[type]++;
+
+        CardView cv;
+        cv.texType = cardTexMap.at(type);
+
+        cv.basePosition = {
+            400.f + col * 150.f,
+            350.f + row * 230.f
+        };
+
+        cards.push_back(cv);
+    }
+}
+
+bool DiscardPilePanel::HandleMousePressed(const sf::Vector2f& mousePos){
+    if(!visible) return false;
+    if (backButton->getGlobalBounds().contains(mousePos)) {
+        //std::cout<<"close backpackpanel"<<std::endl;
+        Close();
+        return true;
+    }
+    return true;
+}
+
+void DiscardPilePanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos){
+    if(!visible) return;
+
+    sf::Vector2f mouseF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+    window.draw(veil);
+    window.draw(*backButton);
+
+    for (const auto& card : cards)
+    {
+        sf::Sprite sprite(rm->getTexture(card.texType));
+        const auto size = sprite.getTexture().getSize();
+        sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
+        sprite.setPosition(card.basePosition);
+        sprite.setRotation(sf::degrees(card.rotation));
+        sprite.setScale({0.58f, 0.58f});
+
+        // hover
+        //if (sprite.getGlobalBounds().contains(mouseF))
+        //{
+        //    sprite.move({0.f, -44.f});
+        //    sprite.setScale({0.64f, 0.64f});
+        //}
+
+        window.draw(sprite);
+    }
+
+    if (hasFont) {
+        sf::Text titleText(*font); 
+        titleText.setString("Discard Pile"); 
+        titleText.setCharacterSize(60); 
         titleText.setFillColor(sf::Color::White); 
-        titleText.setPosition({145.f, 62.f}); 
+        titleText.setPosition({780.f, 100.f}); 
         window.draw(titleText);
     }
 }

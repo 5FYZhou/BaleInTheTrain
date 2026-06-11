@@ -12,6 +12,7 @@ private:
     std::vector<GameEvent> events;
     SettingPanel settingPanel;
     BackpackPanel backpackPanel;
+    DiscardPilePanel discardPilePanel;
 
     bool hasFont = false;
     const sf::Font* font = nullptr;
@@ -33,6 +34,7 @@ public:
     void DrawPanels(sf::RenderWindow& window, sf::Vector2i& mousePos){ 
         settingPanel.Draw(window); 
         backpackPanel.Draw(window, mousePos);
+        discardPilePanel.Draw(window, mousePos);
     }
 
     void OpenSettingsPopup(){ settingPanel.Open(); }
@@ -43,6 +45,11 @@ public:
     bool IsBackpackPopupOpen(){ return backpackPanel.IsVisible(); }
     void CloseBackpackPopup(){ backpackPanel.Close(); }
     void SetBackPackCard(std::vector<PileType>& cards){ backpackPanel.SetCards(cards); }
+    
+    void OpenDiscardPopup(){ discardPilePanel.Open(); }
+    bool IsDiscardPopupOpen(){ return discardPilePanel.IsVisible(); }
+    void CloseDiscardPopup(){ discardPilePanel.Close(); }
+    void SetDiscardCard(std::vector<PileType>& cards){ discardPilePanel.SetCards(cards); }
 
     void scaleToWindow(sf::Sprite& sprite)
     {

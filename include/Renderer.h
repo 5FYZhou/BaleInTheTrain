@@ -19,19 +19,14 @@ private:
     UIManager& uiManager;
     const sf::Font* font;
     
+    // player HP
     sf::Sprite* statusBox = nullptr;
     sf::RectangleShape hpBack;
     sf::RectangleShape hpBar;
     sf::Text* hpText = nullptr;
 
     // UI
-    sf::Sprite* potionIcon1 = nullptr;
-    sf::Sprite* potionIcon2 = nullptr;
-    sf::Sprite* potionIcon3 = nullptr;
-    sf::Sprite* cubeIcon = nullptr;
-    sf::Sprite* discardPileIcon = nullptr;
     sf::Sprite* dialogBox = nullptr;
-
     sf::Text* dialogText = nullptr;
     sf::Text* dialogHintText = nullptr;
     sf::Text* movementHintText = nullptr;
@@ -54,16 +49,9 @@ public:
     // Main drawing methods
     void DrawPlayer(sf::RenderWindow& window, const Player& player);
     void DrawScene(sf::RenderWindow& window, const Scene& scene);
-    void DrawUI(sf::RenderWindow& window);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
     void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
         , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
-    //void DrawEnemy(sf::RenderWindow& window, const Enemy& enemy);
-    void DrawEnemy(sf::RenderWindow& window, const Enemy& enemy);
-    
-    void DisablePotionIcons();
-    void EnablePotionIcon(int index);
-    void ApplyDisabledIconColor(sf::Sprite* sprite);
 
     void DrawDialog(sf::RenderWindow& window, const DialogManager& dialogMgr);
     void DrawMovementHint(sf::RenderWindow& window);

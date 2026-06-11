@@ -194,6 +194,12 @@ void Game::HandleEvents(const GameEvent& event){
             uiMgr.SetBackPackCard(cardsOnPlayer);
             uiMgr.OpenBackpackPopup();
             break;
+        // 打开弃牌池
+        case EventType::OpenDiscardPile:
+            std::cout<<"Event::openDiscard"<<std::endl;
+            uiMgr.SetDiscardCard(cardsOnPlayer);
+            uiMgr.OpenDiscardPopup();
+            break;
 
         // 修改音效音量
         case EventType::SfxVolumeChange:
@@ -216,7 +222,7 @@ void Game::HandleEvents(const GameEvent& event){
         // 场景中的交互物品点击
         case EventType::ItemClicked:
             // TODO: 处理游戏场景中的交互物品点击事件
-            std::cout<< "hitItem:"<<event.val<<std::endl;
+            std::cout<< "hitItem:"<<event.val<<std::endl; 
             break;
         case EventType::BeginBattle:
             sceneMgr.LoadScene(SceneType::Battle);
@@ -246,8 +252,6 @@ void Game::Draw() {
         if (dialogMgr.IsMovementHintVisible()) {
             renderer.DrawMovementHint(window);
         }
-        // Draw UI
-        renderer.DrawUI(window);
     }
 
     // UI面板

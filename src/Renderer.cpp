@@ -14,11 +14,6 @@ Renderer::~Renderer() {
     delete font;
     delete statusBox;
     
-    delete potionIcon1;
-    delete potionIcon2;
-    delete potionIcon3;
-    delete cubeIcon;
-    delete discardPileIcon;
     delete dialogBox;
     delete dialogText;
     delete dialogHintText;
@@ -74,55 +69,27 @@ void Renderer::Init() {
     hpText->setFillColor(sf::Color::White);
     hpText->setPosition({92.f, 35.f});
 
-    try {
-        potionIcon1 = new sf::Sprite(rm.getTexture(TextureType::Potion1));
-        potionIcon1->setPosition({365.f, 30.f});
-        potionIcon1->setScale({POTION_ICON_SCALE, POTION_ICON_SCALE});
+    dialogBox = new sf::Sprite(rm.getTexture(TextureType::DialogBox));
+    dialogBox->setPosition({260.f, 770.f});
+    dialogBox->setScale({1.0f, 1.0f});
 
-        potionIcon2 = new sf::Sprite(rm.getTexture(TextureType::Potion2));
-        potionIcon2->setPosition({450.f, 30.f});
-        potionIcon2->setScale({POTION_ICON_SCALE, POTION_ICON_SCALE});
+    dialogText = new sf::Text(*font);
+    dialogText->setCharacterSize(30);
+    dialogText->setFillColor(sf::Color::White);
+    dialogText->setPosition({330.f, 815.f});
+    dialogText->setLineSpacing(1.2f);
 
-        potionIcon3 = new sf::Sprite(rm.getTexture(TextureType::Potion3));
-        potionIcon3->setPosition({535.f, 30.f});
-        potionIcon3->setScale({POTION_ICON_SCALE, POTION_ICON_SCALE});
+    dialogHintText = new sf::Text(*font);
+    dialogHintText->setString("Space / Enter / Click");
+    dialogHintText->setCharacterSize(22);
+    dialogHintText->setFillColor(sf::Color(230, 230, 230, 210));
+    dialogHintText->setPosition({1335.f, 940.f});
 
-        cubeIcon = new sf::Sprite(rm.getTexture(TextureType::Cube));
-        cubeIcon->setPosition({620.f, 30.f});
-        cubeIcon->setScale({POTION_ICON_SCALE, POTION_ICON_SCALE});
-
-        discardPileIcon = new sf::Sprite(rm.getTexture(TextureType::DiscardPile));
-        discardPileIcon->setPosition({1515.f, 25.f});
-        discardPileIcon->setScale({0.45f, 0.45f});
-
-        dialogBox = new sf::Sprite(rm.getTexture(TextureType::DialogBox));
-        dialogBox->setPosition({260.f, 770.f});
-        dialogBox->setScale({1.0f, 1.0f});
-
-        {
-            dialogText = new sf::Text(*font);
-            dialogText->setCharacterSize(30);
-            dialogText->setFillColor(sf::Color::White);
-            dialogText->setPosition({330.f, 815.f});
-            dialogText->setLineSpacing(1.2f);
-
-            dialogHintText = new sf::Text(*font);
-            dialogHintText->setString("Space / Enter / Click");
-            dialogHintText->setCharacterSize(22);
-            dialogHintText->setFillColor(sf::Color(230, 230, 230, 210));
-            dialogHintText->setPosition({1335.f, 940.f});
-
-            movementHintText = new sf::Text(*font);
-            movementHintText->setString("Use A / D or Arrow Keys to move");
-            movementHintText->setCharacterSize(30);
-            movementHintText->setFillColor(sf::Color::White);
-            movementHintText->setPosition({720.f, 930.f});
-        }
-
-        DisablePotionIcons();
-    } catch (const std::exception& e) {
-        std::cout << "Failed to initialize UI: " << e.what() << std::endl;
-    }
+    movementHintText = new sf::Text(*font);
+    movementHintText->setString("Use A / D or Arrow Keys to move");
+    movementHintText->setCharacterSize(30);
+    movementHintText->setFillColor(sf::Color::White);
+    movementHintText->setPosition({720.f, 930.f});
 }
 
 void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
@@ -153,9 +120,11 @@ void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
 }
 
 void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
+    // 背景
     sf::Sprite bg(rm.getTexture(scene.GetBgTextrue()));
     scaleToWindow(bg);
     window.draw(bg);
+    // 交互物品
     for(const auto& item : scene.GetInteractables()) {
         //DrawItem(window, item.position, item.texture, item.scale);
         sf::Sprite sprite(rm.getTexture(item.texture));
@@ -163,30 +132,12 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
         sprite.setScale(item.scale);
         window.draw(sprite);
     }
-
+    // 敌人
     const auto& e = scene.GetEnemy();
     if(e){
         sf::Sprite es(rm.getTexture(enemyTexMap.at(e->id), e->frameIndex));
         es.setPosition(e->position);
         window.draw(es);
-    }
-}
-
-void Renderer::DrawUI(sf::RenderWindow& window){
-    if (potionIcon1) {
-        window.draw(*potionIcon1);
-    }
-    if (potionIcon2) {
-        window.draw(*potionIcon2);
-    }
-    if (potionIcon3) {
-        window.draw(*potionIcon3);
-    }
-    if (cubeIcon) {
-        window.draw(*cubeIcon);
-    }
-    if (discardPileIcon) {
-        window.draw(*discardPileIcon);
     }
 }
 
@@ -200,41 +151,6 @@ void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const T
     sprite.setPosition(position);
     sprite.setScale(scale);
     window.draw(sprite);
-}
-
-
-void Renderer::ApplyDisabledIconColor(sf::Sprite* sprite){
-    if (sprite) {
-        sprite->setColor(sf::Color(
-            static_cast<std::uint8_t>(POTION_ICON_GRAY),
-            static_cast<std::uint8_t>(POTION_ICON_GRAY),
-            static_cast<std::uint8_t>(POTION_ICON_GRAY),
-            static_cast<std::uint8_t>(POTION_ICON_ALPHA)));
-    }
-}
-
-void Renderer::DisablePotionIcons(){
-    ApplyDisabledIconColor(potionIcon1);
-    ApplyDisabledIconColor(potionIcon2);
-    ApplyDisabledIconColor(potionIcon3);
-    ApplyDisabledIconColor(cubeIcon);
-}
-
-void Renderer::EnablePotionIcon(int index){
-    sf::Sprite* target = nullptr;
-    if (index == 0) {
-        target = potionIcon1;
-    } else if (index == 1) {
-        target = potionIcon2;
-    } else if (index == 2) {
-        target = potionIcon3;
-    } else if (index == 3) {
-        target = cubeIcon;
-    }
-
-    if (target) {
-        target->setColor(sf::Color::White);
-    }
 }
 
 void Renderer::DrawDialog(sf::RenderWindow& window, const DialogManager& dialogMgr){

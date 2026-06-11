@@ -68,10 +68,7 @@ public:
     virtual void Enter() {}
     virtual void Leave() {}
 
-    virtual void BuildInteractables() = 0;
-    const std::vector<SceneInteractable>& GetInteractables() const {
-        return interactables;
-    }
+    const std::vector<SceneInteractable>& GetInteractables() const { return interactables; }
     SceneType GetType() const { return type; }
     TextureType GetBgTextrue() const { return bgTex; }
     virtual const Enemy* GetEnemy() const{ return nullptr; }
@@ -83,14 +80,10 @@ public:
 };
 
 class MenuScene : public Scene {
-private:
 public:
     MenuScene(std::vector<GameEvent>& e) : Scene(e) { 
         type = SceneType::Menu; 
         bgTex = TextureType::MenuBackground;
-    }
-    void BuildInteractables() override {
-        interactables.clear();
         interactables = {
             { false, TextureType::Title, {580.f, 85.f}},
             { TextureType::StartButton, {704.f, 510.f}, {512.f, 159.f}, EventType::StartGame },
@@ -121,12 +114,6 @@ public:
      enemy(enemyInScene[idx].first, enemyInScene[idx].second) { 
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
-    }
-    
-    const Enemy* GetEnemy() const override { return &enemy; }
-    Enemy* GetEnemy() override { return &enemy; }
-    
-    void BuildInteractables() override {
         interactables.clear();
         for (const auto& item : itemInScene[idx]) {
             interactables.push_back({ TextureType::Star, item.pos, {90, 109}, EventType::ItemClicked, item.type });
@@ -134,6 +121,9 @@ public:
         interactables.push_back({TextureType::BackpackIcon, {1695.f, 25.f}, {179, 190}, {0.45f, 0.45f}, EventType::OpenBackpackIcon});
         interactables.push_back({TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings});
     }
+    
+    const Enemy* GetEnemy() const override { return &enemy; }
+    Enemy* GetEnemy() override { return &enemy; }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
         if(enemy.bound.contains(mousePos)){
@@ -144,6 +134,7 @@ public:
             // 因为要进入战斗场景了，不再处理当前场景的点击
             return;
         }
+
         for (size_t i = 0; i < interactables.size(); ++i) {
             const auto& item = interactables[i];
             if (!item.clickable || item.eventType == EventType::None) {
@@ -171,6 +162,13 @@ public:
     BattleScene(std::vector<GameEvent>& e) : Scene(e) { 
         type = SceneType::Battle; 
         bgTex = TextureType::GameBackground;
+        interactables = {
+            { TextureType::Potion1, {365.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::Potion2, {450.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::Potion3, {535.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::Cube, {620.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::DiscardPile, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile }
+        };
     }
     ~BattleScene(){ delete enemy; }
 
@@ -182,9 +180,6 @@ public:
         enemy = e; 
     }
     const Enemy* GetEnemy() const override { return enemy; }
-    void BuildInteractables() override {
-        interactables.clear();
-    }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
         for (size_t i = 0; i < interactables.size(); ++i) {

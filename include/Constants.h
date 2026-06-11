@@ -76,7 +76,7 @@ enum class ItemType {
 
 enum class EventType {
     None,
-    StartGame, OpenSettings, ExitGame, OpenBackpackIcon,
+    StartGame, OpenSettings, ExitGame, OpenBackpackIcon, OpenDiscardPile, 
     MusicVolumeChange, SfxVolumeChange, 
     ResetPlayerPos,
     ItemClicked,
@@ -151,7 +151,7 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
 struct CardView {
     TextureType texType;    // 纹理类型
     sf::Vector2f basePosition;   // 基础位置
-    float rotation;              // 旋转角度（度）
+    float rotation = 0.f;              // 旋转角度（度）
 };
 
 inline constexpr int WINDOW_WIDTH = 1920;

@@ -1,6 +1,7 @@
 #include "UIManager.h"
 
-UIManager::UIManager() : settingPanel(events), backpackPanel(events){
+UIManager::UIManager() : 
+    settingPanel(events), backpackPanel(events), discardPilePanel(events){
 }
 
 UIManager::~UIManager(){
@@ -17,11 +18,13 @@ bool UIManager::Init(ResourceManager& rm){
 
     backpackPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
     backpackPanel.background.emplace(rm.getTexture(TextureType::BackpackInterior));
-    backpackPanel.Close();
     scaleToWindow(*backpackPanel.background);
+
+    discardPilePanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
 
     settingPanel.Init(rm, font);
     backpackPanel.Init(rm, font);
+    discardPilePanel.Init(rm, font);
     return true;
 }
 
@@ -31,6 +34,9 @@ bool UIManager::HandleMousePressed(const sf::Vector2f& mousePos){
     }
     if(backpackPanel.IsVisible()){
         return backpackPanel.HandleMousePressed(mousePos);
+    }
+    if(discardPilePanel.IsVisible()){
+        return discardPilePanel.HandleMousePressed(mousePos);
     }
 
     return false;

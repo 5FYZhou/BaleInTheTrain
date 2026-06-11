@@ -44,10 +44,6 @@ private:
 
 public:
     SceneManager(){
-        menuScene.BuildInteractables();
-        gameScene1.BuildInteractables();
-        gameScene2.BuildInteractables();
-        gameScene3.BuildInteractables();
         curScene = &menuScene;
     };
     ~SceneManager() = default;
@@ -113,6 +109,7 @@ public:
 
     void Update(float dt) {
         curScene->Update(dt);
+        
         if (fadeState == FadeState::FadeOut) {
             fadeAlpha += FadeSpeed * dt;
             if (fadeAlpha >= 255.f) {

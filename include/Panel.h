@@ -21,17 +21,10 @@ public:
     virtual void Open() { visible = true; }
     virtual void Close() { visible = false; }
 
-    bool IsVisible() const {
-        return visible;
-    }
+    bool IsVisible() const { return visible; }
 };
 
-enum class SliderTarget
-{
-    None,
-    Music,
-    Sfx
-};
+enum class SliderTarget{ None, Music, Sfx };
 
 class SettingPanel : public Panel{
 private:
@@ -58,9 +51,7 @@ public:
     void Draw(sf::RenderWindow& window) ;
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
-
     void HandleMouseMoved(const sf::Vector2f& mousePos);
-
     void HandleMouseReleased();
 
     void Close() override {
@@ -68,13 +59,8 @@ public:
         draggingSlider = SliderTarget::None;
     }
 
-    float GetMusicVolume() const{
-        return musicVolume;
-    }
-
-    float GetSfxVolume() const{
-        return sfxVolume;
-    }
+    float GetMusicVolume() const{ return musicVolume; }
+    float GetSfxVolume() const{ return sfxVolume; }
 
     void SetMusicVolume(float v);
     void SetSfxVolume(float v);
@@ -98,10 +84,34 @@ public:
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
+    const std::vector<CardView>& GetCards() const { return cards; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
 
     void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
+};
 
+class DiscardPilePanel : public Panel{
+private:
+    ResourceManager* rm = nullptr;
+
+    std::vector<CardView> cards;
+
+    const sf::Font* font = nullptr;
+    bool hasFont = false;
+
+    sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
+
+public:
+    std::optional<sf::Sprite> backButton;
+
+    DiscardPilePanel(std::vector<GameEvent>& e) : Panel(e) {}
+    void Init(ResourceManager& resource, const sf::Font* uiFont);
+
+    void SetCards(const std::vector<PileType>& c);
     const std::vector<CardView>& GetCards() const { return cards; }
+
+    bool HandleMousePressed(const sf::Vector2f& mousePos);
+
+    void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
 };
