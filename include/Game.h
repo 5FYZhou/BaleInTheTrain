@@ -42,7 +42,7 @@ private:
     DialogManager dialogMgr;
     
     Player player;
-    std::vector<CardType> cardsOnPlayer;
+    std::vector<PileType> cardsOnPlayer;
 
     void Init();
     void Logic(float dt);

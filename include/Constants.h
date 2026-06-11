@@ -8,39 +8,32 @@
 
 // Texture types for resource management.
 enum class TextureType {
-    BACKGROUND,
-    GRID,
-    BUTTONS,
-    NUM,
-    TIMER,
-    COUNTER,
-    GAMEOVER,
-    Player,
-    Monster,
-    Key,
-    Card,
-    Star,
-    MenuBackground,
-    StartButton,
-    ExitButton,
-    SettingsButton,
-    GameBackground,
-    StatusBox,
-    Potion1,
-    Potion2,
-    Potion3,
-    Cube,
-    SettingsIcon,
-    Title,
-    Backpack,
-    DiscardPile,
-    BackpackInterior,
-    BackButton,
-    DialogBox,
-    SettingsPanel,
+    MenuBackground, Title, StartButton, ExitButton, SettingsButton,
+    GameBackground, StatusBox, Potion1, Potion2, Potion3, Cube,
+    Player, Star, Key,
+    SettingsIcon, SettingsPanel, 
+    BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox,
     CloseButton,
-    Strike6,
-    Defend5
+
+    Strike, //打击24
+    Defend, //防御1
+    Rage, //暴走2
+    Shrug_off, //耸肩无视3
+    Heavy_strike, //痛击4
+    Anger, //愤怒5
+    Continuous_punches, //连续拳6
+    Observe_weaknesses, //观察弱点7
+    Activate_muscles, //活动肌肉8
+    Revitalize_spirit, //重振精神9
+    Metallization, //金属化10
+    Unstoppable, //势不可挡11
+    Rampart, //壁垒12
+    Sacrifice, //祭品13
+    
+    Train_attendant, //列车员
+    LightMonster, //车灯怪
+    TicketMonster, //车票怪
+    TyreMosnter, //轮胎怪
 };
 
 // Sound/audio types for resource management.
@@ -60,15 +53,25 @@ enum class SoundEffect {
 enum class GameState { MENU, GAME, SETTINGS, GAMEOVER, RUNNING, PAUSED, EXIT };
 
 // Scene/carriage system.
-enum class SceneType { Menu, Game };
+enum class SceneType { Menu, Game, Battle };
 
 enum class ItemType {
     Button,
-    Attack,
-    Heal,
-    Buff,
-    Debuff,
-    Utility
+    Strike, //打击0
+    Defend, //防御1
+    Rage, //暴走2
+    Shrug_off, //耸肩无视3
+    Heavy_strike, //痛击4
+    Anger, //愤怒5
+    Continuous_punches, //连续拳6
+    Observe_weaknesses, //观察弱点7
+    Activate_muscles, //活动肌肉8
+    Revitalize_spirit, //重振精神9
+    Metallization, //金属化10
+    Unstoppable, //势不可挡11
+    Rampart, //壁垒12
+    Sacrifice, //祭品13
+    Key // 钥匙
 };
 
 enum class EventType {
@@ -114,9 +117,41 @@ enum class PileType{
     Revitalize_spirit, //重振精神9
     Metallization, //金属化10
     Unstoppable, //势不可挡11
-    Rampart //壁垒12
+    Rampart, //壁垒12
+    Sacrifice //祭品13
 };
 
+// 卡牌类型映射纹理类型
+inline const std::unordered_map<PileType, TextureType> cardTexMap = {
+    { PileType::Strike, TextureType::Strike },
+    { PileType::Defend, TextureType::Defend },
+    { PileType::Rage, TextureType::Rage },
+    { PileType::Shrug_off, TextureType::Shrug_off },
+    { PileType::Heavy_strike, TextureType::Heavy_strike },
+    { PileType::Anger, TextureType::Anger },
+    { PileType::Continuous_punches, TextureType::Continuous_punches },
+    { PileType::Observe_weaknesses, TextureType::Observe_weaknesses },
+    { PileType::Activate_muscles, TextureType::Activate_muscles },
+    { PileType::Revitalize_spirit, TextureType::Revitalize_spirit },
+    { PileType::Metallization, TextureType::Metallization },
+    { PileType::Unstoppable, TextureType::Unstoppable },
+    { PileType::Rampart, TextureType::Rampart },
+    { PileType::Sacrifice, TextureType::Sacrifice }
+};
+
+// 敌人类型映射纹理类型
+inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
+    { EnemyType::Train_attendant, TextureType::Train_attendant },
+    { EnemyType::LightMonster, TextureType::LightMonster },
+    { EnemyType::TicketMonster, TextureType::TicketMonster },
+    { EnemyType::TyreMosnter, TextureType::TyreMosnter }
+};
+
+struct CardView {
+    TextureType texType;    // 纹理类型
+    sf::Vector2f basePosition;   // 基础位置
+    float rotation;              // 旋转角度（度）
+};
 
 inline constexpr int WINDOW_WIDTH = 1920;
 inline constexpr int WINDOW_HEIGHT = 1080;
@@ -136,28 +171,6 @@ inline constexpr int REWARD_DEFEND_COUNT = 2;
 inline constexpr float DIALOG_FADE_IN_SPEED = 900.f;
 inline constexpr float DIALOG_FADE_OUT_SPEED = 520.f;
 inline constexpr float MOVEMENT_HINT_DURATION = 5.f;
-
-// Card configuration.
-enum class CardType { Strike6, Defend5, Heal, Buff, Utility };
-
-inline const std::unordered_map<CardType, TextureType> cardTexMap = {
-    { CardType::Strike6, TextureType::Strike6 },
-    { CardType::Defend5, TextureType::Defend5 }
-};
-
-struct CardData {
-    CardType type;
-    sf::Vector2f position;
-    float rotation = 0.f;
-    int count = 1;
-};
-
-struct CardView {
-    TextureType texType;
-    std::string textureKey;      // 卡牌纹理key
-    sf::Vector2f basePosition;   // 基础位置
-    float rotation;              // 旋转角度（度）
-};
 
 // UI configuration.
 inline constexpr float POTION_ICON_GRAY = 120.f;

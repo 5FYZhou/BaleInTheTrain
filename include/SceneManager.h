@@ -24,7 +24,6 @@ private:
     static constexpr float FadeSpeed = 520.f;
     float pendingPlayerX = PlayerStartX;
     
-
     // Carriage boundaries and entry/exit positions
     static constexpr float LeftExitX = 210.f;      // Player exit on left
     static constexpr float RightExitX = 1710.f;    // Player exit on right
@@ -53,7 +52,7 @@ public:
     
     Scene& GetScene() { return *curScene; }
     const Scene& GetScene() const { return *curScene; }
-    SceneType GetCurrentSceneType() const { return curScene->GetType(); }
+    SceneType GetCurSceneType() const { return curScene->GetType(); }
     bool IsFading() const { return fadeState != FadeState::None; }
     float GetFadeAlpha() const { return fadeAlpha; }
     FadeState GetFadeState() const { return fadeState; }

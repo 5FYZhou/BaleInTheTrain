@@ -40,7 +40,7 @@ private:
 
     SliderTarget draggingSlider = SliderTarget::None;
 
-    sf::Font* font = nullptr;
+    const sf::Font* font = nullptr;
 
     float SliderValueFromX(float x, float left, float width) const;
 
@@ -53,7 +53,7 @@ public:
     SettingPanel(std::vector<GameEvent>& e) : Panel(e){}
     ~SettingPanel(){ delete font; }
 
-    void Init(ResourceManager& rm, sf::Font* uiFont);
+    void Init(ResourceManager& rm, const sf::Font* uiFont);
 
     void Draw(sf::RenderWindow& window) ;
 
@@ -86,7 +86,7 @@ private:
 
     std::vector<CardView> cards;
 
-    sf::Font* font = nullptr;
+    const sf::Font* font = nullptr;
     bool hasFont = false;
 
     sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
@@ -95,9 +95,9 @@ public:
     std::optional<sf::Sprite> background, backButton;
 
     BackpackPanel(std::vector<GameEvent>& e) : Panel(e) {}
-    void Init(ResourceManager& resource, sf::Font* uiFont);
+    void Init(ResourceManager& resource, const sf::Font* uiFont);
 
-    void SetCards(const std::vector<CardType>& c);
+    void SetCards(const std::vector<PileType>& c);
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
 

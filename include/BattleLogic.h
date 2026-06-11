@@ -9,8 +9,8 @@ struct BattleState {
     std::vector<Card> drawPile;
     std::vector<Card> handCards;
     std::vector<Card> discardPile;
-    std::vector<Potion> potions;
-    std::vector<Relic> relics;
+    //std::vector<Potion> potions;
+    //std::vector<Relic> relics;
     std::vector<Enemy> enemies;
     bool isPlayerTurn;
     // 临时交互状态

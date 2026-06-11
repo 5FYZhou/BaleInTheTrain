@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-void SettingPanel::Init(ResourceManager& rm, sf::Font* uiFont)
+void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont)
 {
     font = uiFont;
     panel->setPosition({560.f, 235.f});
@@ -171,7 +171,7 @@ static bool PointInRect(const sf::Vector2f& p, const sf::FloatRect& r){
     return r.contains(p);
 }
 
-void BackpackPanel::Init(ResourceManager& resource, sf::Font* uiFont){
+void BackpackPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     rm = &resource;
     font = uiFont;
     hasFont = (font != nullptr);
@@ -188,13 +188,13 @@ void BackpackPanel::Init(ResourceManager& resource, sf::Font* uiFont){
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 }
 
-void BackpackPanel::SetCards(const std::vector<CardType>& c){
+void BackpackPanel::SetCards(const std::vector<PileType>& c){
     cards.clear();
     int k1 = 0, k2 = 0;
     for(int i = 0; i < c.size(); i++){
         CardView cv;
         cv.texType = cardTexMap.at(c[i]);
-        if(c[i] == CardType::Strike6){
+        if(c[i] == PileType::Strike){
             cv.basePosition = {410.f + k1 * 128.f, 525.f + k1 * 7.f}; // 位置（X轴间隔128，Y轴微调） 
             cv.rotation = -7.f + k1 * 1.5f; // 旋转（扇形展开）
             cards.push_back(cv);
@@ -204,7 +204,7 @@ void BackpackPanel::SetCards(const std::vector<CardType>& c){
     for(int i = 0; i < c.size(); i++){
         CardView cv;
         cv.texType = cardTexMap.at(c[i]);
-        if(c[i] == CardType::Defend5){
+        if(c[i] == PileType::Defend){
             cv.basePosition = {1010.f + k2 * 128.f, 525.f + k2 * 7.f}; // 位置（X轴间隔128，Y轴微调） 
             cv.rotation = -7.f + k2 * 1.5f; // 旋转（扇形展开）
             cards.push_back(cv);

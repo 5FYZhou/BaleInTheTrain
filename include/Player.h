@@ -10,6 +10,9 @@ private:
     int facing = 1;             // Direction: 1 = right, -1 = left
     float speed = 430.f;        // Movement speed in pixels per second
 
+    int currentHP = 100;
+    int maxHP = 100;
+
     // Animation
     float walkTimer = 0.f;      // Timer for walking animation
     bool isMoving = false;
@@ -20,6 +23,8 @@ private:
     // Texture references (Player does not own sprites)
     float height = 454.f;       // Player sprite height in pixels
     float groundY = 1028.f;     // Ground level Y coordinate
+
+    sf::FloatRect bound;//{ 195.f, 330.f };
 
 public:
     Player();
@@ -34,6 +39,8 @@ public:
     float GetWalkTimer() const { return walkTimer; }
     float GetHeight() const { return height; }
     int GetTextureIndex() const { return textureIndex; }
+    int GetCurrentHP() const { return currentHP; }
+    int GetMaxHP() const { return maxHP; }
 
     // Setters
     void SetFeet(sf::Vector2f newFeet) { feet = newFeet; }
@@ -43,6 +50,11 @@ public:
     void SetHeight(float h) { height = h; }
     void SetSpeed(float s) { speed = s; }
     void SetTextureIndex(int index) { textureIndex = index; }
+    void SetHP(int current, int max);
+
+    // Enemy
+    void TakeDamage(int damage);
+    void Heal(int amount);
 
     // Movement
     void Move(int direction, float dt);

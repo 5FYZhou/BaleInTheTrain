@@ -43,3 +43,19 @@ void Player::UpdateFrame(float dt) {
         textureIndex = (textureIndex + 1) % frameCount; // Cycle through 3 frames
     }
 }
+
+void Player::SetHP(int current, int max)
+{
+    currentHP = std::clamp(current, 0, std::max(1, max));
+    maxHP = std::max(1, max);
+}
+
+void Player::TakeDamage(int damage)
+{
+    SetHP(currentHP - damage, maxHP);
+}
+
+void Player::Heal(int amount)
+{
+    SetHP(currentHP + amount, maxHP);
+}

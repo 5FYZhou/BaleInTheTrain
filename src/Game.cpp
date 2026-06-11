@@ -41,9 +41,9 @@ void Game::Init() {
     renderer.Init();
 
     player.Init(rm.getTextureCount(TextureType::Player));
+    player.SetHP(100, 100);
 
     uiMgr.Init(rm);
-    uiMgr.SetHP(100, 100);
 
     audioMgr.Initialize(rm);
     audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
@@ -53,7 +53,7 @@ void Game::Init() {
     sceneMgr.SetCurScene(SceneType::Menu);
 
     // 暂时指定卡片
-    cardsOnPlayer = { CardType::Strike6, CardType::Defend5, CardType::Defend5, CardType::Strike6, CardType::Strike6};
+    cardsOnPlayer = { PileType::Strike, PileType::Defend, PileType::Defend, PileType::Strike, PileType::Strike};
 }
 
 void Game::HandleInput(float dt){
@@ -67,13 +67,13 @@ void Game::HandleInput(float dt){
                 if (uiMgr.IsSettingsPopupOpen()) {
                     uiMgr.CloseSettingsPopup();
                     audioMgr.PlaySound(SoundEffect::Back);
-                } else if (sceneMgr.GetCurrentSceneType() == SceneType::Game) {
+                } else if (sceneMgr.GetCurSceneType() == SceneType::Game) {
                     sceneMgr.LoadScene(SceneType::Menu);
                 } else {
                     window.close();
                 }
             } 
-            else if (sceneMgr.GetCurrentSceneType() == SceneType::Game &&
+            else if (sceneMgr.GetCurSceneType() == SceneType::Game &&
                        dialogMgr.IsActive() &&
                        (key->scancode == sf::Keyboard::Scancode::Space ||
                         key->scancode == sf::Keyboard::Scancode::Enter)) {
@@ -110,7 +110,7 @@ void Game::HandleInput(float dt){
             if(uiMgr.HandleMousePressed(mousePos)) 
                 return;
 
-            if (sceneMgr.GetCurrentSceneType() == SceneType::Game && dialogMgr.IsActive()) {
+            if (sceneMgr.GetCurSceneType() == SceneType::Game && dialogMgr.IsActive()) {
                 dialogMgr.AdvanceDialog();
                 continue;
             }
@@ -120,7 +120,7 @@ void Game::HandleInput(float dt){
     }
 
     int movementDirection = 0;
-    if (sceneMgr.GetCurrentSceneType() != SceneType::Game ||
+    if (sceneMgr.GetCurSceneType() != SceneType::Game ||
         dialogMgr.IsActive() ||
         uiMgr.IsSettingsPopupOpen() ||
         sceneMgr.IsFading()) {
@@ -146,7 +146,7 @@ void Game::Logic(float dt) {
     audioMgr.Update();
 
     if (!sceneMgr.IsFading()) {
-        if (sceneMgr.GetCurrentSceneType() == SceneType::Game) {
+        if (sceneMgr.GetCurSceneType() == SceneType::Game) {
             sceneMgr.CheckChangeGameScene(player.GetFeet().x);
         }
     }
@@ -226,31 +226,31 @@ void Game::HandleEvents(const GameEvent& event){
 void Game::Draw() {
     window.clear();
 
-    SceneType currentScene = sceneMgr.GetCurrentSceneType();
+    SceneType currentScene = sceneMgr.GetCurSceneType();
+    
+    // 绘制场景
+    renderer.DrawScene(window, sceneMgr.GetScene());
     
     if (currentScene == SceneType::Menu) {
-        renderer.DrawMenu(window);
+        //renderer.DrawMenu(window);
     } else if (currentScene == SceneType::Game) {
-        renderer.DrawGame(window, player);
-        uiMgr.DrawDialog(window, dialogMgr);
-        uiMgr.DrawCardRewards(window, cardsOnPlayer, dialogMgr.GetRewardAlpha());
+        renderer.DrawPlayer(window, player);
+        renderer.DrawDialog(window, dialogMgr);
+        renderer.DrawCardRewards(window, cardsOnPlayer, dialogMgr.GetRewardAlpha());
         if (dialogMgr.IsMovementHintVisible()) {
-            uiMgr.DrawMovementHint(window);
+            renderer.DrawMovementHint(window);
         }
+        // Draw UI
+        renderer.DrawUI(window);
     }
 
-    // 场景中的交互物品
-    Scene& scene = sceneMgr.GetScene();
-    for(const auto& item : scene.GetInteractables()) {
-        renderer.DrawItem(window, item.position, item.texture, item.scale);
-    }
+    // UI面板
+    uiMgr.DrawPanels(window, mousePosMove);
 
     // 切场景遮罩
     if (sceneMgr.GetFadeAlpha() > 0.f) {
         renderer.DrawFadeOverlay(window, static_cast<std::uint8_t>(sceneMgr.GetFadeAlpha()));
     }
-
-    uiMgr.DrawPanels(window, mousePosMove);
 
     window.display();
 }
