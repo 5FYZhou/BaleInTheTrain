@@ -19,6 +19,8 @@ private:
     std::filesystem::path assetRoot;
     std::filesystem::path audioRoot;
 
+    sf::Font font;
+
     std::filesystem::path FindAssetRoot() const {
         const std::vector<std::filesystem::path> candidates = {
             std::filesystem::current_path(),
@@ -73,16 +75,34 @@ private:
         return (audioRoot / relative).string();
     }
 
-public:
-    TextureType CardTypeFromKey(const std::string& cardType) const {
-        if (cardType == "strike6") {
-            return TextureType::Strike6;
+
+    bool loadTextureFromUnicodePath(sf::Texture& texture, const std::string& utf8Path) {
+#ifdef _WIN32
+            std::filesystem::path fsPath(utf8Path);
+            std::wstring widePath = fsPath.wstring();
+            
+            FILE* file = _wfopen(widePath.c_str(), L"rb");
+            if (!file) {
+                return false;
+            }
+            
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            
+            std::vector<unsigned char> buffer(fileSize);
+            size_t bytesRead = fread(buffer.data(), 1, fileSize, file);
+            fclose(file);
+            
+            if (bytesRead != fileSize) {
+                return false;
+            }
+            
+            return texture.loadFromMemory(buffer.data(), buffer.size());
+#else
+            return texture.loadFromFile(utf8Path);
+#endif
         }
-        if (cardType == "defend5") {
-            return TextureType::Defend5;
-        }
-        return TextureType::Card;
-    }
 
 public:
     ResourceManager() {
@@ -92,39 +112,55 @@ public:
         std::cout << "ResourceManager audio root: " << audioRoot.string() << std::endl;
 
         texturePath = {
-            {TextureType::BACKGROUND, {}},
-            {TextureType::GRID, {}},
-            {TextureType::BUTTONS, {}},
-            {TextureType::NUM, {}},
-            {TextureType::TIMER, {}},
-            {TextureType::COUNTER, {}},
-            {TextureType::Player, {"/balestand1.png", "/bale1.png", "/bale2.png", "/bale3.png", "/bale4.png"}},
-            {TextureType::Card, {"/cardframe.png"}},
-            {TextureType::Star, {"/星星.png"}},
-            {TextureType::GAMEOVER, {}},
-
+            // 开始界面
             {TextureType::MenuBackground, {"/开始界面备用.png"}},
+            {TextureType::Title, {"/标题.png"}},
             {TextureType::StartButton, {"/开始游戏选项.png"}},
-            {TextureType::ExitButton, {"/退出游戏选项.png"}},
             {TextureType::SettingsButton, {"/设置选项.png"}},
+            {TextureType::ExitButton, {"/退出游戏选项.png"}},
+
+            // 游戏界面
             {TextureType::GameBackground, {"/游戏背景备用.png"}},
+            {TextureType::Player, {"/balestand1.png", "/bale1.png", "/bale2.png", "/bale3.png", "/bale4.png"}},
+            {TextureType::Star, {"/星星.png"}},
+            {TextureType::Key, {"/钥匙.png"}},
+            // 游戏UI
             {TextureType::StatusBox, {"/状态框.png"}},
             {TextureType::Potion1, {"/药剂1.png"}},
             {TextureType::Potion2, {"/药剂2.png"}},
             {TextureType::Potion3, {"/药剂3.png"}},
             {TextureType::Cube, {"/魔方.png"}},
             {TextureType::SettingsIcon, {"/设置.png"}},
-            {TextureType::Title, {"/标题.png"}},
 
-            {TextureType::Backpack, {"/背包.png"}},
+            {TextureType::BackpackIcon, {"/背包.png"}},
             {TextureType::DiscardPile, {"/弃牌池.png"}},
             {TextureType::BackpackInterior, {"/背包内部.png"}},
             {TextureType::BackButton, {"/返回键.png"}},
             {TextureType::DialogBox, {"/对话框.png"}},
             {TextureType::SettingsPanel, {"/设置面板.png"}},
             {TextureType::CloseButton, {"/叉叉键.png"}},
-            {TextureType::Strike6, {"/打击6点.png"}},
-            {TextureType::Defend5, {"/防御5点.png"}}
+
+            // 卡牌
+            {TextureType::Strike, {"/打击6点.png"}},
+            {TextureType::Defend, {"/防御5点.png"}},
+            {TextureType::Rage, {"/暴走.png"}},
+            {TextureType::Shrug_off, {"/耸肩无视.png"}},
+            {TextureType::Heavy_strike, {"/痛击.png"}},
+            {TextureType::Anger, {"/愤怒.png"}},
+            {TextureType::Continuous_punches, {"/连续拳.png"}},
+            {TextureType::Observe_weaknesses, {"/观察弱点.png"}},
+            {TextureType::Activate_muscles, {"/活动肌肉.png"}},
+            {TextureType::Revitalize_spirit, {"/重振精神.png"}},
+            {TextureType::Metallization, {"/金属化.png"}},
+            {TextureType::Unstoppable, {"/势不可当.png"}},
+            {TextureType::Rampart, {"/壁垒.png"}},
+            {TextureType::Sacrifice, {"/祭品.png"}},
+
+            // 敌人
+            {TextureType::Train_attendant, {"/乘务员1.png", "/乘务员2.png"}},
+            {TextureType::LightMonster, {"/车灯1.png", "/车灯2.png"}},
+            {TextureType::TicketMonster, {"/车票1.png", "/车票2.png"}},
+            {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}}
         };
 
         soundEffectPath = {
@@ -135,20 +171,29 @@ public:
             {SoundEffect::MenuButton, "/开始界面按钮音效.wav"}
         };
 
-        loadAllResources();
-        LoadAudioResources();
+        loadAllTex();
+        LoadAllAudio();
+        LoadFont();
     }
 
-    bool loadTexture(TextureType type, const std::string& path) {
-        sf::Texture texture;
-        if (!texture.loadFromFile(path)) {
-            std::cout << "Failed to load texture: " << path << std::endl;
-            return false;
+     bool loadTexture(TextureType type, const std::string& path){
+            sf::Texture texture;
+            bool success = false;
+            
+#ifdef _WIN32
+            success = loadTextureFromUnicodePath(texture, path);
+#else
+            success = texture.loadFromFile(path);
+#endif
+            
+            if (!success) {
+                std::cout << "Failed to load texture: " << path << std::endl;
+                return false;
+            }
+            textures[type].push_back(texture);
+            return true;
         }
 
-        textures[type].push_back(std::move(texture));
-        return true;
-    }
 
     bool loadSound(SoundEffect effect, const std::string& path) {
         if (effect == SoundEffect::None) {
@@ -166,7 +211,7 @@ public:
         return true;
     }
 
-    bool loadAllResources() {
+    bool loadAllTex() {
         bool success = true;
         for (const auto& [type, paths] : texturePath) {
             for (const auto& path : paths) {
@@ -179,11 +224,6 @@ public:
         return success;
     }
 
-    bool LoadCardTexture(const std::string& cardType) {
-        const TextureType type = CardTypeFromKey(cardType);
-        return textures.find(type) != textures.end() && !textures[type].empty();
-    }
-
     bool LoadDialogAssets() {
         return getTextureCount(TextureType::DialogBox) > 0;
     }
@@ -193,7 +233,7 @@ public:
                getTextureCount(TextureType::CloseButton) > 0;
     }
 
-    bool LoadAudioResources() {
+    bool LoadAllAudio() {
         bool success = true;
         for (const auto& [effect, path] : soundEffectPath) {
             if (soundEffectBuffers.find(effect) == soundEffectBuffers.end()) {
@@ -202,6 +242,25 @@ public:
         }
         return success;
     }
+
+    bool LoadFont(){
+        const std::array<std::string, 5> candidates = {
+            "C:/Windows/Fonts/msyh.ttc",
+            "C:/Windows/Fonts/simhei.ttf",
+            "C:/Windows/Fonts/simsun.ttc",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/calibri.ttf"
+        };
+
+        for (const auto& path : candidates) {
+            if (font.openFromFile(path)) {
+                return true;
+            }
+        }
+
+        std::cout << "Failed to load system font. Text UI will be hidden.\n";
+        return false;
+} 
 
     const sf::Texture& getTexture(TextureType type, size_t index = 0) const {
         auto found = textures.find(type);
@@ -212,10 +271,6 @@ public:
             return emptyTexture;
         }
         return found->second[index];
-    }
-
-    const sf::Texture& GetCardTexture(const std::string& cardType) const {
-        return getTexture(CardTypeFromKey(cardType));
     }
 
     const sf::Texture& GetSettingsPanelTexture() const {
@@ -236,6 +291,8 @@ public:
         }
         return found->second;
     }
+
+    const sf::Font& getFont() const { return font; }
 
     bool HasSound(SoundEffect effect) const {
         return soundEffectBuffers.find(effect) != soundEffectBuffers.end();
