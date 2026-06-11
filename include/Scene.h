@@ -166,7 +166,7 @@ public:
             { TextureType::Potion1, {365.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion2, {450.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion3, {535.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
-            { TextureType::Cube, {620.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::Cube, {100.f, 900.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::OpenDealCardPanel },
             { TextureType::DiscardPile, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile }
         };
     }

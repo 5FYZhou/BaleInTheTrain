@@ -81,6 +81,7 @@ public:
     std::optional<sf::Sprite> background, backButton;
 
     BackpackPanel(std::vector<GameEvent>& e) : Panel(e) {}
+    ~BackpackPanel(){ delete rm; delete font; }
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
@@ -106,6 +107,7 @@ public:
     std::optional<sf::Sprite> backButton;
 
     DiscardPilePanel(std::vector<GameEvent>& e) : Panel(e) {}
+    ~DiscardPilePanel(){ delete rm; delete font; }
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
@@ -115,3 +117,30 @@ public:
 
     void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
 };
+
+class DealCardPanel : public Panel{
+private:
+    ResourceManager* rm = nullptr;
+
+    std::vector<CardView> cards;
+
+    const sf::Font* font = nullptr;
+    bool hasFont = false;
+
+    sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
+
+public:
+    std::optional<sf::Sprite> backButton;
+
+    DealCardPanel(std::vector<GameEvent>& e) : Panel(e) {}
+    ~DealCardPanel(){ delete rm; delete font; }
+    void Init(ResourceManager& resource, const sf::Font* uiFont);
+
+    void SetCards(const std::vector<PileType>& c);
+    const std::vector<CardView>& GetCards() const { return cards; }
+
+    bool HandleMousePressed(const sf::Vector2f& mousePos);
+
+    void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
+};
+

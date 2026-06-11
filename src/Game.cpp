@@ -200,6 +200,12 @@ void Game::HandleEvents(const GameEvent& event){
             uiMgr.SetDiscardCard(cardsOnPlayer);
             uiMgr.OpenDiscardPopup();
             break;
+        // 打开发牌池
+        case EventType::OpenDealCardPanel:
+            std::cout<<"Event::openDealcard"<<std::endl;
+            uiMgr.SetDealCardCard(cardsOnPlayer);
+            uiMgr.OpenDealCardPopup();
+            break;
 
         // 修改音效音量
         case EventType::SfxVolumeChange:
@@ -224,6 +230,7 @@ void Game::HandleEvents(const GameEvent& event){
             // TODO: 处理游戏场景中的交互物品点击事件
             std::cout<< "hitItem:"<<event.val<<std::endl; 
             break;
+        // 开始战斗
         case EventType::BeginBattle:
             sceneMgr.LoadScene(SceneType::Battle);
             std::cout<<"Event:beginBattle"<<std::endl;
@@ -235,18 +242,16 @@ void Game::HandleEvents(const GameEvent& event){
 void Game::Draw() {
     window.clear();
 
-    SceneType currentScene = sceneMgr.GetCurSceneType();
+    SceneType curSceneType = sceneMgr.GetCurSceneType();
     
     // 绘制场景
     renderer.DrawScene(window, sceneMgr.GetScene());
     
-    if(currentScene != SceneType::Menu){
+    if(curSceneType != SceneType::Menu){
         renderer.DrawPlayer(window, player);
     }
-    
-    if (currentScene == SceneType::Menu) {
-        //renderer.DrawMenu(window);
-    } else if (currentScene == SceneType::Game) {
+
+    if(curSceneType == SceneType::Game) {
         renderer.DrawDialog(window, dialogMgr);
         renderer.DrawCardRewards(window, cardsOnPlayer, dialogMgr.GetRewardAlpha());
         if (dialogMgr.IsMovementHintVisible()) {

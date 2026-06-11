@@ -13,28 +13,77 @@ private:
     SettingPanel settingPanel;
     BackpackPanel backpackPanel;
     DiscardPilePanel discardPilePanel;
+    DealCardPanel dealCardPanel;
 
-    bool hasFont = false;
     const sf::Font* font = nullptr;
 
-public:
-    UIManager();
-    ~UIManager();
+    void scaleToWindow(sf::Sprite& sprite){
+        const auto size = sprite.getTexture().getSize();
+        sprite.setScale({
+            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(size.x),
+            static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
+        });
+    }
 
-    bool Init(ResourceManager& rm);
-    
+public:
+    UIManager() : settingPanel(events), backpackPanel(events)
+        , discardPilePanel(events), dealCardPanel(events){}
+    ~UIManager(){ delete font; }
+
+    void Init(ResourceManager& rm){
+        resourceManager = &rm;
+        font = &rm.getFont();
+
+        settingPanel.panel.emplace(rm.getTexture(TextureType::SettingsPanel));
+        settingPanel.closeButton.emplace(rm.getTexture(TextureType::CloseButton));
+
+        backpackPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
+        backpackPanel.background.emplace(rm.getTexture(TextureType::BackpackInterior));
+        scaleToWindow(*backpackPanel.background);
+
+        discardPilePanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
+
+        dealCardPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
+
+        settingPanel.Init(rm, font);
+        backpackPanel.Init(rm, font);
+        discardPilePanel.Init(rm, font);
+        dealCardPanel.Init(rm, font);
+    }
+
     std::vector<GameEvent>& GetEvents(){ return events; }
 
-    SettingPanel& GetSettingsPanel(){ return settingPanel; }
-
-    bool HandleMousePressed(const sf::Vector2f& mousePos);
-    void HandleMouseMoved(const sf::Vector2f& mousePos);
-    void HandleMouseReleased();
+    bool HandleMousePressed(const sf::Vector2f& mousePos){
+        if(settingPanel.IsVisible()){
+            return settingPanel.HandleMousePressed(mousePos);
+        }
+        if(backpackPanel.IsVisible()){
+            return backpackPanel.HandleMousePressed(mousePos);
+        }
+        if(discardPilePanel.IsVisible()){
+            return discardPilePanel.HandleMousePressed(mousePos);
+        }
+        if(dealCardPanel.IsVisible()){
+            return dealCardPanel.HandleMousePressed(mousePos);
+        }
+        return false;
+    }
+    void HandleMouseMoved(const sf::Vector2f& mousePos){
+        if(settingPanel.IsVisible()){
+            settingPanel.HandleMouseMoved(mousePos);
+        }
+    }
+    void HandleMouseReleased(){
+        if(settingPanel.IsVisible()){
+            settingPanel.HandleMouseReleased();
+        }
+    }
 
     void DrawPanels(sf::RenderWindow& window, sf::Vector2i& mousePos){ 
         settingPanel.Draw(window); 
         backpackPanel.Draw(window, mousePos);
         discardPilePanel.Draw(window, mousePos);
+        dealCardPanel.Draw(window, mousePos);
     }
 
     void OpenSettingsPopup(){ settingPanel.Open(); }
@@ -51,12 +100,9 @@ public:
     void CloseDiscardPopup(){ discardPilePanel.Close(); }
     void SetDiscardCard(std::vector<PileType>& cards){ discardPilePanel.SetCards(cards); }
 
-    void scaleToWindow(sf::Sprite& sprite)
-    {
-        const auto size = sprite.getTexture().getSize();
-        sprite.setScale({
-            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(size.x),
-            static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
-        });
-    }
+    void OpenDealCardPopup(){ dealCardPanel.Open(); }
+    bool IsDealCardPopupOpen(){ return dealCardPanel.IsVisible(); }
+    void CloseDealCardPopup(){ dealCardPanel.Close(); }
+    void SetDealCardCard(std::vector<PileType>& cards){ dealCardPanel.SetCards(cards); }
+
 };

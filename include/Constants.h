@@ -76,7 +76,7 @@ enum class ItemType {
 
 enum class EventType {
     None,
-    StartGame, OpenSettings, ExitGame, OpenBackpackIcon, OpenDiscardPile, 
+    StartGame, OpenSettings, ExitGame, OpenBackpackIcon, OpenDiscardPile, OpenDealCardPanel, 
     MusicVolumeChange, SfxVolumeChange, 
     ResetPlayerPos,
     ItemClicked,
