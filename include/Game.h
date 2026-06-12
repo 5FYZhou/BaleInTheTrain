@@ -9,6 +9,7 @@
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "TimeSystem.h"
+#include "BattleLogic.h"
 #include "UIManager.h"
 #include <SFML/Graphics.hpp>
 #include <string>
