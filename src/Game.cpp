@@ -100,10 +100,10 @@ void Game::HandleInput(float dt){
                 continue;
             }
 
-            const MouseState mouseState = input.GetMouseState(window);
+            const sf::Vector2i mousePosi = sf::Mouse::getPosition(window);
             const sf::Vector2f mousePos{
-                static_cast<float>(mouseState.position.x),
-                static_cast<float>(mouseState.position.y)
+                static_cast<float>(mousePosi.x),
+                static_cast<float>(mousePosi.y)
             };
 
             // 如果有UI面板是打开的或处理了该鼠标点击 跳过场景处理鼠标点击
@@ -232,7 +232,10 @@ void Game::HandleEvents(const GameEvent& event){
             break;
         // 开始战斗
         case EventType::BeginBattle:
-            sceneMgr.LoadScene(SceneType::Battle);
+            sceneMgr.LoadScene(SceneType::Battle, [this]{
+                uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                uiMgr.OpenCardsInHandPopup();
+            });
             std::cout<<"Event:beginBattle"<<std::endl;
         default:
             break;

@@ -19,9 +19,9 @@ inline const std::vector<std::vector<Item>> itemInScene = {
 };
 
 inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
-    { EnemyType::Train_attendant, { 1500, 500 } },
-    { EnemyType::LightMonster, { 1500, 500 } },
-    { EnemyType::TicketMonster, { 1500, 500 } }
+    { EnemyType::Train_attendant, { 1500, 490 } },
+    { EnemyType::LightMonster, { 1500, 480 } },
+    { EnemyType::TicketMonster, { 1500, 560 } }
 };
 
 struct SceneInteractable {
@@ -182,6 +182,12 @@ public:
     const Enemy* GetEnemy() const override { return enemy; }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
+        if(enemy->bound.contains(mousePos)){
+            GameEvent event;
+            event.type = EventType::TryGetHoldingCard;
+            events.push_back(event);
+        }
+
         for (size_t i = 0; i < interactables.size(); ++i) {
             const auto& item = interactables[i];
             if (!item.clickable || item.eventType == EventType::None) {

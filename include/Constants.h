@@ -79,9 +79,11 @@ enum class EventType {
     StartGame, OpenSettings, ExitGame, OpenBackpackIcon, OpenDiscardPile, OpenDealCardPanel, 
     MusicVolumeChange, SfxVolumeChange, 
     ResetPlayerPos,
-    ItemClicked,
+    ItemClicked, 
     GenericAction,
-    BeginBattle
+    BeginBattle,
+    TryGetHoldingCard, // 点击敌人时，检查是否有选中的牌
+    PlayACard // 如果有选中的牌 打出
 };
 
 struct GameEvent {
@@ -184,9 +186,9 @@ inline constexpr float DEFAULT_SFX_VOLUME = 0.75f;
 inline constexpr float DEFAULT_MUSIC_VOLUME = 0.7f;
 inline constexpr float FOOTSTEP_VOLUME_SCALE = 0.65f;
 
-inline const float PlayerGroundY = 1028.f;
+inline const float PlayerGroundY = 860.f;
 inline const float PlayerHeight = 454.f;
-inline const float PlayerStartX = 350.f;
+inline const float PlayerStartX = 300.f;
 
 struct GameData {
     int score = 0;

@@ -466,3 +466,61 @@ void DealCardPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos)
     }
 }
 
+
+
+
+void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
+    rm = &resource;
+    font = uiFont;
+    hasFont = (font != nullptr);
+}
+
+void CardsInHandPanel::SetCards(const std::vector<PileType>& c)
+{
+    cards.clear();
+    for(int i = 0; i < c.size(); i++){
+        CardView cv;
+        cv.texType = cardTexMap.at(c[i]);
+        cv.basePosition = {500.f + i * 128.f, 950.f + i * 7.f}; // 位置（X轴间隔128，Y轴微调） 
+        cv.rotation = -7.f + i * 1.5f; // 旋转（扇形展开）
+        cards.push_back(cv);        
+    }
+}
+
+// 特殊面板 不截断鼠标点击
+bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
+    return false;
+}
+
+void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
+{
+    if (!visible)
+        return;
+}
+
+void CardsInHandPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos){
+    if(!visible) return;
+
+    sf::Vector2f mouseF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+    for (const auto& card : cards)
+    {
+        sf::Sprite sprite(rm->getTexture(card.texType));
+        const auto size = sprite.getTexture().getSize();
+        sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
+        sprite.setPosition(card.basePosition);
+        sprite.setRotation(sf::degrees(card.rotation));
+        sprite.setScale({0.7f, 0.7f});
+
+        // hover
+        if (sprite.getGlobalBounds().contains(mouseF))
+        {
+            sprite.move({0.f, -44.f});
+            sprite.setScale({0.64f, 0.64f});
+        }
+
+        window.draw(sprite);
+    }
+}
+
+
