@@ -170,6 +170,7 @@ void Game::ProcessEvents() {
 
 void Game::HandleEvents(const GameEvent& event){
     switch (event.type) {
+        #pragma region 切场景,UI,音乐
         // 切换到游戏场景
         case EventType::StartGame:
             sceneMgr.LoadScene(SceneType::Game);
@@ -215,20 +216,70 @@ void Game::HandleEvents(const GameEvent& event){
         case EventType::MusicVolumeChange:
             audioMgr.SetMusicVolume(event.val);
             break;
-
-        // 进入新游戏场景时 重置玩家位置
+        #pragma endregion
+        
+        // 进入新游戏/战斗场景时 重置玩家位置
         case EventType::ResetPlayerPos:
             player.SetFeet({event.val, PlayerGroundY});
             if(event.val == PlayerStartX){
                 player.SetFacing(1);
             }
             player.ResetToStand();
-            std::cout<< "Reset player position to: " << player.GetFeet().x << std::endl;
-            break;
+            std::cout<< "Event: Reset player position to: " << player.GetFeet().x << std::endl;
+            break; 
         // 场景中的交互物品点击
         case EventType::ItemClicked:
-            // TODO: 处理游戏场景中的交互物品点击事件
-            std::cout<< "hitItem:"<<event.val<<std::endl; 
+        {
+            ItemType itemtype = static_cast<ItemType>(event.val);
+            switch (itemtype)
+            {
+            case ItemType::Enemy:
+                if(uiMgr.HasSelectedCard()){
+                    // 出牌
+                    auto [type, idx] = uiMgr.GetSelectedCard();
+                    std::cout<<"event: click Enemy & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    // 如果出牌 删除该牌
+                    cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
+                    // 重新绘制
+                    uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                }
+                break;
+            case ItemType::Player:
+                if(uiMgr.HasSelectedCard()){
+                    // 出牌
+                    auto [type, idx] = uiMgr.GetSelectedCard();
+                    std::cout<<"event: click Player & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    // 如果出牌 删除该牌
+                    cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
+                    // 重新绘制
+                    uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                }
+                break;
+            case ItemType::Key:
+                break;
+                
+            case ItemType::Strike: //打击0
+            case ItemType::Defend: //防御1
+            case ItemType::Rage: //暴走2
+            case ItemType::Shrug_off: //耸肩无视3
+            case ItemType::Heavy_strike: //痛击4
+            case ItemType::Anger: //愤怒5
+            case ItemType::Continuous_punches: //连续拳6
+            case ItemType::Observe_weaknesses: //观察弱点7
+            case ItemType::Activate_muscles: //活动肌肉8
+            case ItemType::Revitalize_spirit: //重振精神9
+            case ItemType::Metallization: //金属化10
+            case ItemType::Unstoppable: //势不可挡11
+            case ItemType::Rampart: //壁垒12
+            case ItemType::Sacrifice: //祭品13
+                std::cout<< "Event : hitcard:"<<event.val<<std::endl; 
+                // 给玩家加卡牌
+                cardsOnPlayer.push_back(itemPileMap.at(itemtype));
+                break;
+            default:
+                break;
+            }
+        }
             break;
         // 开始战斗
         case EventType::BeginBattle:
@@ -237,6 +288,11 @@ void Game::HandleEvents(const GameEvent& event){
                 uiMgr.OpenCardsInHandPopup();
             });
             std::cout<<"Event:beginBattle"<<std::endl;
+            break;
+        // 结束回合
+        case EventType::EndTurn:
+            std::cout<<"Event: end turn"<<std::endl;
+            break;
         default:
             break;
         }

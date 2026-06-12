@@ -119,5 +119,11 @@ public:
     bool IsCardsInHandPopupOpen(){ return cardsInHandPanel.IsVisible(); }
     void CloseCardsInHandPopup(){ cardsInHandPanel.Close(); }
     void SetCardsInHandCard(std::vector<PileType>& cards){ cardsInHandPanel.SetCards(cards); }
+    bool HasSelectedCard(){ 
+        if(cardsInHandPanel.IsVisible()) 
+            return cardsInHandPanel.HasSelectedCard();
+        return false;
+    }
+    std::pair<PileType, int> GetSelectedCard(){ return cardsInHandPanel.GetSelectedCard(); }
 
 };

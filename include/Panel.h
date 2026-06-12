@@ -145,7 +145,10 @@ private:
     ResourceManager* rm = nullptr;
 
     std::vector<CardView> cards;
+    bool hasSelectedCard;
     PileType selectedCard;
+    int hoveredIndex = -1;
+    int selectedIndex = -1;
 
     const sf::Font* font = nullptr;
     bool hasFont = false;
@@ -156,7 +159,8 @@ public:
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
-    PileType GetSelectedCard() { return selectedCard; }
+    std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
+    bool HasSelectedCard() { return hasSelectedCard; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
     void HandleMouseMoved(const sf::Vector2f& mousePos);

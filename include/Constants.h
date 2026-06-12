@@ -8,12 +8,13 @@
 
 // Texture types for resource management.
 enum class TextureType {
+    None, 
     MenuBackground, Title, StartButton, ExitButton, SettingsButton,
     GameBackground, StatusBox, Potion1, Potion2, Potion3, Cube,
     Player, Star, Key,
     SettingsIcon, SettingsPanel, 
     BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox,
-    CloseButton,
+    CloseButton, EndTurn, 
 
     Strike, //打击24
     Defend, //防御1
@@ -71,7 +72,9 @@ enum class ItemType {
     Unstoppable, //势不可挡11
     Rampart, //壁垒12
     Sacrifice, //祭品13
-    Key // 钥匙
+    Key, // 钥匙
+    Player, 
+    Enemy
 };
 
 enum class EventType {
@@ -81,8 +84,7 @@ enum class EventType {
     ResetPlayerPos,
     ItemClicked, 
     GenericAction,
-    BeginBattle,
-    TryGetHoldingCard, // 点击敌人时，检查是否有选中的牌
+    BeginBattle, EndTurn,
     PlayACard // 如果有选中的牌 打出
 };
 
@@ -150,7 +152,26 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
     { EnemyType::TyreMosnter, TextureType::TyreMosnter }
 };
 
+// 场景物品类型映射卡牌类型
+inline const std::unordered_map<ItemType, PileType> itemPileMap = {
+    { ItemType::Strike, PileType::Strike },
+    { ItemType::Defend, PileType::Defend },
+    { ItemType::Rage, PileType::Rage },
+    { ItemType::Shrug_off, PileType::Shrug_off },
+    { ItemType::Heavy_strike, PileType::Heavy_strike },
+    { ItemType::Anger, PileType::Anger },
+    { ItemType::Continuous_punches, PileType::Continuous_punches },
+    { ItemType::Observe_weaknesses, PileType::Observe_weaknesses },
+    { ItemType::Activate_muscles, PileType::Activate_muscles },
+    { ItemType::Revitalize_spirit, PileType::Revitalize_spirit },
+    { ItemType::Metallization, PileType::Metallization },
+    { ItemType::Unstoppable, PileType::Unstoppable },
+    { ItemType::Rampart, PileType::Rampart },
+    { ItemType::Sacrifice, PileType::Sacrifice }
+};
+
 struct CardView {
+    PileType cardType;
     TextureType texType;    // 纹理类型
     sf::Vector2f basePosition;   // 基础位置
     float rotation = 0.f;              // 旋转角度（度）

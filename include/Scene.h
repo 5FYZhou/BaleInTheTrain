@@ -25,14 +25,14 @@ inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
 };
 
 struct SceneInteractable {
-    bool clickable = true;
-    TextureType texture;
+    bool clickable = true; // 可点击的
+    TextureType texture; // 纹理
     sf::Vector2f position;
     sf::Vector2f size;
     sf::Vector2f scale;
     sf::FloatRect bounds = sf::FloatRect({0.f, 0.f}, {0.f, 0.f});
-    EventType eventType = EventType::None;
-    ItemType itemType = ItemType::Button;
+    EventType eventType = EventType::None; // 点击后发出的事件
+    ItemType itemType = ItemType::Button; // 当前物品的类型
     SceneInteractable(bool c, TextureType tex, sf::Vector2f pos)
         : clickable(c), texture(tex), position(pos) {
         scale = {1.f, 1.f};
@@ -135,6 +135,7 @@ public:
             return;
         }
 
+        std::vector<SceneInteractable> n;
         for (size_t i = 0; i < interactables.size(); ++i) {
             const auto& item = interactables[i];
             if (!item.clickable || item.eventType == EventType::None) {
@@ -147,7 +148,12 @@ public:
                 event.val = static_cast<int>(item.itemType);
                 events.push_back(event);
             }
+            else{
+                // 未被点击的不删除
+                n.push_back(item);
+            }
         }
+        interactables = n;
     }
 
     void Update(float dt) override{
@@ -167,7 +173,9 @@ public:
             { TextureType::Potion2, {450.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion3, {535.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Cube, {100.f, 900.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::OpenDealCardPanel },
-            { TextureType::DiscardPile, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile }
+            { TextureType::DiscardPile, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile },
+            { TextureType::EndTurn, {1250, 750}, {157, 69}, EventType::EndTurn},
+            { TextureType::None, {357, 508}, {195, 352}, {-1.f, 1.f}, EventType::ItemClicked, ItemType::Player}
         };
     }
     ~BattleScene(){ delete enemy; }
@@ -184,7 +192,8 @@ public:
     void ProcessInput(const sf::Vector2f& mousePos) override {
         if(enemy->bound.contains(mousePos)){
             GameEvent event;
-            event.type = EventType::TryGetHoldingCard;
+            event.type = EventType::ItemClicked;
+            event.val = static_cast<int>(ItemType::Enemy);
             events.push_back(event);
         }
 

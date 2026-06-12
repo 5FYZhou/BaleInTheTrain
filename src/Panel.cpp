@@ -475,50 +475,98 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     hasFont = (font != nullptr);
 }
 
-void CardsInHandPanel::SetCards(const std::vector<PileType>& c)
-{
+void CardsInHandPanel::SetCards(const std::vector<PileType>& c){
+    hoveredIndex = -1;
+    selectedIndex = -1;
     cards.clear();
-    for(int i = 0; i < c.size(); i++){
+    int n = c.size();
+    float centerX = 960.f;  // 屏幕中间 X
+    float baseY = 950.f;    // 底部 Y
+
+    float spacingX = 120.f;        // 卡牌横向间距
+    float maxAngle = 15.f;         // 扇形最大旋转角度
+
+    for(int i = 0; i < n; i++){
         CardView cv;
+        cv.cardType = c[i];
         cv.texType = cardTexMap.at(c[i]);
-        cv.basePosition = {500.f + i * 128.f, 950.f + i * 7.f}; // 位置（X轴间隔128，Y轴微调） 
-        cv.rotation = -7.f + i * 1.5f; // 旋转（扇形展开）
+
+        // 计算相对中心的偏移
+        float offset = i - (n - 1) / 2.f;
+        cv.basePosition = {centerX + offset * spacingX, baseY + std::abs(offset) * 6.f};
+        cv.rotation = offset * (maxAngle / (n > 1 ? (n-1)/2.f : 1.f));
+
         cards.push_back(cv);        
     }
 }
 
 // 特殊面板 不截断鼠标点击
 bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
+    if(hoveredIndex != -1){
+        selectedIndex = hoveredIndex;
+        selectedCard = cards[selectedIndex].cardType;
+        hasSelectedCard = true;
+        return true;
+    }
     return false;
 }
 
 void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
 {
-    if (!visible)
-        return;
+    if (!visible) return;
+    hoveredIndex = -1;
+
+    for(int i = 0; i < cards.size(); i++)
+    {
+        sf::Sprite sprite(rm->getTexture(cards[i].texType));
+        const auto size = sprite.getTexture().getSize();
+        sf::FloatRect bounds(
+            {cards[i].basePosition.x - size.x * 0.5f,
+             cards[i].basePosition.y - size.y * 0.5f},
+            {static_cast<float>(size.x),
+             static_cast<float>(size.y)}
+        );
+        if(bounds.contains(mousePos)){
+            hoveredIndex = i;
+            break;
+        }
+    }
 }
 
 void CardsInHandPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos){
     if(!visible) return;
-
     sf::Vector2f mouseF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
-    for (const auto& card : cards)
+    for(int i = 0; i < cards.size(); i++)
     {
-        sf::Sprite sprite(rm->getTexture(card.texType));
+        sf::Sprite sprite(rm->getTexture(cards[i].texType));
         const auto size = sprite.getTexture().getSize();
-        sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
-        sprite.setPosition(card.basePosition);
-        sprite.setRotation(sf::degrees(card.rotation));
-        sprite.setScale({0.7f, 0.7f});
+        sprite.setOrigin({size.x*0.5f, size.y*0.5f});
 
-        // hover
-        if (sprite.getGlobalBounds().contains(mouseF))
+        sf::Vector2f pos = cards[i].basePosition;
+        float rot = cards[i].rotation;
+        float scale = 0.7f;
+
+        // hover & shift other cards
+        if(hoveredIndex != -1)
         {
-            sprite.move({0.f, -44.f});
-            sprite.setScale({0.64f, 0.64f});
+            int offset = i - hoveredIndex;
+            if(offset != 0)
+            {
+                pos.x += offset * 40.f;  // 左右偏移
+                pos.y += std::abs(offset) * 4.f; // Y 微调
+            }
         }
 
+        // hover 浮起
+        if(i == hoveredIndex) { pos.y -= 44.f; scale = 0.74f; }
+
+        // 选中浮出
+        if(i == selectedIndex) { pos.y -= 40.f; }
+
+        sprite.setPosition(pos);
+        sprite.setRotation(sf::degrees(rot));
+        sprite.setScale({scale, scale});
         window.draw(sprite);
     }
 }
