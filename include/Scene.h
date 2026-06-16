@@ -15,7 +15,7 @@ struct Item{
 };
 
 inline const std::vector<std::vector<Item>> itemInScene = {
-    { {{100.f, 100.f}, ItemType::Strike}, {{200.f, 100.f}, ItemType::Strike} },
+    { {{100.f, 100.f}, ItemType::Activate_muscles}, {{200.f, 100.f}, ItemType::Strike} },
     { {{100.f, 200.f}, ItemType::Strike}, {{200.f, 200.f}, ItemType::Strike}, {{150.f, 300.f}, ItemType::Defend} },
     { {{100.f, 300.f}, ItemType::Strike}, {{200.f, 300.f}, ItemType::Strike}, {{150.f, 400.f}, ItemType::Defend}, {{150.f, 200.f}, ItemType::Key} }
 };
@@ -61,7 +61,7 @@ class Scene {
 protected:
     std::vector<GameEvent>& events;
     SceneType type;
-    TextureType bgTex;
+    TextureType bgTex = TextureType::None;
     std::vector<SceneInteractable> interactables;
 public:
     Scene(std::vector<GameEvent>& e) : events(e) {}
@@ -180,6 +180,9 @@ public:
                 // 这里的val可以用来区分不同的物品，例如可以直接使用itemInScene中的类型枚举值
                 event.val = static_cast<int>(item.itemType);
                 events.push_back(event);
+                if(item.itemType == ItemType::Button)
+                    // 按钮不删除
+                    n.push_back(item);
             }
             else{
                 // 未被点击的不删除
@@ -246,6 +249,21 @@ public:
     }
     void Update(float dt) override{
         enemy->Update(dt);
+    }
+};
+
+class WinScene : public Scene {
+public:
+    WinScene(std::vector<GameEvent>& e) : Scene(e) { 
+        type = SceneType::Win; 
+        interactables = {
+            { false, TextureType::Win, {715.f, 349.f}}
+        };
+    }
+    void ProcessInput(const sf::Vector2f& mousePos) override {
+        GameEvent event;
+        event.type = EventType::ReturnMenu;
+        events.push_back(event);
     }
 };
 

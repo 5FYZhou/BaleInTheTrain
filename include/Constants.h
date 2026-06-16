@@ -14,7 +14,7 @@ enum class TextureType {
     Player, Star, Key,
     SettingsIcon, SettingsPanel, 
     BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox,
-    CloseButton, EndTurn, 
+    CloseButton, EndTurn, Win, 
 
     Strike, //打击24
     Defend, //防御1
@@ -54,7 +54,7 @@ enum class SoundEffect {
 enum class GameState { MENU, GAME, SETTINGS, GAMEOVER, RUNNING, PAUSED, EXIT };
 
 // Scene/carriage system.
-enum class SceneType { Menu, Game, Battle };
+enum class SceneType { Menu, Game, Battle, Win };
 
 enum class ItemType {
     Button,
@@ -82,7 +82,8 @@ enum class ItemType {
 
 enum class EventType {
     None,
-    StartGame, OpenSettings, ExitGame, OpenBackpackIcon, OpenDiscardPile, OpenDealCardPanel, 
+    StartGame, OpenSettings, ExitGame, ReturnMenu,
+    OpenBackpackIcon, OpenDiscardPile, OpenDealCardPanel, 
     MusicVolumeChange, SfxVolumeChange, 
     ResetPlayerPos,
     ItemClicked, 

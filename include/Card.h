@@ -1,5 +1,7 @@
 #pragma once
 #include "Constants.h"
+#include "Player.h"
+#include "Enemy.h"
 class Card{
 public:
     int id; // 卡牌ID

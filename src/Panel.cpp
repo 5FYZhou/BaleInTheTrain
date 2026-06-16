@@ -181,7 +181,7 @@ void BackpackPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     background->setPosition({0.f, 0.f});
 
     //backButton.emplace(sf::Sprite(resource.getTexture(TextureType::BackButton)));
-    backButton->setPosition({1700.f, 900.f});
+    backButton->setPosition({1695.f, 25.f});
     backButton->setScale({0.7f, 0.7f});
 
     //veil = sf::Sprite();    // 遮罩初始化
@@ -283,35 +283,18 @@ void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 }
 
-void DiscardPilePanel::SetCards(const std::vector<PileType>& c)
-{
+void DiscardPilePanel::SetCards(const std::vector<PileType>& c){
     cards.clear();
-
-    // 每种牌对应的行号
-    std::unordered_map<PileType, int> rowMap;
-
-    // 每行当前已有多少张牌
-    std::unordered_map<PileType, int> colMap;
-
-    int nextRow = 0;
-
-    for(const auto& type : c)
-    {
-        // 第一次遇到该类型，分配新行
-        if(rowMap.find(type) == rowMap.end())
-        {
-            rowMap[type] = nextRow++;
-        }
-
-        int row = rowMap[type];
-        int col = colMap[type]++;
+    for(size_t i = 0; i < c.size(); ++i){
+        int row = static_cast<int>(i) / cardsPerRow;
+        int col = static_cast<int>(i) % cardsPerRow;
 
         CardView cv;
-        cv.texType = cardTexMap.at(type);
+        cv.texType = cardTexMap.at(c[i]);
 
         cv.basePosition = {
-            400.f + col * 150.f,
-            350.f + row * 230.f
+            startX + col * spacingX,
+            startY + row * spacingY
         };
 
         cards.push_back(cv);
@@ -384,35 +367,18 @@ void DealCardPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 }
 
-void DealCardPanel::SetCards(const std::vector<PileType>& c)
-{
+void DealCardPanel::SetCards(const std::vector<PileType>& c){
     cards.clear();
-
-    // 每种牌对应的行号
-    std::unordered_map<PileType, int> rowMap;
-
-    // 每行当前已有多少张牌
-    std::unordered_map<PileType, int> colMap;
-
-    int nextRow = 0;
-
-    for(const auto& type : c)
-    {
-        // 第一次遇到该类型，分配新行
-        if(rowMap.find(type) == rowMap.end())
-        {
-            rowMap[type] = nextRow++;
-        }
-
-        int row = rowMap[type];
-        int col = colMap[type]++;
+    for(size_t i = 0; i < c.size(); ++i){
+        int row = static_cast<int>(i) / cardsPerRow;
+        int col = static_cast<int>(i) % cardsPerRow;
 
         CardView cv;
-        cv.texType = cardTexMap.at(type);
+        cv.texType = cardTexMap.at(c[i]);
 
         cv.basePosition = {
-            400.f + col * 150.f,
-            350.f + row * 230.f
+            startX + col * spacingX,
+            startY + row * spacingY
         };
 
         cards.push_back(cv);
@@ -500,7 +466,6 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c){
     }
 }
 
-// 特殊面板 不截断鼠标点击
 bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     if(hoveredIndex != -1){
         selectedIndex = hoveredIndex;
@@ -511,8 +476,7 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     return false;
 }
 
-void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
-{
+void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
     if (!visible) return;
     hoveredIndex = -1;
 

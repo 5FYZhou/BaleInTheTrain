@@ -9,6 +9,7 @@ private:
     sf::Vector2f feet;          // Player's foot position (ground level)
     int facing = 1;             // Direction: 1 = right, -1 = left
     float speed = 430.f;        // Movement speed in pixels per second
+    float nextX;
 
     int currentHP = 100;
     int maxHP = 100;
@@ -44,6 +45,7 @@ public:
     int GetTextureIndex() const { return textureIndex; }
     int GetCurrentHP() const { return currentHP; }
     int GetMaxHP() const { return maxHP; }
+    float GetNextX(int dir, float dt) const { return feet.x + speed * dir * dt;; }
 
     // Setters
     void SetFeet(sf::Vector2f newFeet) { feet = newFeet; }

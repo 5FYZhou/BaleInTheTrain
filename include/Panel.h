@@ -6,6 +6,12 @@
 
 enum class PanelType { Setting, Backpack, Discard, DealCard, CardsInHand };
 
+inline constexpr int cardsPerRow = 8;
+inline constexpr float startX = 400.f;
+inline constexpr float startY = 350.f;
+inline constexpr float spacingX = 150.f;
+inline constexpr float spacingY = 230.f;
+
 class Panel {
 protected:
     bool visible = false;
@@ -161,6 +167,7 @@ public:
     void SetCards(const std::vector<PileType>& c);
     std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
     bool HasSelectedCard() { return hasSelectedCard; }
+    void SetHasSelected(bool f) { hasSelectedCard = f; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
     void HandleMouseMoved(const sf::Vector2f& mousePos);
