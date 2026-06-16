@@ -14,6 +14,7 @@ private:
     BackpackPanel backpackPanel;
     DiscardPilePanel discardPilePanel;
     DealCardPanel dealCardPanel;
+    CardsInHandPanel cardsInHandPanel;
 
     const sf::Font* font = nullptr;
 
@@ -27,7 +28,8 @@ private:
 
 public:
     UIManager() : settingPanel(events), backpackPanel(events)
-        , discardPilePanel(events), dealCardPanel(events){}
+        , discardPilePanel(events), dealCardPanel(events)
+        , cardsInHandPanel(events){}
     ~UIManager(){ delete font; }
 
     void Init(ResourceManager& rm){
@@ -49,6 +51,7 @@ public:
         backpackPanel.Init(rm, font);
         discardPilePanel.Init(rm, font);
         dealCardPanel.Init(rm, font);
+        cardsInHandPanel.Init(rm, font);
     }
 
     std::vector<GameEvent>& GetEvents(){ return events; }
@@ -66,11 +69,17 @@ public:
         if(dealCardPanel.IsVisible()){
             return dealCardPanel.HandleMousePressed(mousePos);
         }
+        if(cardsInHandPanel.IsVisible()){
+            cardsInHandPanel.HandleMousePressed(mousePos);
+        }
         return false;
     }
     void HandleMouseMoved(const sf::Vector2f& mousePos){
         if(settingPanel.IsVisible()){
             settingPanel.HandleMouseMoved(mousePos);
+        }
+        if(cardsInHandPanel.IsVisible()){
+            cardsInHandPanel.HandleMouseMoved(mousePos);
         }
     }
     void HandleMouseReleased(){
@@ -80,6 +89,7 @@ public:
     }
 
     void DrawPanels(sf::RenderWindow& window, sf::Vector2i& mousePos){ 
+        cardsInHandPanel.Draw(window, mousePos);
         settingPanel.Draw(window); 
         backpackPanel.Draw(window, mousePos);
         discardPilePanel.Draw(window, mousePos);
@@ -104,5 +114,16 @@ public:
     bool IsDealCardPopupOpen(){ return dealCardPanel.IsVisible(); }
     void CloseDealCardPopup(){ dealCardPanel.Close(); }
     void SetDealCardCard(std::vector<PileType>& cards){ dealCardPanel.SetCards(cards); }
+
+    void OpenCardsInHandPopup(){ cardsInHandPanel.Open(); }
+    bool IsCardsInHandPopupOpen(){ return cardsInHandPanel.IsVisible(); }
+    void CloseCardsInHandPopup(){ cardsInHandPanel.Close(); }
+    void SetCardsInHandCard(std::vector<PileType>& cards){ cardsInHandPanel.SetCards(cards); }
+    bool HasSelectedCard(){ 
+        if(cardsInHandPanel.IsVisible()) 
+            return cardsInHandPanel.HasSelectedCard();
+        return false;
+    }
+    std::pair<PileType, int> GetSelectedCard(){ return cardsInHandPanel.GetSelectedCard(); }
 
 };

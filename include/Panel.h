@@ -4,6 +4,8 @@
 #include "Constants.h"
 #include "ResourceManager.h"
 
+enum class PanelType { Setting, Backpack, Discard, DealCard, CardsInHand };
+
 class Panel {
 protected:
     bool visible = false;
@@ -59,9 +61,6 @@ public:
         draggingSlider = SliderTarget::None;
     }
 
-    float GetMusicVolume() const{ return musicVolume; }
-    float GetSfxVolume() const{ return sfxVolume; }
-
     void SetMusicVolume(float v);
     void SetSfxVolume(float v);
 };
@@ -85,7 +84,6 @@ public:
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
-    const std::vector<CardView>& GetCards() const { return cards; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
 
@@ -111,7 +109,6 @@ public:
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
-    const std::vector<CardView>& GetCards() const { return cards; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
 
@@ -137,10 +134,38 @@ public:
     void Init(ResourceManager& resource, const sf::Font* uiFont);
 
     void SetCards(const std::vector<PileType>& c);
-    const std::vector<CardView>& GetCards() const { return cards; }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos);
 
     void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
 };
+
+class CardsInHandPanel : public Panel{
+private:
+    ResourceManager* rm = nullptr;
+
+    std::vector<CardView> cards;
+    bool hasSelectedCard;
+    PileType selectedCard;
+    int hoveredIndex = -1;
+    int selectedIndex = -1;
+
+    const sf::Font* font = nullptr;
+    bool hasFont = false;
+
+public:
+    CardsInHandPanel(std::vector<GameEvent>& e) : Panel(e) {}
+    ~CardsInHandPanel(){ delete rm; delete font; }
+    void Init(ResourceManager& resource, const sf::Font* uiFont);
+
+    void SetCards(const std::vector<PileType>& c);
+    std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
+    bool HasSelectedCard() { return hasSelectedCard; }
+
+    bool HandleMousePressed(const sf::Vector2f& mousePos);
+    void HandleMouseMoved(const sf::Vector2f& mousePos);
+
+    void Draw(sf::RenderWindow& window, const sf::Vector2i& mousePos);
+};
+
 

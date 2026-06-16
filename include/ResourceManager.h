@@ -139,6 +139,7 @@ public:
             {TextureType::DialogBox, {"/对话框.png"}},
             {TextureType::SettingsPanel, {"/设置面板.png"}},
             {TextureType::CloseButton, {"/叉叉键.png"}},
+            {TextureType::EndTurn, {"/结束回合.png"}},
 
             // 卡牌
             {TextureType::Strike, {"/打击6点.png"}},
@@ -263,11 +264,14 @@ public:
 } 
 
     const sf::Texture& getTexture(TextureType type, size_t index = 0) const {
+        static sf::Texture emptyTexture;
+        if(type == TextureType::None){
+            return emptyTexture;
+        }
         auto found = textures.find(type);
         if (found == textures.end() || index >= found->second.size()) {
             std::cerr << "ResourceManager::getTexture missing texture for type "
                       << static_cast<int>(type) << " index " << index << std::endl;
-            static sf::Texture emptyTexture;
             return emptyTexture;
         }
         return found->second[index];

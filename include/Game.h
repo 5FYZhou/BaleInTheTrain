@@ -35,7 +35,6 @@ private:
 
     ResourceManager rm;
     Renderer renderer;
-    Input input;
     TimeSystem timeSystem;
     UIManager uiMgr;
     SceneManager sceneMgr;

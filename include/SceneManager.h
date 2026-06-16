@@ -4,12 +4,14 @@
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <functional>
 
 enum class FadeState { None, FadeOut, FadeIn };
 
 class SceneManager {
 private:
     std::vector<GameEvent> events;
+    std::function<void()> callback;
 
     MenuScene menuScene{events};
     GameScene gameScene1{events, 0};
@@ -86,15 +88,18 @@ public:
         //pendingScene = type;
         fadeState = FadeState::None;
         fadeAlpha = 0.f;
+        if(callback)
+            callback();
     }
 
-    void LoadScene(SceneType type) {
+    void LoadScene(SceneType type, std::function<void()> cb = nullptr) {
         //if (fadeState != FadeState::None && pendingScene == type) {
         //    return;
         //}
         pendingScene = type;
         gameSceneIdx = 0;
         pendingPlayerX = PlayerStartX;
+        callback = cb;
         StartFadeOut();
     }
 
@@ -109,7 +114,7 @@ public:
 
     void Update(float dt) {
         curScene->Update(dt);
-        
+
         if (fadeState == FadeState::FadeOut) {
             fadeAlpha += FadeSpeed * dt;
             if (fadeAlpha >= 255.f) {
