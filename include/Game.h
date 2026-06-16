@@ -31,8 +31,6 @@ private:
     RenderWindow window;
     sf::Vector2i mousePosMove;
 
-    GameState gameState = GameState::MENU;
-
     ResourceManager rm;
     Renderer renderer;
     TimeSystem timeSystem;
@@ -44,13 +42,13 @@ private:
     
     Player player;
     std::vector<PileType> cardsOnPlayer;
+    int playerMoveDir;
     int keyCnt;
     float playerXBeforeBattle;
     int playerFaceBeforeBattle;
 
     void Init();
     void Logic(float dt);
-    void PlayerMove(float dt, bool canTranslate);
     void HandleInput(float dt);
     void ProcessEvents();
     void HandleEvents(const GameEvent& event);

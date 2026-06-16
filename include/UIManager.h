@@ -55,6 +55,8 @@ public:
     }
 
     std::vector<GameEvent>& GetEvents(){ return events; }
+    bool BlockInput(){ return settingPanel.IsVisible() || backpackPanel.IsVisible() 
+        || discardPilePanel.IsVisible() || dealCardPanel.IsVisible(); }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos){
         if(settingPanel.IsVisible()){
@@ -70,7 +72,7 @@ public:
             return dealCardPanel.HandleMousePressed(mousePos);
         }
         if(cardsInHandPanel.IsVisible()){
-            cardsInHandPanel.HandleMousePressed(mousePos);
+            return cardsInHandPanel.HandleMousePressed(mousePos);
         }
         return false;
     }
@@ -123,6 +125,10 @@ public:
         if(cardsInHandPanel.IsVisible()) 
             return cardsInHandPanel.HasSelectedCard();
         return false;
+    }
+    void SetHasSelected(bool f){
+        if(cardsInHandPanel.IsVisible()) 
+            cardsInHandPanel.SetHasSelected(f);
     }
     std::pair<PileType, int> GetSelectedCard(){ return cardsInHandPanel.GetSelectedCard(); }
 

@@ -17,8 +17,9 @@ private:
     GameScene gameScene1{events, 0};
     GameScene gameScene2{events, 1};
     GameScene gameScene3{events, 2};
-    BattleScene battleScene{events};
     int curGameIdx = 0;
+    BattleScene battleScene{events};
+    WinScene winScene{events};
 
     Scene* curScene;
     SceneType pendingScene = SceneType::Menu;
@@ -84,6 +85,9 @@ public:
             battleScene.SetEnemy(curScene->GetEnemy());
             curScene = &battleScene;
             events.push_back({EventType::ResetPlayerPos, BattleX});
+            break;
+        case SceneType::Win:
+            curScene = &winScene;
             break;
         default:
             std::cout<<"SceneMgr:undefined load scene type"<<std::endl;

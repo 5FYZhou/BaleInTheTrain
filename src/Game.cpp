@@ -13,8 +13,14 @@ Game::Game()
     }), "Bale In The Train", WindowStyle);
 
     window.setFramerateLimit(60);
-    gameState = GameState::MENU;
-    keyCnt = 0;
+    uiMgr.Init(rm);
+    audioMgr.Initialize(rm);
+    audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
+    audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
+    dialogMgr.Initialize(&audioMgr);
+    player.Init(rm.getTextureCount(TextureType::Player));
+    renderer.Init();
+    sceneMgr.SetCurScene(SceneType::Menu);
 }
 
 Game::~Game() {
@@ -39,19 +45,9 @@ void Game::Run() {
 }
 
 void Game::Init() {
-    renderer.Init();
-
-    player.Init(rm.getTextureCount(TextureType::Player));
     player.SetHP(100, 100);
 
-    uiMgr.Init(rm);
-
-    audioMgr.Initialize(rm);
-    audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
-    audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
-    dialogMgr.Initialize(&audioMgr);
-
-    sceneMgr.SetCurScene(SceneType::Menu);
+    keyCnt = 0;
 
     // 暂时指定卡片
     cardsOnPlayer = { PileType::Strike, PileType::Defend, PileType::Defend, PileType::Strike, PileType::Strike};
@@ -132,12 +128,15 @@ void Game::HandleInput(float dt){
         }
     }
 
-    if (sceneMgr.GetCurSceneType() != SceneType::Game ||
-        dialogMgr.IsActive() ||
-        uiMgr.IsSettingsPopupOpen() ||
-        sceneMgr.IsFading()) {
-        player.Move(0, dt);
-        return;
+    playerMoveDir = 0;
+    // Check keyboard input
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
+        playerMoveDir -= 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
+        playerMoveDir += 1;
     }
 
     
@@ -147,31 +146,18 @@ void Game::Logic(float dt) {
     sceneMgr.Update(dt);
     dialogMgr.Update(dt);
     audioMgr.Update();
-    if (!sceneMgr.IsFading()) {
+    if (!sceneMgr.IsFading() && !dialogMgr.IsActive() && !uiMgr.BlockInput()) {
         if (sceneMgr.GetCurSceneType() == SceneType::Game) {
             // 没撞墙
-            bool canMove = sceneMgr.CheckChangeGameScene(player.GetFeet().x, keyCnt);
+            float nextX = player.GetNextX(playerMoveDir, dt);
+            bool canMove = sceneMgr.CheckChangeGameScene(nextX, keyCnt);
             if(canMove){
-                PlayerMove(dt, canMove);
+                player.Move(playerMoveDir, dt);
             }
         }
     }
     
     ProcessEvents();
-}
-
-void Game::PlayerMove(float dt, bool canTranslate){
-    int movementDirection = 0;
-    // Check keyboard input
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
-        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
-        movementDirection -= 1;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
-        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
-        movementDirection += 1;
-    }
-    player.Move(movementDirection, dt, canTranslate);
 }
 
 void Game::ProcessEvents() {
@@ -194,7 +180,6 @@ void Game::HandleEvents(const GameEvent& event){
         // 切换到游戏场景
         case EventType::StartGame:
             sceneMgr.LoadScene(SceneType::Game);
-            gameState = GameState::GAME;
             dialogMgr.StartDialog();
             audioMgr.PlaySound(SoundEffect::MenuButton);
             break;
@@ -209,6 +194,12 @@ void Game::HandleEvents(const GameEvent& event){
         // 钥匙足够打开门
         case EventType::Win:
             std::cout<<"Event::Win"<<std::endl;
+            sceneMgr.LoadScene(SceneType::Win);
+            break;
+        case EventType::ReturnMenu:
+            std::cout<<"Event::ReturnMenu"<<std::endl;
+            sceneMgr.LoadScene(SceneType::Menu);
+            Init();
             break;
 
         // 打开设置面板
@@ -272,6 +263,7 @@ void Game::HandleEvents(const GameEvent& event){
                     cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
                     // 重新绘制
                     uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                    uiMgr.SetHasSelected(false);
                 }
                 break;
             case ItemType::Player:
@@ -284,6 +276,7 @@ void Game::HandleEvents(const GameEvent& event){
                     // 如果出牌 删除该牌
                     // 重新绘制
                     uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                    uiMgr.SetHasSelected(false);
                 }
                 break;
             case ItemType::Key:
@@ -365,7 +358,7 @@ void Game::Draw() {
     // 绘制场景
     renderer.DrawScene(window, sceneMgr.GetScene());
     
-    if(curSceneType != SceneType::Menu){
+    if(curSceneType == SceneType::Game || curSceneType == SceneType::Battle){
         renderer.DrawPlayer(window, player);
     }
 
