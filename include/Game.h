@@ -40,6 +40,7 @@ private:
     SceneManager sceneMgr;
     AudioManager audioMgr;
     DialogManager dialogMgr;
+    BattleLogic btLogic;
     
     Player player;
     std::vector<PileType> cardsOnPlayer;

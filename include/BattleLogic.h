@@ -52,11 +52,14 @@ public:
     void BattleLogicManager(const std::vector<Enemy>& initialEnemies, std::vector<Card>& Cards,  Player& player);
     void HandleInput(const sf::Vector2f& mousePos);
     void BattleUpdate();
+    void turnsOver();
+    void PlayerStatusSettlement(Player& player);//玩家状态结算
+    void waitPlayerInput(int idx, Player& player);
+    void waitPlayerInput(int idx, Enemy& enemy);
 
     bool BattleFinished(Player &player);
     void StartBattle(const std::vector<Enemy>& initialEnemies, const std::vector<Card>& Cards,  Player& player);
     void EndPlayerTurn();       // 敌人行动，然后切回玩家
-    void PlayCard(Card* card, void* target = nullptr); // target 可为敌人或玩家自己
     void SelectCard(int handIndex);   // 点击手牌时调用，可能进入等待目标状态
     void SelectTarget(sf::Vector2i mousePos); // 多目标时根据点击确定目标
     void CancelSelection();     // 右键取消

@@ -6,12 +6,7 @@ void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vec
     while (!BattleFinished(player))
     {
         // 交互
-        const MouseState mouseState = input.GetMouseState(window);
-            const sf::Vector2f mousePos{
-                static_cast<float>(mouseState.position.x),
-                static_cast<float>(mouseState.position.y)
-            };
-        HandleInput(const sf::Vector2f& mousePos);
+
         // 更新
         BattleUpdate();
         // 渲染
@@ -21,7 +16,6 @@ void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vec
     // updatepotion;
     //.....
 }
-
 
 void BattleLogic::BattleUpdate()
 {
@@ -46,55 +40,65 @@ void BattleLogic::BattleUpdate()
         }
         // 一些buff，debuff结算
 
-        // 玩家操作
-        while (state.isPlayerTurn)
-        {
-            // 如果鼠标悬停在牌上，卡牌会向上浮起，露出完整的效果描述
+        // 如果鼠标悬停在药水上，显示药水效果
 
-            if (如果左键点击卡牌)
-            {
-                state.cardIsUsed = true;
-                while (检测鼠标)
-                {
-                    if (右键)
-                    {
-                        state.cardIsUsed = false;
-                    }
-                    if (左键点击目标)
-                    {
-                        for (auto enemy : state.enemies)
-                        {
-                            if (enemy.bound.contains(mousePos))
-                            {
-                            }
-                        }
-                        if (是玩家)
-                        {
-                        }
-                    }
-                }
-            }
-
-            // 如果鼠标悬停在药水上，显示药水效果
-
-            // if(如果左键点击药水)
-            //{
-            //
-            // }
-
-            if (点击结束按钮)
-            {
-                state.isPlayerTurn = false;
-                // 手牌丢到弃牌堆中
-                for (int i = 0; i < state.handCards.size(); ++i)
-                {
-                    state.discardPile.push_back(state.handCards[i]);
-                    state.discardPileCount++;
-                    state.handCards.erase(state.handCards.begin() + i);
-                }
-            }
-        }
+        // if(如果左键点击药水)
+        //{
+        //
+        // }
     }
+}
+
+void BattleLogic::turnsOver()
+{
+    state.isPlayerTurn = false;
+    // 手牌丢到弃牌堆中
+    for (int i = 0; i < state.handCards.size(); ++i)
+    {
+        state.discardPile.push_back(state.handCards[i]);
+        state.discardPileCount++;
+        state.handCards.erase(state.handCards.begin() + i);
+    }
+}
+
+void BattleLogic::PlayerStatusSettlement(Player& player)//玩家状态结算
+{
+    player.defend_num = 0;
+}
+
+void BattleLogic::waitPlayerInput(int idx, Player &player)
+{
+    PileType ty = state.handCards[idx].name;
+    // 卡牌效果
+    switch (ty)
+    {
+    case PileType::Defend:
+        player.defend_num += 5;
+        break;
+
+    default:
+        break;
+    }
+
+    
+    // 删除卡牌
+    state.handCards.erase(state.handCards.begin()+idx);
+}
+void BattleLogic::waitPlayerInput(int idx, Enemy &enemy){
+    PileType ty = state.handCards[idx].name;
+
+    switch (ty)
+    {
+    case PileType::Strike:
+        enemy.cur_health -= 6;
+        break;
+
+    default:
+        break;
+    }
+
+    // 删除卡牌
+    state.handCards.erase(state.handCards.begin()+idx);
 }
 
 void BattleLogic::HandleInput(const sf::Vector2f &mousePos)
@@ -165,13 +169,13 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
 void BattleLogic::EndPlayerTurn() // 敌人行动，然后切回玩家
 {
     // 敌人行动逻辑
-    for (auto &enemy : state.enemies)
-    {
-        if (enemy.IsAlive())
-        {
-            enemy.PerformAction();
-        }
-    }
+    // for (auto &enemy : state.enemies)
+    // {
+    //     if (enemy.IsAlive())
+    //     {
+    //         enemy.PerformAction();
+    //     }
+    // }
 
     // 切回玩家回合A
     state.isPlayerTurn = true;

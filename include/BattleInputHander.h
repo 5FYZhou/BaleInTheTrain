@@ -5,6 +5,7 @@
 #include "Input.h"
 class BattleInputHandler {
 public:
-    void HandleInput(sf::RenderWindow& window, BattleLogic& logic, BattleRender& render);
-    // 内部检测鼠标位置，调用 logic.SelectCard / logic.SelectTarget / logic.CancelSelection 等
+    void ProcessInput(const sf::Vector2f &mousePos) {
+
+    }
 };
