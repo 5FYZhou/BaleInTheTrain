@@ -15,7 +15,7 @@ struct Item{
 };
 
 inline const std::vector<std::vector<Item>> itemInScene = {
-    { {{100.f, 100.f}, ItemType::Strike}, {{200.f, 100.f}, ItemType::Strike} },
+    { {{100.f, 150.f}, ItemType::Strike}, {{200.f, 100.f}, ItemType::Strike} },
     { {{100.f, 200.f}, ItemType::Strike}, {{200.f, 200.f}, ItemType::Strike}, {{150.f, 300.f}, ItemType::Defend} },
     { {{100.f, 300.f}, ItemType::Strike}, {{200.f, 300.f}, ItemType::Strike}, {{150.f, 400.f}, ItemType::Defend}, {{150.f, 200.f}, ItemType::Key} }
 };

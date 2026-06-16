@@ -14,6 +14,5 @@ public:
     Card(int id, const PileType& name, const  int cost)
         : id(id), name(name), cost(cost) {}
 
-    void triggerEffect(Player &player);
-    void triggerEffect(Enemy &enemy);
+   
 };
