@@ -57,7 +57,7 @@ public:
     void Heal(int amount);
 
     // Movement
-    void Move(int direction, float dt);
+    void Move(int direction, float dt, bool canTranslate = true);
     void ClampPosition(float minX, float maxX);
 
     // Animation

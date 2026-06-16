@@ -18,22 +18,18 @@ private:
     GameScene gameScene2{events, 1};
     GameScene gameScene3{events, 2};
     BattleScene battleScene{events};
-    int gameSceneIdx = 0;
+    int curGameIdx = 0;
 
     Scene* curScene;
     SceneType pendingScene = SceneType::Menu;
+    float pendingPlayerX = PlayerStartX;
+
     FadeState fadeState = FadeState::None;
     float fadeAlpha = 0.f;
     static constexpr float FadeSpeed = 520.f;
-    float pendingPlayerX = PlayerStartX;
-    
-    // Carriage boundaries and entry/exit positions
-    static constexpr float LeftExitX = 210.f;      // Player exit on left
-    static constexpr float RightExitX = 1710.f;    // Player exit on right
-    static constexpr float LeftEntryX = 275.f;     // Entry position from left
-    static constexpr float RightEntryX = 1645.f;   // Entry position from right
-    static constexpr float BattleX = 275.f;   // Entry position of BattleScene
 
+    int gameIdxBeforeBattle;
+    
     void StartFadeOut() {
         fadeState = FadeState::FadeOut;
         fadeAlpha = 0.f;
@@ -65,6 +61,8 @@ public:
             curScene = &menuScene;
             break;
         case SceneType::Game:
+        {
+            Scene* lastScene = curScene;
             if(idx == 0){
                 curScene = &gameScene1;
             } 
@@ -74,7 +72,13 @@ public:
             else if(idx == 2){
                 curScene = &gameScene3;
             }
-            events.push_back({EventType::ResetPlayerPos, playerX});
+            if(lastScene->GetType() == SceneType::Battle){
+                curScene->EnemyDrop();
+            }
+            else{
+                events.push_back({EventType::ResetPlayerPos, playerX});
+            }
+        }
             break;
         case SceneType::Battle:
             battleScene.SetEnemy(curScene->GetEnemy());
@@ -93,22 +97,18 @@ public:
     }
 
     void LoadScene(SceneType type, std::function<void()> cb = nullptr) {
-        //if (fadeState != FadeState::None && pendingScene == type) {
-        //    return;
-        //}
+        gameIdxBeforeBattle = curGameIdx;
         pendingScene = type;
-        gameSceneIdx = 0;
+        curGameIdx = 0;
         pendingPlayerX = PlayerStartX;
         callback = cb;
         StartFadeOut();
     }
 
-    void LoadScene(SceneType type, int idx) {
-        //if (fadeState != FadeState::None && pendingScene == type) {
-        //    return;
-        //}
+    void LoadScene(SceneType type, int idx, std::function<void()> cb = nullptr) {
         pendingScene = type;
-        gameSceneIdx = idx;
+        curGameIdx = idx;
+        callback = cb;
         StartFadeOut();
     }
 
@@ -119,7 +119,7 @@ public:
             fadeAlpha += FadeSpeed * dt;
             if (fadeAlpha >= 255.f) {
                 fadeAlpha = 255.f;
-                SetCurScene(pendingScene, gameSceneIdx, pendingPlayerX);
+                SetCurScene(pendingScene, curGameIdx, pendingPlayerX);
                 StartFadeIn();
             }
         } 
@@ -132,27 +132,49 @@ public:
         }
     }
 
-    void CheckChangeGameScene(float playerX){
+    bool CheckChangeGameScene(float playerX, int keyCnt){
         if(curScene->GetType() == SceneType::Game){
             // 如果角色位置大于左/右边界
             if(playerX <= LeftExitX) {
                 pendingPlayerX = RightEntryX;
-                changeToNextGameScene(-1);
+                return changeToNextGameScene(-1, keyCnt);
             } 
             else if(playerX >= RightExitX) {
                 pendingPlayerX = LeftEntryX;
-                changeToNextGameScene(1);
+                return changeToNextGameScene(1, keyCnt);
             }
         }
+        return true;
     }
 
-    void changeToNextGameScene(int offset){
-        int next = gameSceneIdx + offset;
+    bool changeToNextGameScene(int offset, int keyCnt){
+        int next = curGameIdx + offset;
         if(next < 0 || next > 2) {
-            LoadScene(SceneType::Menu);
+            GameEvent event;
+            if(keyCnt >= KeyCntToOpenDoor)
+                event.type = EventType::Win;
+            else
+                event.type = EventType::KeysInsufficient;
+            events.push_back(event);
+            GameEvent e;
+            e.type = EventType::ResetPlayerPos;
+            e.val = next < 0 ? LeftExitX + 1 : RightExitX - 1;
+            events.push_back(e);
+            // 撞墙
+            return false;
         }
         else{
             LoadScene(SceneType::Game, next);
+            return true;
         }
+    }
+
+    void LoadGameBeforeBattle(std::function<void()> cb = nullptr){
+        //pendingPlayerX = playerPosBeforeBattle;
+        LoadScene(SceneType::Game, gameIdxBeforeBattle, cb);
+    }
+
+    void SaveCurGameScene(){
+        
     }
 };

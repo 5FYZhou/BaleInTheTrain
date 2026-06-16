@@ -14,6 +14,7 @@ Game::Game()
 
     window.setFramerateLimit(60);
     gameState = GameState::MENU;
+    keyCnt = 0;
 }
 
 Game::~Game() {
@@ -67,9 +68,20 @@ void Game::HandleInput(float dt){
                 if (uiMgr.IsSettingsPopupOpen()) {
                     uiMgr.CloseSettingsPopup();
                     audioMgr.PlaySound(SoundEffect::Back);
-                } else if (sceneMgr.GetCurSceneType() == SceneType::Game) {
+                } 
+                /*
+                else if (sceneMgr.GetCurSceneType() == SceneType::Game) {
                     sceneMgr.LoadScene(SceneType::Menu);
-                } else {
+                } 
+                else if(sceneMgr.GetCurSceneType() == SceneType::Battle){
+                    sceneMgr.LoadGameBeforeBattle([this]{
+                        uiMgr.CloseCardsInHandPopup();
+                        player.SetFacing(playerFaceBeforeBattle);
+                        player.SetFeet({playerXBeforeBattle, PlayerGroundY});
+                        player.ResetToStand();
+                    });
+                }*/
+                else if(sceneMgr.GetCurSceneType() == SceneType::Menu) {
                     window.close();
                 }
             } 
@@ -119,7 +131,6 @@ void Game::HandleInput(float dt){
         }
     }
 
-    int movementDirection = 0;
     if (sceneMgr.GetCurSceneType() != SceneType::Game ||
         dialogMgr.IsActive() ||
         uiMgr.IsSettingsPopupOpen() ||
@@ -128,30 +139,38 @@ void Game::HandleInput(float dt){
         return;
     }
 
-        // Check keyboard input
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
-            movementDirection -= 1;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
-            movementDirection += 1;
-        }
-        player.Move(movementDirection, dt);
+    
 }
 
 void Game::Logic(float dt) {
     sceneMgr.Update(dt);
     dialogMgr.Update(dt);
     audioMgr.Update();
-
     if (!sceneMgr.IsFading()) {
         if (sceneMgr.GetCurSceneType() == SceneType::Game) {
-            sceneMgr.CheckChangeGameScene(player.GetFeet().x);
+            // 没撞墙
+            bool canMove = sceneMgr.CheckChangeGameScene(player.GetFeet().x, keyCnt);
+            if(canMove){
+                PlayerMove(dt, canMove);
+            }
         }
     }
     
     ProcessEvents();
+}
+
+void Game::PlayerMove(float dt, bool canTranslate){
+    int movementDirection = 0;
+    // Check keyboard input
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
+        movementDirection -= 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
+        movementDirection += 1;
+    }
+    player.Move(movementDirection, dt, canTranslate);
 }
 
 void Game::ProcessEvents() {
@@ -181,6 +200,14 @@ void Game::HandleEvents(const GameEvent& event){
         // 退出游戏
         case EventType::ExitGame:
             window.close();
+            break;
+        // 走到车厢开头/末尾时钥匙数量不足
+        case EventType::KeysInsufficient:
+            std::cout<<"Event::KeysInsufficient"<<std::endl;
+            break;
+        // 钥匙足够打开门
+        case EventType::Win:
+            std::cout<<"Event::Win"<<std::endl;
             break;
 
         // 打开设置面板
@@ -256,6 +283,8 @@ void Game::HandleEvents(const GameEvent& event){
                 }
                 break;
             case ItemType::Key:
+                std::cout<<"Event: get one key"<<std::endl;
+                keyCnt++;
                 break;
                 
             case ItemType::Strike: //打击0
@@ -283,15 +312,35 @@ void Game::HandleEvents(const GameEvent& event){
             break;
         // 开始战斗
         case EventType::BeginBattle:
+            playerFaceBeforeBattle = player.GetFacing();
+            playerXBeforeBattle = player.GetPos().x;
             sceneMgr.LoadScene(SceneType::Battle, [this]{
                 uiMgr.SetCardsInHandCard(cardsOnPlayer);
                 uiMgr.OpenCardsInHandPopup();
+                player.SetFacing(1);
             });
             std::cout<<"Event:beginBattle"<<std::endl;
             break;
         // 结束回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;
+            break;
+        // 结束对局
+        case EventType::EndBattle:
+            std::cout<<"Event: EndBattle"<<std::endl;
+            // 胜利
+            if(event.val == 0){
+                sceneMgr.LoadGameBeforeBattle([this]{
+                    uiMgr.CloseCardsInHandPopup();
+                    player.SetFacing(playerFaceBeforeBattle);
+                    player.SetFeet({playerXBeforeBattle, PlayerGroundY});
+                    player.ResetToStand();
+                });
+            }
+            // 失败
+            else if(event.val == 1){
+
+            }
             break;
         default:
             break;

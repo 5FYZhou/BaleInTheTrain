@@ -6,6 +6,8 @@
 #include <functional>
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <random>
+#include <cmath>
 
 struct Item{
     sf::Vector2f pos;
@@ -74,6 +76,8 @@ public:
     virtual const Enemy* GetEnemy() const{ return nullptr; }
     virtual Enemy* GetEnemy() { return nullptr; }
 
+    virtual void EnemyDrop() { return; }
+
     virtual void ProcessInput(const sf::Vector2f& mousePos) = 0;
 
     virtual void Update(float dt) {}
@@ -125,8 +129,37 @@ public:
     const Enemy* GetEnemy() const override { return &enemy; }
     Enemy* GetEnemy() override { return &enemy; }
 
+    void EnemyDrop() override {
+        //enemy.dead = true;
+        if(!enemy.dead) return;
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+
+        constexpr float DROP_RADIUS = 50.f;
+
+        std::uniform_real_distribution<float> angleDist(0.f, 2.f * 3.1415926f);
+        std::uniform_real_distribution<float> radiusDist(0.f, DROP_RADIUS);
+
+        for(auto& item : enemy.droppedItems){
+            float angle = angleDist(gen);
+            float radius = radiusDist(gen);
+
+            sf::Vector2f dropPos = enemy.position;
+            dropPos.x += std::cos(angle) * radius;
+            dropPos.y += std::sin(angle) * radius;
+
+            interactables.push_back({
+                TextureType::Star,
+                dropPos,
+                {90, 109},
+                EventType::ItemClicked,
+                item
+            });
+        }
+    }
+
     void ProcessInput(const sf::Vector2f& mousePos) override {
-        if(enemy.bound.contains(mousePos)){
+        if(!enemy.dead && enemy.bound.contains(mousePos)){
             GameEvent event;
             event.type = EventType::BeginBattle;
             event.val = static_cast<int>(enemy.id);

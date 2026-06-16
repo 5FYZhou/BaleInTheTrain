@@ -19,13 +19,14 @@ void Player::Init(int fc){
     SetTextureIndex(0);
 }
 
-void Player::Move(int direction, float dt) {
+void Player::Move(int direction, float dt, bool canTranslate) {
     if(direction == 0){
         ResetToStand();
         isMoving = false;
         return;
     }
-    feet.x += speed * direction * dt;
+    if(canTranslate)
+        feet.x += speed * direction * dt;
     SetFacing(direction);
     UpdateFrame(dt);
     isMoving = true;
@@ -44,8 +45,7 @@ void Player::UpdateFrame(float dt) {
     }
 }
 
-void Player::SetHP(int current, int max)
-{
+void Player::SetHP(int current, int max){
     currentHP = std::clamp(current, 0, std::max(1, max));
     maxHP = std::max(1, max);
 }

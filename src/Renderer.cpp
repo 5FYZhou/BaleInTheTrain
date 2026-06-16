@@ -100,7 +100,7 @@ void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
     // scale to player height and apply facing
     const auto size = tex.getSize();
     const float scale = player.GetWalkTimer() >= 0.f ? (player.GetIsMoving() ? 1.f : 1.f) : 1.f;
-    const float scaleY = player.GetHeight() / static_cast<float>(size.y);
+    const float scaleY = 1.2f;//player.GetHeight() / static_cast<float>(size.y);
     p.setOrigin(sf::Vector2f(static_cast<float>(size.x) * 0.5f, static_cast<float>(size.y)));
     p.setScale(sf::Vector2f(scaleY * static_cast<float>(-player.GetFacing()), scaleY));
     p.setPosition(player.GetFeet());
@@ -134,7 +134,7 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
     }
     // 敌人
     const auto& e = scene.GetEnemy();
-    if(e){
+    if(e && !e->dead){
         sf::Sprite es(rm.getTexture(enemyTexMap.at(e->id), e->frameIndex));
         es.setPosition(e->position);
         window.draw(es);

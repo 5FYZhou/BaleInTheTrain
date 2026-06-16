@@ -73,6 +73,9 @@ enum class ItemType {
     Rampart, //壁垒12
     Sacrifice, //祭品13
     Key, // 钥匙
+    Potion1, // 药剂1
+    Potion2,
+    Potion3,
     Player, 
     Enemy
 };
@@ -84,8 +87,8 @@ enum class EventType {
     ResetPlayerPos,
     ItemClicked, 
     GenericAction,
-    BeginBattle, EndTurn,
-    PlayACard // 如果有选中的牌 打出
+    BeginBattle, EndTurn, EndBattle,
+    Win, KeysInsufficient,
 };
 
 struct GameEvent {
@@ -170,6 +173,28 @@ inline const std::unordered_map<ItemType, PileType> itemPileMap = {
     { ItemType::Sacrifice, PileType::Sacrifice }
 };
 
+// 场景物品类型映射纹理类型
+inline const std::unordered_map<ItemType, TextureType> itemTexMap = {
+    { ItemType::Strike, TextureType::Strike },
+    { ItemType::Defend, TextureType::Defend },
+    { ItemType::Rage, TextureType::Rage },
+    { ItemType::Shrug_off, TextureType::Shrug_off },
+    { ItemType::Heavy_strike, TextureType::Heavy_strike },
+    { ItemType::Anger, TextureType::Anger },
+    { ItemType::Continuous_punches, TextureType::Continuous_punches },
+    { ItemType::Observe_weaknesses, TextureType::Observe_weaknesses },
+    { ItemType::Activate_muscles, TextureType::Activate_muscles },
+    { ItemType::Revitalize_spirit, TextureType::Revitalize_spirit },
+    { ItemType::Metallization, TextureType::Metallization },
+    { ItemType::Unstoppable, TextureType::Unstoppable },
+    { ItemType::Rampart, TextureType::Rampart },
+    { ItemType::Sacrifice, TextureType::Sacrifice },
+    { ItemType::Key, TextureType::Key },
+    { ItemType::Potion1, TextureType::Potion1 },
+    { ItemType::Potion2, TextureType::Potion2 },
+    { ItemType::Potion3, TextureType::Potion3 }
+};
+
 struct CardView {
     PileType cardType;
     TextureType texType;    // 纹理类型
@@ -207,9 +232,16 @@ inline constexpr float DEFAULT_SFX_VOLUME = 0.75f;
 inline constexpr float DEFAULT_MUSIC_VOLUME = 0.7f;
 inline constexpr float FOOTSTEP_VOLUME_SCALE = 0.65f;
 
+// Carriage boundaries and entry/exit positions
+inline const float LeftExitX = 210.f;      // Player exit on left
+inline const float RightExitX = 1710.f;    // Player exit on right
+inline const float LeftEntryX = 275.f;     // Entry position from left
+inline const float RightEntryX = 1645.f;   // Entry position from right
+inline const float BattleX = 275.f;   // Entry position of BattleScene
 inline const float PlayerGroundY = 860.f;
 inline const float PlayerHeight = 454.f;
 inline const float PlayerStartX = 300.f;
+inline const int KeyCntToOpenDoor = 3;
 
 struct GameData {
     int score = 0;
