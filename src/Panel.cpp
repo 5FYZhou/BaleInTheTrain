@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <unordered_map>
+#include <string>
 
 void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont)
 {
@@ -441,33 +442,216 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     hasFont = (font != nullptr);
 }
 
-void CardsInHandPanel::SetCards(const std::vector<PileType>& c){
+void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
+    points = point;
     hoveredIndex = -1;
     selectedIndex = -1;
-    cards.clear();
-    int n = c.size();
-    float centerX = 960.f;  // 屏幕中间 X
-    float baseY = 950.f;    // 底部 Y
 
-    float spacingX = 120.f;        // 卡牌横向间距
-    float maxAngle = 15.f;         // 扇形最大旋转角度
+    constexpr float enterStartX = 100.f;
+    constexpr float enterStartY = 900.f;
 
-    for(int i = 0; i < n; i++){
-        CardView cv;
-        cv.cardType = c[i];
-        cv.texType = cardTexMap.at(c[i]);
+    constexpr float exitEndX = 1700.f;
+    constexpr float exitEndY = 900.f;
 
-        // 计算相对中心的偏移
-        float offset = i - (n - 1) / 2.f;
-        cv.basePosition = {centerX + offset * spacingX, baseY + std::abs(offset) * 6.f};
-        cv.rotation = offset * (maxAngle / (n > 1 ? (n-1)/2.f : 1.f));
+    std::vector<CardView> newCards;
+    std::vector<bool> usedOld(cards.size(), false);
 
-        cards.push_back(cv);        
+    // =========================
+    // ⭐ 第一次直接弧形排列
+    // =========================
+    if (first){
+        cards.clear();
+
+        for (int i = 0; i < c.size(); i++){
+            CardView cv;
+            cv.cardType = c[i];
+            cv.texType = cardTexMap.at(c[i]);
+
+            sf::Vector2f pos;
+            float rot;
+
+            ComputeArcTransform(i, c.size(), pos, rot);
+
+            cv.basePosition = pos;
+            cv.rotation = rot;          // ⭐关键修复
+            cv.state = CardAnimState::Idle;
+
+            cards.push_back(cv);
+        }
+        return;
+    }
+
+    // =========================
+    // ⭐ match existing
+    // =========================
+    for (auto type : c)
+    {
+        bool found = false;
+
+        for (int i = 0; i < cards.size(); i++)
+        {
+            if (usedOld[i]) continue;
+
+            if (cards[i].cardType == type &&
+                cards[i].state != CardAnimState::Exiting)
+            {
+                CardView cv = cards[i];
+                cv.state = CardAnimState::Idle;
+
+                newCards.push_back(cv);
+                usedOld[i] = true;
+                found = true;
+                break;
+            }
+        }
+
+        // ⭐ 新牌：飞入弧形目标
+        if (!found)
+{
+    CardView cv;
+    cv.cardType = type;
+    cv.texType = cardTexMap.at(type);
+
+    cv.state = CardAnimState::Entering;
+
+    cv.animStart = {enterStartX, enterStartY};
+    cv.animTime = 0.f;
+
+    // ⭐⭐⭐关键补充（必须）
+    cv.startRotation = 0.f;
+    cv.rotation = 0.f;
+
+    cv.startScale = 0.2f;   // ⭐从小飞入（效果才明显）
+    cv.scale = 0.2f;
+
+    newCards.push_back(cv);
+}
+    }
+
+    // =========================
+    // ⭐ 多余牌：飞出
+    // =========================
+    for (int i = 0; i < cards.size(); i++)
+    {
+        if (!usedOld[i] && cards[i].state != CardAnimState::Exiting)
+        {
+            CardView cv = cards[i];
+            cv.state = CardAnimState::Exiting;
+
+            cv.animStart = cv.basePosition; // ⭐弧形起点
+            cv.animEnd = {exitEndX, exitEndY};
+
+            cv.animTime = 0.f;
+
+            newCards.push_back(cv);
+        }
+    }
+
+    cards = std::move(newCards);
+
+    UpdateLayoutArc(); // ⭐关键
+}
+
+void CardsInHandPanel::UpdateLayoutArc()
+{
+    int n = 0;
+    int total = 0;
+
+    for (auto& c : cards)
+        if (c.state == CardAnimState::Idle)
+            total++;
+
+    for (auto& c : cards)
+    {
+        if (c.state != CardAnimState::Idle)
+            continue;
+
+        ComputeArcTransform(n, total, c.basePosition, c.rotation);
+        n++;
     }
 }
 
-bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
-    if(hoveredIndex != -1){
+void CardsInHandPanel::Update(float dt)
+{
+    const float speed = 6.f;
+
+    int totalIdle = 0;
+    for (auto& c : cards)
+        if (c.state == CardAnimState::Idle)
+            totalIdle++;
+
+    int enteringIndex = 0;
+
+    for (auto& c : cards)
+    {
+        if (c.state == CardAnimState::Idle)
+            continue;
+
+        c.animTime += dt * speed;
+        float t = std::min(c.animTime, 1.f);
+        float s = Smooth(t);
+
+        // =========================
+        // ⭐进入动画
+        // =========================
+        if (c.state == CardAnimState::Entering)
+{
+    sf::Vector2f targetPos;
+    float targetRot;
+
+    ComputeArcTransform(enteringIndex, totalIdle, targetPos, targetRot);
+    enteringIndex++;
+
+    c.basePosition = Lerp(c.animStart, targetPos, s);
+
+    // ⭐ rotation 修复（关键）
+    c.rotation = Lerp(0.f, targetRot, s);
+
+    // ⭐ scale（解决问题2核心）
+    c.scale = Lerp(0.2f, 0.7f, s);
+
+    if (t >= 1.f)
+    {
+        c.state = CardAnimState::Idle;
+        c.basePosition = targetPos;
+        c.rotation = targetRot;
+        c.scale = 0.7f;
+        UpdateLayoutArc();
+    }
+}
+
+        // =========================
+        // ⭐出牌动画
+        // =========================
+        else if (c.state == CardAnimState::Exiting)
+{
+    c.basePosition = Lerp(c.animStart, c.animEnd, s);
+
+    // ⭐关键：明显缩小（杀戮尖塔风格）
+    c.scale = Lerp(0.7f, 0.1f, s);
+
+    c.rotation = Lerp(c.rotation, c.rotation + 30.f, s);
+}
+    }
+
+    // 删除完成出牌
+    cards.erase(
+        std::remove_if(cards.begin(), cards.end(),
+            [](const CardView& c){
+                return c.state == CardAnimState::Exiting &&
+                       c.animTime >= 1.f;
+            }),
+        cards.end()
+    );
+}
+
+bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
+{
+    if (hoveredIndex != -1)
+    {
+        if (!CanInteract(cards[hoveredIndex]))
+            return false; // ⭐动画中不能选
+
         selectedIndex = hoveredIndex;
         selectedCard = cards[selectedIndex].cardType;
         hasSelectedCard = true;
@@ -476,21 +660,29 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     return false;
 }
 
-void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
+void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
+{
     if (!visible) return;
+
     hoveredIndex = -1;
 
-    for(int i = 0; i < cards.size(); i++)
+    for (int i = 0; i < cards.size(); i++)
     {
+        if (!CanInteract(cards[i]))
+            continue; // ⭐动画中直接跳过
+
         sf::Sprite sprite(rm->getTexture(cards[i].texType));
         const auto size = sprite.getTexture().getSize();
+
         sf::FloatRect bounds(
             {cards[i].basePosition.x - size.x * 0.5f,
              cards[i].basePosition.y - size.y * 0.5f},
             {static_cast<float>(size.x),
              static_cast<float>(size.y)}
         );
-        if(bounds.contains(mousePos)){
+
+        if (bounds.contains(mousePos))
+        {
             hoveredIndex = i;
             break;
         }
@@ -501,6 +693,23 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mouseP
     if(!visible) return;
     sf::Vector2f mouseF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
+    actionPoints->setScale({0.5f, 0.8f});
+    actionPoints->setPosition({350.f, 750.f});
+    window.draw(*actionPoints);
+
+    if (font){
+        sf::Text title(*font);
+
+        title.setFillColor(sf::Color::Black);
+        title.setString("points:" + std::to_string(points));
+
+        title.setCharacterSize(30);
+
+        title.setPosition({360.f, 765.f});
+
+        window.draw(title);
+    }
+
     for(int i = 0; i < cards.size(); i++)
     {
         sf::Sprite sprite(rm->getTexture(cards[i].texType));
@@ -509,7 +718,7 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mouseP
 
         sf::Vector2f pos = cards[i].basePosition;
         float rot = cards[i].rotation;
-        float scale = 0.7f;
+        float scale = cards[i].scale;
 
         // hover & shift other cards
         if(hoveredIndex != -1)
@@ -523,10 +732,18 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window, const sf::Vector2i& mouseP
         }
 
         // hover 浮起
-        if(i == hoveredIndex) { pos.y -= 44.f; scale = 0.74f; }
+bool interactable = CanInteract(cards[i]);
 
-        // 选中浮出
-        if(i == selectedIndex) { pos.y -= 40.f; }
+if (interactable && i == hoveredIndex)
+{
+    pos.y -= 44.f;
+    scale = 0.74f;   // 更自然（不要覆盖动画 scale）
+}
+
+if (interactable && i == selectedIndex)
+{
+    pos.y -= 40.f;
+}
 
         sprite.setPosition(pos);
         sprite.setRotation(sf::degrees(rot));
