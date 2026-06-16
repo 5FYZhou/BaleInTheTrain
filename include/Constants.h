@@ -196,13 +196,6 @@ inline const std::unordered_map<ItemType, TextureType> itemTexMap = {
     { ItemType::Potion3, TextureType::Potion3 }
 };
 
-struct CardView {
-    PileType cardType;
-    TextureType texType;    // 纹理类型
-    sf::Vector2f basePosition;   // 基础位置
-    float rotation = 0.f;              // 旋转角度（度）
-};
-
 inline constexpr int WINDOW_WIDTH = 1920;
 inline constexpr int WINDOW_HEIGHT = 1080;
 inline constexpr int CARD_WIDTH = 60;

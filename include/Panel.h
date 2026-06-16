@@ -11,6 +11,33 @@ inline constexpr float startX = 400.f;
 inline constexpr float startY = 350.f;
 inline constexpr float spacingX = 150.f;
 inline constexpr float spacingY = 230.f;
+enum class CardAnimState {
+    Idle,
+    Entering,
+    Exiting
+};
+
+struct CardView {
+    PileType cardType;
+    TextureType texType;
+
+    sf::Vector2f basePosition;
+    float rotation = 0.f;
+
+    CardAnimState state = CardAnimState::Idle;
+
+    sf::Vector2f animStart;
+    sf::Vector2f animEnd;
+    float animTime = 0.f;
+
+    // ⭐新增（解决问题2）
+    float scale = 0.7f;
+    float startScale = 0.7f;
+    float targetScale = 0.7f;
+
+    // ⭐解决 rotation 动画
+    float startRotation = 0.f;
+};
 
 class Panel {
 protected:
@@ -156,15 +183,44 @@ private:
     int hoveredIndex = -1;
     int selectedIndex = -1;
 
+    int points;
+
     const sf::Font* font = nullptr;
     bool hasFont = false;
+    
+    float Smooth(float t){ return t * t * (3.f - 2.f * t); }
+    sf::Vector2f Lerp(sf::Vector2f a, sf::Vector2f b, float t){ return a + (b - a) * t; }
+    float Lerp(float a, float b, float t){ return a + (b - a) * t;}
+
+    void UpdateLayoutArc();
+    bool CanInteract(const CardView& c){ return c.state == CardAnimState::Idle; }
+    void ComputeArcTransform(int index, int n, sf::Vector2f& pos, float& rot){
+        float centerX = 960.f;
+        float baseY = 950.f;
+
+        float spacingX = 120.f;
+        float liftY = 6.f;
+
+        float maxAngle = 15.f;
+
+        float offset = index - (n - 1) / 2.f;
+
+        pos = {
+            centerX + offset * spacingX,
+            baseY + std::abs(offset) * liftY
+        };
+
+        rot = offset * (maxAngle / (n > 1 ? (n - 1) / 2.f : 1.f));
+    }
 
 public:
+    std::optional<sf::Sprite> actionPoints;
     CardsInHandPanel(std::vector<GameEvent>& e) : Panel(e) {}
     ~CardsInHandPanel(){ delete rm; delete font; }
     void Init(ResourceManager& resource, const sf::Font* uiFont);
+    void Update(float dt) override;
 
-    void SetCards(const std::vector<PileType>& c);
+    void SetCards(const std::vector<PileType>& c, int point, bool first = false);
     std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
     bool HasSelectedCard() { return hasSelectedCard; }
     void SetHasSelected(bool f) { hasSelectedCard = f; }

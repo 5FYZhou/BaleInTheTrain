@@ -70,12 +70,8 @@ void Game::HandleInput(float dt){
                     sceneMgr.LoadScene(SceneType::Menu);
                 } 
                 else if(sceneMgr.GetCurSceneType() == SceneType::Battle){
-                    sceneMgr.LoadGameBeforeBattle([this]{
-                        uiMgr.CloseCardsInHandPopup();
-                        player.SetFacing(playerFaceBeforeBattle);
-                        player.SetFeet({playerXBeforeBattle, PlayerGroundY});
-                        player.ResetToStand();
-                    });
+                    cardsOnPlayer.push_back(PileType::Defend);
+                    uiMgr.SetCardsInHandCard(cardsOnPlayer, 100);
                 }*/
                 else if(sceneMgr.GetCurSceneType() == SceneType::Menu) {
                     window.close();
@@ -145,6 +141,7 @@ void Game::Logic(float dt) {
     sceneMgr.Update(dt);
     dialogMgr.Update(dt);
     audioMgr.Update();
+    uiMgr.Update(dt);
     if (!sceneMgr.IsFading() && !dialogMgr.IsActive() && !uiMgr.BlockInput()) {
         if (sceneMgr.GetCurSceneType() == SceneType::Game) {
             // 没撞墙
@@ -259,7 +256,7 @@ void Game::HandleEvents(const GameEvent& event){
                     // 如果出牌 删除该牌
                     cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
                     // 重新绘制
-                    uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                    uiMgr.SetCardsInHandCard(cardsOnPlayer, 1);
                     uiMgr.SetHasSelected(false);
                 }
                 break;
@@ -271,7 +268,7 @@ void Game::HandleEvents(const GameEvent& event){
                     // 如果出牌 删除该牌
                     cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
                     // 重新绘制
-                    uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                    uiMgr.SetCardsInHandCard(cardsOnPlayer, 50);
                     uiMgr.SetHasSelected(false);
                 }
                 break;
@@ -308,7 +305,7 @@ void Game::HandleEvents(const GameEvent& event){
             playerFaceBeforeBattle = player.GetFacing();
             playerXBeforeBattle = player.GetPos().x;
             sceneMgr.LoadScene(SceneType::Battle, [this]{
-                uiMgr.SetCardsInHandCard(cardsOnPlayer);
+                uiMgr.SetCardsInHandCard(cardsOnPlayer, true);
                 uiMgr.OpenCardsInHandPopup();
                 player.SetFacing(1);
             });

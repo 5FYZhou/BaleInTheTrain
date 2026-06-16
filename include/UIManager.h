@@ -47,11 +47,17 @@ public:
 
         dealCardPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
 
+        cardsInHandPanel.actionPoints.emplace(rm.getTexture(TextureType::StatusBox));
+
         settingPanel.Init(rm, font);
         backpackPanel.Init(rm, font);
         discardPilePanel.Init(rm, font);
         dealCardPanel.Init(rm, font);
         cardsInHandPanel.Init(rm, font);
+    }
+
+    void Update(float dt){
+        cardsInHandPanel.Update(dt);
     }
 
     std::vector<GameEvent>& GetEvents(){ return events; }
@@ -120,7 +126,7 @@ public:
     void OpenCardsInHandPopup(){ cardsInHandPanel.Open(); }
     bool IsCardsInHandPopupOpen(){ return cardsInHandPanel.IsVisible(); }
     void CloseCardsInHandPopup(){ cardsInHandPanel.Close(); }
-    void SetCardsInHandCard(std::vector<PileType>& cards){ cardsInHandPanel.SetCards(cards); }
+    void SetCardsInHandCard(std::vector<PileType>& cards, int p, bool first = false){ cardsInHandPanel.SetCards(cards, p, first); }
     bool HasSelectedCard(){ 
         if(cardsInHandPanel.IsVisible()) 
             return cardsInHandPanel.HasSelectedCard();
