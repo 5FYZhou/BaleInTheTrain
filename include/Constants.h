@@ -88,7 +88,7 @@ enum class EventType {
     ResetPlayerPos,
     ItemClicked, 
     GenericAction,
-    BeginBattle, EndTurn, EndBattle,
+    BeginBattle, PlayerTurn, EndTurn, EndBattle,
     Win, KeysInsufficient,
 };
 

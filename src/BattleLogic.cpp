@@ -3,30 +3,12 @@
 void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vector<Card> &Cards, Player &player)
 {
     StartBattle(Enemies, Cards, player);
-    while (!BattleFinished(player))
-    {
-        // 交互
-
-        // 更新
-        BattleUpdate();
-        // 渲染
-    }
-    // 玩家选择战利品后进行卡组，药水，钥匙等更新
-    // updatecards();
-    // updatepotion;
-    //.....
-}
-
-void BattleLogic::BattleUpdate()
-{
     std::vector<EventType> Btevents;
-    while (true)
-    {
+    
         // 检测玩家和敌人血量
         if (state.playerHP == 0)
         {
             Btevents.push_back(EventType::EndBattle);
-            break;
         }
         bool allEnemiesIsDie = true;
         for (auto it : state.enemies)
@@ -37,24 +19,35 @@ void BattleLogic::BattleUpdate()
         if (allEnemiesIsDie == true)
         {
             Btevents.push_back(EventType::EndBattle);
-            break;
         }
 
-        //玩家回合部分逻辑
-        if (state.isPlayerTurn)
-        {
-            PilePre();//抽牌
-            PlayerStatusSettlement();//玩家状态结算
-        }
-        else{//敌人回合
-            EnemyTurn();
-        }
-    }
+        // 更新
+        BattleUpdate();
+        // 渲染
     
+    // 玩家选择战利品后进行卡组，药水，钥匙等更新
+    // updatecards();
+    // updatepotion;
+    //.....
+}
+
+void BattleLogic::BattleUpdate()
+{
+
+    // 玩家回合部分逻辑
+    if (state.isPlayerTurn)
+    {
+        
+    }
+    else
+    { // 敌人回合
+        
+    }
 }
 
 void BattleLogic::PilePre()
 {
+    state.TurnCount += 1;
     // 检测抽牌堆是否满足抽牌数，否则将弃牌堆中的牌全部加入抽牌堆
     if (state.dealNums > state.dealPile.size())
     {
@@ -126,15 +119,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     state.handCards.erase(state.handCards.begin() + idx);
 }
 
-void BattleLogic::HandleInput(const sf::Vector2f &mousePos)
-{
-    for (auto &enemy : state.enemies)
-    {
-        if (enemy.bound.contains(mousePos))
-        {
-        }
-    }
-}
+
 
 bool BattleLogic::BattleFinished(Player &player)
 {
@@ -158,7 +143,6 @@ bool BattleLogic::BattleFinished(Player &player)
 void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
                               const std::vector<Card> &Cards, Player &player)
 {
-
     // 初始化玩家血量
     state.playerHP = player.GetCurrentHP();
     state.maxHP = player.GetMaxHP();
@@ -187,20 +171,40 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     state.cardIsUsed = false;
 
     // 初始化回合
-    state.TurnCount = 1;
+    state.TurnCount = 0;
     state.isPlayerTurn = true;
+
+    events.push_back({EventType::PlayerTurn});
+
 }
 
 void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
 {
     // 敌人行动逻辑
-    // for (auto &enemy : state.enemies)
-    // {
-    //     if (enemy.IsAlive())
-    //     {
-    //         enemy.PerformAction();
-    //     }
-    // }
+    for (auto &enemy : state.enemies)
+    {
+        PlanType ty = enemy.allPlans[state.TurnCount - 1].plantype;
+        int data = enemy.allPlans[state.TurnCount - 1].num_of_att_ot_def;
+        switch (ty)
+        {
+        case PlanType::attack:
+            if (data > state.defend_num)
+            {
+                state.playerHP -= (data - state.defend_num);
+                state.defend_num = 0;
+            }
+            else
+            {
+                state.defend_num -= data;
+            }
+            break;
+
+        case PlanType::defend:
+            enemy.defend_num = data;
+        default:
+            break;
+        }
+    }
 
     // 切回玩家回合A
     state.isPlayerTurn = true;

@@ -55,6 +55,7 @@ private:
     
 public:
     BattleState state;
+    std::vector<GameEvent> events;
     void BattleLogicManager(const std::vector<Enemy>& initialEnemies, std::vector<Card>& Cards,  Player& player);
     void HandleInput(const sf::Vector2f& mousePos);
 
