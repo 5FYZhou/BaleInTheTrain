@@ -30,6 +30,9 @@ public:
     Player();
     ~Player();
 
+    //战斗相关数值
+    int defend_num = 0;
+
     void Init(int fc);
     // Getters
     sf::Vector2f GetFeet() const { return feet; }

@@ -6,12 +6,12 @@
 #include "BattleLogic.h"
 #include "Card.h"
 #include "Enemy.h"
+#include "Player.h"
 
 
 class BattleRender {
 public:
     BattleRender(ResourceManager& rm);
-    void Init();
     void Draw(sf::RenderWindow& window);  // 每帧调用，从BattleLogic读取状态绘制
 private:
     int hoveredCardIndex = -1; // 当前悬停的手牌索引，-1表示没有悬停

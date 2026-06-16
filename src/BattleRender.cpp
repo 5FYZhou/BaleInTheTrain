@@ -1,4 +1,3 @@
-#pragma once
 #include "BattleRender.h"
 
 void BattleRender::Init()

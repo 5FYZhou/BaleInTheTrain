@@ -324,6 +324,7 @@ void Game::HandleEvents(const GameEvent& event){
         // 结束回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;
+            btLogic.turnsOver();
             break;
         // 结束对局
         case EventType::EndBattle:
