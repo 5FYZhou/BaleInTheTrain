@@ -138,6 +138,44 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
         sf::Sprite es(rm.getTexture(enemyTexMap.at(e->id), e->frameIndex));
         es.setPosition(e->position);
         window.draw(es);
+
+        if(scene.GetType() == SceneType::Battle){
+            // 血条
+            constexpr float BAR_WIDTH  = 120.f;
+            constexpr float BAR_HEIGHT = 12.f;
+
+            float hpPercent =
+                static_cast<float>(e->cur_health) /
+                static_cast<float>(e->sum_health);
+
+            hpPercent = std::clamp(hpPercent, 0.f, 1.f);
+
+            auto bounds = es.getGlobalBounds();
+
+            float x = bounds.position.x + (bounds.size.x - BAR_WIDTH) * 0.5f;
+            float y = e->position.y + e->HPDrawOffset;   // SFML 3
+
+            // 黑色背景
+            sf::RectangleShape bgBar({BAR_WIDTH, BAR_HEIGHT});
+            bgBar.setPosition({x, y});
+            bgBar.setFillColor(sf::Color::Black);
+
+            // 红色血量
+            sf::RectangleShape hpBar({BAR_WIDTH * hpPercent, BAR_HEIGHT});
+            hpBar.setPosition({x, y});
+            hpBar.setFillColor(sf::Color::Red);
+
+            // 可选：白色边框
+            sf::RectangleShape border({BAR_WIDTH, BAR_HEIGHT});
+            border.setPosition({x, y});
+            border.setFillColor(sf::Color::Transparent);
+            border.setOutlineThickness(2.f);
+            border.setOutlineColor(sf::Color::White);
+
+            window.draw(bgBar);
+            window.draw(hpBar);
+            window.draw(border);
+        }
     }
 }
 
