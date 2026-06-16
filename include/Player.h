@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Constants.h"
+#include "Card.h"
 
 class Player {
 private:
@@ -32,9 +33,10 @@ public:
     ~Player();
 
     //战斗相关数值
-    int defend_num = 0;
+    std::vector<Card> cards;
 
     void Init(int fc);
+    void InitCards();
     // Getters
     sf::Vector2f GetFeet() const { return feet; }
     sf::Vector2f GetPos() const { return sf::Vector2f(feet.x, feet.y - height); }

@@ -19,33 +19,58 @@ void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vec
 
 void BattleLogic::BattleUpdate()
 {
-    if (state.isPlayerTurn)
+    std::vector<EventType> Btevents;
+    while (true)
     {
-        // 检测抽牌堆是否满足抽牌数，否则将弃牌堆中的牌全部加入抽牌堆
-        if (state.dealNums > state.dealPile.size())
+        // 检测玩家和敌人血量
+        if (state.playerHP == 0)
         {
-            for (int i = 0; i < state.discardPile.size(); ++i)
-            {
-                state.dealPile.push_back(state.discardPile[i]);
-                state.discardPile.erase(state.discardPile.begin() + i);
-            }
+            Btevents.push_back(EventType::EndBattle);
+            break;
         }
-        // 从抽牌堆中抽牌,恢复行动点
-        for (int i = 0; i < state.dealNums; ++i)
+        bool allEnemiesIsDie = true;
+        for (auto it : state.enemies)
         {
-            state.actionPoints = 3;
-            int rd = getRandomInt(0, state.cardSum);
-            state.handCards.push_back(state.dealPile[rd]);
-            state.dealPile.erase(state.dealPile.begin() + rd);
+            if (it.cur_health > 0)
+                allEnemiesIsDie = false;
         }
-        // 一些buff，debuff结算
+        if (allEnemiesIsDie == true)
+        {
+            Btevents.push_back(EventType::EndBattle);
+            break;
+        }
 
-        // 如果鼠标悬停在药水上，显示药水效果
+        //玩家回合部分逻辑
+        if (state.isPlayerTurn)
+        {
+            PilePre();//抽牌
+            PlayerStatusSettlement();//玩家状态结算
+        }
+        else{//敌人回合
+            EnemyTurn();
+        }
+    }
+    
+}
 
-        // if(如果左键点击药水)
-        //{
-        //
-        // }
+void BattleLogic::PilePre()
+{
+    // 检测抽牌堆是否满足抽牌数，否则将弃牌堆中的牌全部加入抽牌堆
+    if (state.dealNums > state.dealPile.size())
+    {
+        for (int i = 0; i < state.discardPile.size(); ++i)
+        {
+            state.dealPile.push_back(state.discardPile[i]);
+            state.discardPile.erase(state.discardPile.begin() + i);
+        }
+    }
+    // 从抽牌堆中抽牌,恢复行动点
+    for (int i = 0; i < state.dealNums; ++i)
+    {
+        state.actionPoints = 3;
+        int rd = getRandomInt(0, state.cardSum);
+        state.handCards.push_back(state.dealPile[rd]);
+        state.dealPile.erase(state.dealPile.begin() + rd);
     }
 }
 
@@ -61,30 +86,30 @@ void BattleLogic::turnsOver()
     }
 }
 
-void BattleLogic::PlayerStatusSettlement(Player& player)//玩家状态结算
+void BattleLogic::PlayerStatusSettlement() // 玩家状态结算
 {
-    player.defend_num = 0;
+    state.defend_num = 0;
 }
 
-void BattleLogic::waitPlayerInput(int idx, Player &player)
+void BattleLogic::waitPlayerInput(int idx)
 {
     PileType ty = state.handCards[idx].name;
     // 卡牌效果
     switch (ty)
     {
     case PileType::Defend:
-        player.defend_num += 5;
+        state.defend_num += 5;
         break;
 
     default:
         break;
     }
 
-    
     // 删除卡牌
-    state.handCards.erase(state.handCards.begin()+idx);
+    state.handCards.erase(state.handCards.begin() + idx);
 }
-void BattleLogic::waitPlayerInput(int idx, Enemy &enemy){
+void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
+{
     PileType ty = state.handCards[idx].name;
 
     switch (ty)
@@ -98,7 +123,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy){
     }
 
     // 删除卡牌
-    state.handCards.erase(state.handCards.begin()+idx);
+    state.handCards.erase(state.handCards.begin() + idx);
 }
 
 void BattleLogic::HandleInput(const sf::Vector2f &mousePos)
@@ -166,7 +191,7 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     state.isPlayerTurn = true;
 }
 
-void BattleLogic::EndPlayerTurn() // 敌人行动，然后切回玩家
+void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
 {
     // 敌人行动逻辑
     // for (auto &enemy : state.enemies)

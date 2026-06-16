@@ -51,6 +51,7 @@ void Game::Init() {
 
     // 暂时指定卡片
     cardsOnPlayer = { PileType::Strike, PileType::Defend, PileType::Defend, PileType::Strike, PileType::Strike};
+    player.InitCards();
 }
 
 void Game::HandleInput(float dt){
@@ -250,9 +251,11 @@ void Game::HandleEvents(const GameEvent& event){
             {
             case ItemType::Enemy:
                 if(uiMgr.HasSelectedCard()){
+                    if(btLogic.state.isPlayerTurn) break;
                     // 出牌
                     auto [type, idx] = uiMgr.GetSelectedCard();
                     std::cout<<"event: click Enemy & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    btLogic.waitPlayerInput(idx,*sceneMgr.GetScene().GetEnemy());
                     // 如果出牌 删除该牌
                     cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
                     // 重新绘制
@@ -262,11 +265,12 @@ void Game::HandleEvents(const GameEvent& event){
                 break;
             case ItemType::Player:
                 if(uiMgr.HasSelectedCard()){
+                    if(!btLogic.state.isPlayerTurn) break;
                     // 出牌
                     auto [type, idx] = uiMgr.GetSelectedCard();
                     std::cout<<"event: click Player & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    btLogic.waitPlayerInput(idx);
                     // 如果出牌 删除该牌
-                    cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
                     // 重新绘制
                     uiMgr.SetCardsInHandCard(cardsOnPlayer, 50);
                     uiMgr.SetHasSelected(false);
@@ -309,12 +313,15 @@ void Game::HandleEvents(const GameEvent& event){
                 uiMgr.OpenCardsInHandPopup();
                 player.SetFacing(1);
             });
+            btLogic.StartBattle({*sceneMgr.GetScene().GetEnemy()},player.cards,player);
+            btLogic.BattleUpdate();
             std::cout<<"Event:beginBattle"<<std::endl;
             break;
         // 结束回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;
             btLogic.turnsOver();
+
             break;
         // 结束对局
         case EventType::EndBattle:
@@ -326,10 +333,12 @@ void Game::HandleEvents(const GameEvent& event){
                     player.SetFacing(playerFaceBeforeBattle);
                     player.SetFeet({playerXBeforeBattle, PlayerGroundY});
                     player.ResetToStand();
+                    player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
                 });
             }
             // 失败
             else if(event.val == 1){
+                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
 
             }
             break;

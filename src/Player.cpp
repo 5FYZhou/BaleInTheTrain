@@ -18,6 +18,14 @@ void Player::Init(int fc){
     //player.SetFrame(PlayerFrame::Stand);
     SetTextureIndex(0);
 }
+void Player::InitCards(){
+    for(int i = 0;i<5;++i){
+        cards.push_back({i,PileType::Strike,1});
+    }
+    for(int i = 5; i < 10;++i){
+        cards.push_back({i,PileType::Defend,1});
+    }
+}
 
 void Player::Move(int direction, float dt, bool canTranslate) {
     if(direction == 0){
