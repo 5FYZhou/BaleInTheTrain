@@ -19,6 +19,12 @@ struct Plan{
     int num_of_att_ot_def;
     PlanType plantype;
 };
+struct enemy_data{
+    EnemyType ty;
+    std::string name;
+    int maxHP;
+    std::vector<Plan> plans;
+};
 class Enemy {
     public:
         EnemyType ty; // 敌人ID
@@ -44,8 +50,8 @@ class Enemy {
             bound({p, std::get<0>(enemyBound.at(id))}), 
             droppedItems(std::get<1>(enemyBound.at(id))),
             HPDrawOffset(std::get<2>(enemyBound.at(id))){}
-        Enemy(EnemyType id, const std::string& name, int sum_health, std::vector<Plan> plans)
-            : ty(id), name(name), sum_health(sum_health), cur_health(sum_health), allPlans(plans) {}
+        Enemy(enemy_data ed)
+            : ty(ed.ty), name(ed.name), sum_health(ed.maxHP), cur_health(ed.maxHP), allPlans(ed.plans) {}
 
         void Update(float dt){
             frameTimer += dt;
@@ -56,12 +62,7 @@ class Enemy {
         }
 };
 
-struct enemy_data{
-    EnemyType ty;
-    std::string name;
-    int maxHP;
-    std::vector<Plan> plans;
-};
+
 
 inline std::vector<Plan> MakePlans(std::initializer_list<Plan> list) {
     return std::vector<Plan>(list);

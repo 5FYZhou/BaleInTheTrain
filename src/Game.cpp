@@ -319,7 +319,7 @@ void Game::HandleEvents(const GameEvent& event){
                 uiMgr.OpenCardsInHandPopup();
                 player.SetFacing(1);
             });
-            btLogic.StartBattle({g_prefabEnemies[0]},player.cards,player);
+            btLogic.StartBattle({Enemy(g_prefabEnemies[0])},player.cards,player);
             std::cout<<"Event:beginBattle"<<std::endl;
             break;
         //玩家回合

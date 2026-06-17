@@ -135,7 +135,7 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
     // 敌人
     const auto& e = scene.GetEnemy();
     if(e && !e->dead){
-        sf::Sprite es(rm.getTexture(enemyTexMap.at(e->id), e->frameIndex));
+        sf::Sprite es(rm.getTexture(enemyTexMap.at(e->ty), e->frameIndex));
         es.setPosition(e->position);
         window.draw(es);
 

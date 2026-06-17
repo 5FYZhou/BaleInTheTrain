@@ -162,7 +162,7 @@ public:
         if(!enemy.dead && enemy.bound.contains(mousePos)){
             GameEvent event;
             event.type = EventType::BeginBattle;
-            event.val = static_cast<int>(enemy.id);
+            event.val = static_cast<int>(enemy.ty);
             events.push_back(event);
             // 因为要进入战斗场景了，不再处理当前场景的点击
             return;
