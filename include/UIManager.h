@@ -1,141 +1,156 @@
 #pragma once
 
 #include "Constants.h"
-#include "DialogManager.h"
 #include "ResourceManager.h"
 #include "Panel.h"
 #include <SFML/Graphics.hpp>
+#include <algorithm>
+
+struct Notification {
+    std::optional<sf::Sprite> bg;
+    std::optional<sf::Sprite> icon;
+    sf::Text text;
+
+    Notification(const sf::Font& font)
+        : text(font)
+    {}
+
+    float timer = 0.f;
+    sf::Vector2f pos;
+    float alpha = 255.f;
+
+    enum class State {
+        Entering,
+        Stay,
+        Exiting
+    } state = State::Entering;
+};
 
 class UIManager {
 private:
     ResourceManager* resourceManager = nullptr;
     std::vector<GameEvent> events;
-    SettingPanel settingPanel;
-    BackpackPanel backpackPanel;
-    DiscardPilePanel discardPilePanel;
-    DealCardPanel dealCardPanel;
-    CardsInHandPanel cardsInHandPanel;
+    std::vector<Notification> notifications;
+    PanelManager panels;
 
     const sf::Font* font = nullptr;
 
-    void scaleToWindow(sf::Sprite& sprite){
-        const auto size = sprite.getTexture().getSize();
-        sprite.setScale({
-            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(size.x),
-            static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
-        });
-    }
+    void UpdateNotifications(float dt){
+        for (auto& n : notifications){
+            n.timer += dt;
 
+            if (n.state == Notification::State::Entering){
+                n.pos.x += 800.f * dt; // 从左滑入
+
+                if (n.pos.x >= 50.f) {
+                    n.pos.x = 50.f;
+                    n.state = Notification::State::Stay;
+                    n.timer = 0.f;
+                }
+            }
+            else if (n.state == Notification::State::Stay){
+                if (n.timer >= 2.0f) {
+                    n.state = Notification::State::Exiting;
+                }
+            }
+            else if (n.state == Notification::State::Exiting) {
+                n.pos.y -= 200.f * dt;  // 向上飘
+
+                n.alpha -= 300.f * dt;
+
+                if (n.alpha <= 0.f) {
+                    n.alpha = 0.f;
+                    n.state = Notification::State::Stay; // 标记删除
+                }
+            }
+        }
+
+        // 删除结束通知
+        notifications.erase(
+        std::remove_if(notifications.begin(), notifications.end(),
+            [](const Notification& n) {
+                return n.alpha <= 0.f;
+            }),
+            notifications.end()
+        );
+    }
 public:
-    UIManager() : settingPanel(events), backpackPanel(events)
-        , discardPilePanel(events), dealCardPanel(events)
-        , cardsInHandPanel(events){}
-    ~UIManager(){ delete font; }
+
+    UIManager(){}
+    std::vector<GameEvent>& GetEvents(){ return events; }
 
     void Init(ResourceManager& rm){
         resourceManager = &rm;
         font = &rm.getFont();
 
-        settingPanel.panel.emplace(rm.getTexture(TextureType::SettingsPanel));
-        settingPanel.closeButton.emplace(rm.getTexture(TextureType::CloseButton));
-
-        backpackPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
-        backpackPanel.background.emplace(rm.getTexture(TextureType::BackpackInterior));
-        scaleToWindow(*backpackPanel.background);
-
-        discardPilePanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
-
-        dealCardPanel.backButton.emplace(rm.getTexture(TextureType::BackButton));
-
-        cardsInHandPanel.actionPoints.emplace(rm.getTexture(TextureType::StatusBox));
-
-        settingPanel.Init(rm, font);
-        backpackPanel.Init(rm, font);
-        discardPilePanel.Init(rm, font);
-        dealCardPanel.Init(rm, font);
-        cardsInHandPanel.Init(rm, font);
+        panels.AddPanel<SettingPanel>(events)->Init(rm, font);
+        panels.AddPanel<BackpackPanel>(events)->Init(rm, font);
+        panels.AddPanel<DiscardPilePanel>(events)->Init(rm, font);
+        panels.AddPanel<DealCardPanel>(events)->Init(rm, font);
+        panels.AddPanel<CardsInHandPanel>(events)->Init(rm, font);
     }
 
     void Update(float dt){
-        cardsInHandPanel.Update(dt);
+        panels.Update(dt);
+        UpdateNotifications(dt);
     }
 
-    std::vector<GameEvent>& GetEvents(){ return events; }
-    bool BlockInput(){ return settingPanel.IsVisible() || backpackPanel.IsVisible() 
-        || discardPilePanel.IsVisible() || dealCardPanel.IsVisible(); }
+    #pragma region 面板
+    bool BlockInput(){ return panels.BlocksInput(); }
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos){
-        if(settingPanel.IsVisible()){
-            return settingPanel.HandleMousePressed(mousePos);
-        }
-        if(backpackPanel.IsVisible()){
-            return backpackPanel.HandleMousePressed(mousePos);
-        }
-        if(discardPilePanel.IsVisible()){
-            return discardPilePanel.HandleMousePressed(mousePos);
-        }
-        if(dealCardPanel.IsVisible()){
-            return dealCardPanel.HandleMousePressed(mousePos);
-        }
-        if(cardsInHandPanel.IsVisible()){
-            return cardsInHandPanel.HandleMousePressed(mousePos);
-        }
-        return false;
-    }
-    void HandleMouseMoved(const sf::Vector2f& mousePos){
-        if(settingPanel.IsVisible()){
-            settingPanel.HandleMouseMoved(mousePos);
-        }
-        if(cardsInHandPanel.IsVisible()){
-            cardsInHandPanel.HandleMouseMoved(mousePos);
-        }
-    }
-    void HandleMouseReleased(){
-        if(settingPanel.IsVisible()){
-            settingPanel.HandleMouseReleased();
-        }
-    }
+    bool HandleMousePressed(const sf::Vector2f& pos) { return panels.HandleMousePressed(pos); }
+    void HandleMouseMoved(const sf::Vector2f& pos) { panels.HandleMouseMoved(pos); }
+    void HandleMouseReleased() { panels.HandleMouseReleased(); }
 
-    void DrawPanels(sf::RenderWindow& window, sf::Vector2i& mousePos){ 
-        cardsInHandPanel.Draw(window, mousePos);
-        settingPanel.Draw(window); 
-        backpackPanel.Draw(window, mousePos);
-        discardPilePanel.Draw(window, mousePos);
-        dealCardPanel.Draw(window, mousePos);
+    void DrawPanels(sf::RenderWindow& window){ panels.Draw(window); }
+
+    void Open(PanelType type){ panels.Open(type); }
+    void Close(PanelType type){ panels.Close(type); }
+    bool IsOpen(PanelType type){ return panels.IsOpen(type); }
+    template<typename T>
+    T* Get() { return panels.Get<T>(); }
+    #pragma endregion
+
+    void PushNotification(const std::string& text, TextureType icon){
+        notifications.emplace_back(*font);
+        Notification& n = notifications.back();
+
+        n.text.setFont(*font);
+        n.text.setString(text);
+        n.text.setCharacterSize(24);
+
+        n.icon.emplace(resourceManager->getTexture(icon));
+        n.bg.emplace(resourceManager->getTexture(TextureType::NotificationBG));
+        n.bg->setScale({0.7, 0.7});
+        if(icon == TextureType::Key){
+            n.icon->setScale({0.55, 0.55});
+        }
+        else{
+            n.icon->setScale({0.18, 0.18});
+        }
+
+        n.pos = {-400.f, 300.f}; // 左侧外面起点
+        n.state = Notification::State::Entering;
+
+        //notifications.push_back(n);
     }
 
-    void OpenSettingsPopup(){ settingPanel.Open(); }
-    bool IsSettingsPopupOpen(){ return settingPanel.IsVisible(); }
-    void CloseSettingsPopup(){ settingPanel.Close(); }
+    void DrawNotifications(sf::RenderWindow& window){
+        for (auto& n : notifications){
+            sf::Color c(255,255,255,static_cast<std::uint8_t>(n.alpha));
 
-    void OpenBackpackPopup(){ backpackPanel.Open(); }
-    bool IsBackpackPopupOpen(){ return backpackPanel.IsVisible(); }
-    void CloseBackpackPopup(){ backpackPanel.Close(); }
-    void SetBackPackCard(std::vector<PileType>& cards){ backpackPanel.SetCards(cards); }
-    
-    void OpenDiscardPopup(){ discardPilePanel.Open(); }
-    bool IsDiscardPopupOpen(){ return discardPilePanel.IsVisible(); }
-    void CloseDiscardPopup(){ discardPilePanel.Close(); }
-    void SetDiscardCard(std::vector<PileType>& cards){ discardPilePanel.SetCards(cards); }
+            n.bg->setPosition(n.pos);
+            n.icon->setPosition(n.pos + sf::Vector2f(30,20));
+            n.text.setPosition(n.pos + sf::Vector2f(110,40));
 
-    void OpenDealCardPopup(){ dealCardPanel.Open(); }
-    bool IsDealCardPopupOpen(){ return dealCardPanel.IsVisible(); }
-    void CloseDealCardPopup(){ dealCardPanel.Close(); }
-    void SetDealCardCard(std::vector<PileType>& cards){ dealCardPanel.SetCards(cards); }
+            n.bg->setColor(c);
+            n.icon->setColor(c);
+            n.text.setFillColor(c);
 
-    void OpenCardsInHandPopup(){ cardsInHandPanel.Open(); }
-    bool IsCardsInHandPopupOpen(){ return cardsInHandPanel.IsVisible(); }
-    void CloseCardsInHandPopup(){ cardsInHandPanel.Close(); }
-    void SetCardsInHandCard(std::vector<PileType>& cards, int p, bool first = false){ cardsInHandPanel.SetCards(cards, p, first); }
-    bool HasSelectedCard(){ 
-        if(cardsInHandPanel.IsVisible()) 
-            return cardsInHandPanel.HasSelectedCard();
-        return false;
+            window.draw(*n.bg);
+            window.draw(*n.icon);
+            window.draw(n.text);
+        }
     }
-    void SetHasSelected(bool f){
-        if(cardsInHandPanel.IsVisible()) 
-            cardsInHandPanel.SetHasSelected(f);
-    }
-    std::pair<PileType, int> GetSelectedCard(){ return cardsInHandPanel.GetSelectedCard(); }
 
 };

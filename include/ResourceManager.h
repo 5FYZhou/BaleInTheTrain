@@ -132,6 +132,7 @@ public:
             {TextureType::Potion3, {"/药剂3.png"}},
             {TextureType::Cube, {"/魔方.png"}},
             {TextureType::SettingsIcon, {"/设置.png"}},
+            {TextureType::NotificationBG, {"/获得物品框.png"}},
 
             {TextureType::BackpackIcon, {"/背包.png"}},
             {TextureType::DiscardPile, {"/弃牌池.png"}},

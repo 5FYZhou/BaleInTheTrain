@@ -174,11 +174,7 @@ public:
     }
 
     void LoadGameBeforeBattle(std::function<void()> cb = nullptr){
-        //pendingPlayerX = playerPosBeforeBattle;
         LoadScene(SceneType::Game, gameIdxBeforeBattle, cb);
     }
 
-    void SaveCurGameScene(){
-        
-    }
 };

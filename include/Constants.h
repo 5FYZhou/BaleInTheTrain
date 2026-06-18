@@ -13,7 +13,7 @@ enum class TextureType {
     GameBackground, StatusBox, Potion1, Potion2, Potion3, Cube,
     Player, Star, Key,
     SettingsIcon, SettingsPanel, 
-    BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox,
+    BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox, NotificationBG,
     CloseButton, EndTurn, Win, 
 
     Strike, //打击24
@@ -241,3 +241,12 @@ struct GameData {
     int score = 0;
     int level = 0;
 };
+
+
+inline static void scaleToWindow(sf::Sprite& sprite){
+    const auto size = sprite.getTexture().getSize();
+    sprite.setScale({
+        static_cast<float>(WINDOW_WIDTH) / static_cast<float>(size.x),
+        static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
+    });
+}

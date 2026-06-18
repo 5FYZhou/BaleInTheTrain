@@ -26,15 +26,6 @@ sf::Sprite Renderer::makeSprite(const sf::Texture& texture, sf::Vector2f positio
     return sprite;
 }
 
-void Renderer::scaleToWindow(sf::Sprite& sprite) {
-    const sf::Texture& tex = sprite.getTexture();
-    const auto size = tex.getSize();
-    sf::Vector2f scale(
-        static_cast<float>(WINDOW_WIDTH) / static_cast<float>(size.x),
-        static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
-    );
-    sprite.setScale(scale);
-}
 /*
 Button Renderer::makeCenteredButton(const sf::Texture& texture, float centerY) {
     sf::Sprite sprite(texture);
@@ -191,8 +182,8 @@ void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const T
     window.draw(sprite);
 }
 
-void Renderer::DrawDialog(sf::RenderWindow& window, const DialogManager& dialogMgr){
-    if (!dialogMgr.IsActive()) {
+void Renderer::DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr){
+    if (!textHintMgr.IsActive()) {
         return;
     }
 
@@ -201,7 +192,7 @@ void Renderer::DrawDialog(sf::RenderWindow& window, const DialogManager& dialogM
     }
 
     if (dialogText && dialogHintText) {
-        dialogText->setString(dialogMgr.GetCurrentText());
+        dialogText->setString(textHintMgr.GetCurrentText());
         window.draw(*dialogText);
         window.draw(*dialogHintText);
     }
@@ -252,3 +243,28 @@ void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileT
     }
 }
 
+void Renderer::DrawCenteredText(sf::RenderWindow& window,
+                                const std::string& text,
+                                float alpha)
+{
+    sf::Text t(*font);
+    t.setString(text);
+    t.setCharacterSize(40);
+
+    t.setFillColor(sf::Color(255, 255, 255,
+        static_cast<std::uint8_t>(alpha)));
+
+    sf::FloatRect bounds = t.getLocalBounds();
+
+    t.setOrigin({
+        bounds.position.x + bounds.size.x / 2.f,
+        bounds.position.y + bounds.size.y / 2.f
+    });
+
+    t.setPosition({
+        window.getSize().x / 2.f,
+        window.getSize().y / 2.f
+    });
+
+    window.draw(t);
+}

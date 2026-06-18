@@ -2,7 +2,7 @@
 
 #include "AudioManager.h"
 #include "Constants.h"
-#include "DialogManager.h"
+#include "TextHintManager.h"
 #include "Input.h"
 #include "Player.h"
 #include "Renderer.h"
@@ -29,7 +29,6 @@ private:
     unsigned int windowWidth = 1920;
     unsigned int windowHeight = 1080;
     RenderWindow window;
-    sf::Vector2i mousePosMove;
 
     ResourceManager rm;
     Renderer renderer;
@@ -37,7 +36,7 @@ private:
     UIManager uiMgr;
     SceneManager sceneMgr;
     AudioManager audioMgr;
-    DialogManager dialogMgr;
+    TextHintManager textHintMgr;
     BattleLogic btLogic;
     
     Player player;

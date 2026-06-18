@@ -1,4 +1,4 @@
-#include "DialogManager.h"
+#include "TextHintManager.h"
 #include "AudioManager.h"
 
 #include <algorithm>
@@ -14,19 +14,20 @@ std::vector<std::string> DefaultIntroDialog() {
     };
 }
 }
+const std::string TextHintManager::DOOR_HINT_TEXT = "A door with three locks";
 
-DialogManager::DialogManager()
+TextHintManager::TextHintManager()
     : dialogTexts(DefaultIntroDialog())
 {
 }
 
-void DialogManager::Initialize(AudioManager* audioMgr)
+void TextHintManager::Initialize(AudioManager* audioMgr)
 {
     audioManager = audioMgr;
     ResetState();
 }
 
-void DialogManager::ResetState()
+void TextHintManager::ResetState()
 {
     isActive = false;
     currentIndex = 0;
@@ -36,7 +37,7 @@ void DialogManager::ResetState()
     movementHintTimer = 0.f;
 }
 
-void DialogManager::StartDialog()
+void TextHintManager::StartDialog()
 {
     if (dialogTexts.empty()) {
         dialogTexts = DefaultIntroDialog();
@@ -50,13 +51,13 @@ void DialogManager::StartDialog()
     movementHintTimer = 0.f;
 }
 
-void DialogManager::StartDialog(const std::vector<std::string>& dialogs)
+void TextHintManager::StartDialog(const std::vector<std::string>& dialogs)
 {
     dialogTexts = dialogs.empty() ? DefaultIntroDialog() : dialogs;
     StartDialog();
 }
 
-void DialogManager::AdvanceDialog()
+void TextHintManager::AdvanceDialog()
 {
     if (!isActive) {
         return;
@@ -76,7 +77,7 @@ void DialogManager::AdvanceDialog()
     }
 }
 
-void DialogManager::EndDialog()
+void TextHintManager::EndDialog()
 {
     isActive = false;
     movementHintVisible = true;
@@ -84,7 +85,7 @@ void DialogManager::EndDialog()
     PlayCompletionSound();
 }
 
-const std::string& DialogManager::GetCurrentText() const
+const std::string& TextHintManager::GetCurrentText() const
 {
     if (currentIndex < dialogTexts.size()) {
         return dialogTexts[currentIndex];
@@ -94,13 +95,13 @@ const std::string& DialogManager::GetCurrentText() const
     return empty;
 }
 
-void DialogManager::StartRewardFade()
+void TextHintManager::StartRewardFade()
 {
     introRewardFading = true;
     introRewardAlpha = 255.f;
 }
 
-void DialogManager::UpdateRewardFade(float dt)
+void TextHintManager::UpdateRewardFade(float dt)
 {
     if (introRewardFading) {
         introRewardAlpha -= DIALOG_FADE_OUT_SPEED * dt;
@@ -113,18 +114,18 @@ void DialogManager::UpdateRewardFade(float dt)
     }
 }
 
-void DialogManager::ShowMovementHint()
+void TextHintManager::ShowMovementHint()
 {
     movementHintVisible = true;
     movementHintTimer = 0.f;
 }
 
-void DialogManager::HideMovementHint()
+void TextHintManager::HideMovementHint()
 {
     movementHintVisible = false;
 }
 
-void DialogManager::UpdateMovementHint(float dt)
+void TextHintManager::UpdateMovementHint(float dt)
 {
     if (movementHintVisible) {
         movementHintTimer += dt;
@@ -134,22 +135,57 @@ void DialogManager::UpdateMovementHint(float dt)
     }
 }
 
-void DialogManager::Update(float dt)
+void TextHintManager::Update(float dt)
 {
     UpdateRewardFade(dt);
     UpdateMovementHint(dt);
+    UpdateDoorHint(dt);
 }
 
-void DialogManager::PlayDialogSound()
+void TextHintManager::PlayDialogSound()
 {
     if (audioManager) {
         audioManager->PlaySound(SoundEffect::Dialog);
     }
 }
 
-void DialogManager::PlayCompletionSound()
+void TextHintManager::PlayCompletionSound()
 {
     if (audioManager) {
         audioManager->PlaySound(SoundEffect::Tutorial);
+    }
+}
+
+
+void TextHintManager::ShowDoorHint()
+{
+    doorHintVisible = true;
+
+    doorHintTimer = 0.f;
+
+    doorHintAlpha = 255.f;  // 🔥 直接显示，不做出现动画
+}
+
+void TextHintManager::HideDoorHint()
+{
+    doorHintVisible = false;
+}
+
+void TextHintManager::UpdateDoorHint(float dt)
+{
+    if (!doorHintVisible) return;
+
+    doorHintTimer += dt;
+
+    // 🟡 进入消失阶段
+    if (doorHintTimer >= DOOR_HINT_DURATION)
+    {
+        doorHintAlpha -= DOOR_FADE_SPEED * dt;
+
+        if (doorHintAlpha <= 0.f)
+        {
+            doorHintAlpha = 0.f;
+            doorHintVisible = false;
+        }
     }
 }

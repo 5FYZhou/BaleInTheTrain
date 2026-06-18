@@ -1,15 +1,14 @@
 #pragma once
 
 #include "Constants.h"
+#include "AudioManager.h"
 #include <string>
 #include <vector>
 
-class AudioManager;
-
-class DialogManager {
+class TextHintManager {
 public:
-    DialogManager();
-    ~DialogManager() = default;
+    TextHintManager();
+    ~TextHintManager() = default;
 
     void Initialize(AudioManager* audioMgr);
 
@@ -36,6 +35,14 @@ public:
         return isActive && currentIndex == INTRO_BACKPACK_INDEX && !introRewardFading;
     }
 
+    void ShowDoorHint();
+    void HideDoorHint();
+    void UpdateDoorHint(float dt);
+
+    bool IsDoorHintVisible() const { return doorHintVisible; }
+    const std::string& GetDoorHintText() const { return DOOR_HINT_TEXT; }
+    float GetDoorHintAlpha() const { return doorHintAlpha; }
+
     void Update(float dt);
 
 private:
@@ -48,6 +55,17 @@ private:
 
     bool movementHintVisible = false;
     float movementHintTimer = 0.f;
+
+    // 门提示
+    bool doorHintVisible = false;
+
+    float doorHintTimer = 0.f;
+    float doorHintAlpha = 0.f;
+
+    static constexpr float DOOR_HINT_DURATION = 2.5f;
+    static constexpr float DOOR_FADE_SPEED = 300.f;
+
+    static const std::string DOOR_HINT_TEXT;
 
     AudioManager* audioManager = nullptr;
 

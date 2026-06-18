@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Constants.h"
-#include "DialogManager.h"
+#include "TextHintManager.h"
 #include "Enemy.h"
 #include "ResourceManager.h"
 #include "Player.h"
@@ -36,7 +36,6 @@ private:
 
     // Helper methods
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
-    void scaleToWindow(sf::Sprite& sprite);
     //Button makeCenteredButton(const sf::Texture& texture, float centerY);
     void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
 
@@ -53,7 +52,9 @@ public:
     void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
         , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
 
-    void DrawDialog(sf::RenderWindow& window, const DialogManager& dialogMgr);
+    void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);
     void DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsV, float alpha);
+
+    void DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha);
 };
