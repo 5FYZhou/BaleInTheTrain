@@ -179,6 +179,12 @@ void Game::ProcessEvents() {
         HandleEvents(event);
     }
     eventsInUI.clear();
+
+    std::vector<GameEvent>& eventsInBl = btLogic.events;
+    for (const auto& event : eventsInBl) {
+        HandleEvents(event);
+    }
+    eventsInBl.clear();
 }
 
 void Game::HandleEvents(const GameEvent& event){
@@ -341,14 +347,18 @@ void Game::HandleEvents(const GameEvent& event){
                 uiMgr.Open(PanelType::CardsInHand);
                 player.SetFacing(1);
             });
-            btLogic.StartBattle({*sceneMgr.GetScene().GetEnemy()},player.cards,player);
-            btLogic.BattleUpdate();
+            btLogic.StartBattle({Enemy(g_prefabEnemies[0])},player.cards,player);
             std::cout<<"Event:beginBattle"<<std::endl;
             break;
-        // 结束回合
+        //玩家回合
+        case EventType::PlayerTurn:
+            btLogic.PilePre();                // 抽牌
+            btLogic.PlayerStatusSettlement(); // 玩家状态结算
+        // 结束玩家回合，开始敌人回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;
             btLogic.turnsOver();
+            btLogic.EnemyTurn();
 
             break;
         // 结束对局

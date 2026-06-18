@@ -17,11 +17,17 @@ enum class PlanType{
 };
 struct Plan{
     int num_of_att_ot_def;
-    PlanType plan;
+    PlanType plantype;
+};
+struct enemy_data{
+    EnemyType ty;
+    std::string name;
+    int maxHP;
+    std::vector<Plan> plans;
 };
 class Enemy {
     public:
-        EnemyType id; // 敌人ID
+        EnemyType ty; // 敌人ID
         std::string name; // 敌人名称
         sf::Vector2f position; // 敌人位置（用于渲染）
         int frameIndex = 0; // 当前动画帧索引
@@ -31,20 +37,21 @@ class Enemy {
         sf::FloatRect bound; // 碰撞体
         float HPDrawOffset; // 绘制血量时相对敌人位置的y轴偏移
 
-        int sum_health = 100; // 总生命值
-        int cur_health = 100; // 当前生命值
+        int sum_health; // 总生命值
+        int cur_health; // 当前生命值
+        int defend_num = 0;
         bool dead; // 是否死亡
-        std::vector<Plan> allPlans; // 下一回合计划（0-攻击，1-防御，2-增益，3-减益）
+        std::vector<Plan> allPlans; // 回合计划（0-攻击，1-防御，2-增益，3-减益）
         std::vector<StatusType> StatusEffect; // 状态效果（如中毒、虚弱等）
         std::vector<ItemType> droppedItems; // 被击败后掉落的物品
 
     public:
-        Enemy(EnemyType id, sf::Vector2f p) : id(id), position(p), 
+        Enemy(EnemyType id, sf::Vector2f p) : ty(id), position(p), 
             bound({p, std::get<0>(enemyBound.at(id))}), 
             droppedItems(std::get<1>(enemyBound.at(id))),
             HPDrawOffset(std::get<2>(enemyBound.at(id))){}
-        Enemy(EnemyType id, const std::string& name, int sum_health, int num_of_turns, std::vector<Plan> plans)
-            : id(id), name(name), sum_health(sum_health), cur_health(sum_health), allPlans(plans) {}
+        Enemy(enemy_data ed)
+            : ty(ed.ty), name(ed.name), sum_health(ed.maxHP), cur_health(ed.maxHP), allPlans(ed.plans) {}
 
         void Update(float dt){
             frameTimer += dt;
@@ -53,4 +60,36 @@ class Enemy {
                 frameTimer = 0.f;
             }
         }
+};
+
+
+
+inline std::vector<Plan> MakePlans(std::initializer_list<Plan> list) {
+    return std::vector<Plan>(list);
+}
+const std::vector<enemy_data> g_prefabEnemies = {
+    // 示例1：列车员
+   enemy_data {
+        EnemyType::Train_attendant,
+        "列车员",
+        40,
+        std::vector<Plan>({
+            {6, PlanType::attack},   // 攻击
+            {4, PlanType::defend},   // 防御
+            {8, PlanType::attack},  
+            {4, PlanType::defend},
+            {10, PlanType::attack},
+            {4, PlanType::defend},
+            {12, PlanType::attack},
+            {4, PlanType::defend},
+            {14, PlanType::attack},
+            {4, PlanType::defend},
+        })
+    },
+    
+    // 示例2：光之怪物
+   
+    // 示例3：票务怪物
+   
+   
 };
