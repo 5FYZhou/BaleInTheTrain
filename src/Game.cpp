@@ -62,7 +62,6 @@ void Game::Init()
     keyCnt = 0;
 
     // 暂时指定卡片
-    cardsOnPlayer = {PileType::Strike, PileType::Defend, PileType::Defend, PileType::Strike, PileType::Strike};
     player.InitCards();
 }
 
@@ -263,7 +262,7 @@ void Game::HandleEvents(const GameEvent &event)
     // 打开背包面板
     case EventType::OpenBackpackIcon:
         std::cout << "Event::openbackpack" << std::endl;
-        uiMgr.Get<BackpackPanel>()->SetCards(cardsOnPlayer);
+        uiMgr.Get<BackpackPanel>()->SetCards(player.GetPileCards());
         uiMgr.Open(PanelType::Backpack);
         break;
     // 打开弃牌池
@@ -367,7 +366,7 @@ void Game::HandleEvents(const GameEvent &event)
         case ItemType::Sacrifice:          // 祭品13
             std::cout << "Event : hitcard:" << event.val << std::endl;
             // 给玩家加卡牌
-            cardsOnPlayer.push_back(itemPileMap.at(itemtype));
+            player.AddCards(itemPileMap.at(itemtype));
             uiMgr.PushNotification("Obtain a card", itemTexMap.at(itemtype));
             break;
         default:
@@ -453,7 +452,7 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
-        renderer.DrawCardRewards(window, cardsOnPlayer, textHintMgr.GetRewardAlpha());
+        renderer.DrawCardRewards(window, player.GetPileCards(), textHintMgr.GetRewardAlpha());
         if (textHintMgr.IsMovementHintVisible())
         {
             renderer.DrawMovementHint(window);

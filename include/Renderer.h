@@ -38,8 +38,26 @@ private:
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
     //Button makeCenteredButton(const sf::Texture& texture, float centerY);
     void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
+    CardView MakeFanCard( PileType type, int index, int count, sf::Vector2f center, float yOffset, float spacingX, float angleRange){
+        CardView cv;
+        cv.texType = cardTexMap.at(type);
 
-public:
+        float mid = (count - 1) / 2.f;
+        float offset = index - mid;
+
+        float t = (count <= 1) ? 0.f : offset / mid;
+
+        cv.basePosition = {
+            center.x + offset * spacingX,
+            center.y + (t * t) * 25.f + yOffset
+        };
+
+        cv.rotation = t * angleRange;
+
+        return cv;
+    }
+
+    public:
     Renderer(ResourceManager& rm, UIManager& ui);
     ~Renderer();
 

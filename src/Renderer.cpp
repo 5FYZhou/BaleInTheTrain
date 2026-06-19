@@ -71,13 +71,13 @@ void Renderer::Init() {
     dialogText->setLineSpacing(1.2f);
 
     dialogHintText = new sf::Text(*font);
-    dialogHintText->setString("Space / Enter / Click");
+    dialogHintText->setString(utf8("点击鼠标左键 / 空格 / 回车 继续"));
     dialogHintText->setCharacterSize(22);
     dialogHintText->setFillColor(sf::Color(230, 230, 230, 210));
     dialogHintText->setPosition({1335.f, 940.f});
 
     movementHintText = new sf::Text(*font);
-    movementHintText->setString("Use A / D or Arrow Keys to move");
+    movementHintText->setString(utf8("按 A / D 或方向键左右移动"));
     movementHintText->setCharacterSize(30);
     movementHintText->setFillColor(sf::Color::White);
     movementHintText->setPosition({720.f, 930.f});
@@ -209,7 +209,7 @@ void Renderer::DrawDialog(sf::RenderWindow& window, const TextHintManager& textH
     }
 
     if (dialogText && dialogHintText) {
-        dialogText->setString(textHintMgr.GetCurrentText());
+        dialogText->setString(utf8(textHintMgr.GetCurrentText()));
         window.draw(*dialogText);
         window.draw(*dialogHintText);
     }
@@ -232,31 +232,61 @@ void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float al
     window.draw(sprite);
 }
 
-void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsT, float alpha) { 
-    if (alpha <= 0.f) { return; } 
-    int k1 = 0, k2 = 0;
-    for (int i = 0; i < cardsT.size(); i++) {
-        CardView cv;
-        cv.texType = cardTexMap.at(cardsT[i]);
-        if(cardsT[i] == PileType::Strike){
-            cv.basePosition = {890.f + static_cast<float>(k1) * 72.f, 405.f + static_cast<float>(k1) * 5.f};
-            cv.rotation = -10.f + static_cast<float>(k1) * 3.f;
-            k1++;
-            DrawCard(window, cv, alpha); 
-        }
+void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsT, float alpha)
+{
+    if (alpha <= 0.f) return;
+
+    int strikeIndex = 0;
+    int defendIndex = 0;
+
+    std::vector<PileType> strikeCards;
+    std::vector<PileType> defendCards;
+
+    for (auto c : cardsT)
+    {
+        if (c == PileType::Strike) strikeCards.push_back(c);
+        else if (c == PileType::Defend) defendCards.push_back(c);
     }
-    for (int i = 0; i < cardsT.size(); i++) {
-        CardView cv;
-        cv.texType = cardTexMap.at(cardsT[i]);
-        if(cardsT[i] == PileType::Defend){
-            cv.basePosition = {970.f + static_cast<float>(k2) * 72.f, 505.f + static_cast<float>(k2) * 5.f},
-            cv.rotation = 5.f + static_cast<float>(k2) * 3.f;
-            k2++;
-            DrawCard(window, cv, alpha); 
-        }
+
+    // =========================
+    // ⭐ Strike（上排扇形）
+    // =========================
+    for (int i = 0; i < strikeCards.size(); i++)
+    {
+        CardView cv = MakeFanCard(
+            strikeCards[i],
+            i,
+            (int)strikeCards.size(),
+            {960.f, 380.f},   // ⭐屏幕中心上方
+            0.f,
+            80.f,
+            18.f
+        );
+
+        DrawCard(window, cv, alpha);
     }
-    if(k1 + k2 < cardsT.size()){
-        std::cout<<"Renderer : has undefined draw card rewards type"<<std::endl;
+
+    // =========================
+    // ⭐ Defend（下排扇形）
+    // =========================
+    for (int i = 0; i < defendCards.size(); i++)
+    {
+        CardView cv = MakeFanCard(
+            defendCards[i],
+            i,
+            (int)defendCards.size(),
+            {960.f, 500.f},   // ⭐屏幕中心下方
+            0.f,
+            80.f,
+            18.f
+        );
+
+        DrawCard(window, cv, alpha);
+    }
+
+    if (strikeCards.size() + defendCards.size() != cardsT.size())
+    {
+        std::cout << "Renderer: undefined card type\n";
     }
 }
 

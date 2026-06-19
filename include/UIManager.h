@@ -99,8 +99,8 @@ public:
     bool BlockInput(){ return panels.BlocksInput(); }
 
     bool HandleMousePressed(const sf::Vector2f& pos) { return panels.HandleMousePressed(pos); }
-    void HandleMouseMoved(const sf::Vector2f& pos) { panels.HandleMouseMoved(pos); }
-    void HandleMouseReleased() { panels.HandleMouseReleased(); }
+    bool HandleMouseMoved(const sf::Vector2f& pos) { return panels.HandleMouseMoved(pos); }
+    bool HandleMouseReleased() { return panels.HandleMouseReleased(); }
 
     void DrawPanels(sf::RenderWindow& window){ panels.Draw(window); }
 

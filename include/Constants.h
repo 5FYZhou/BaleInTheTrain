@@ -271,3 +271,19 @@ inline static void scaleToWindow(sf::Sprite& sprite){
         static_cast<float>(WINDOW_HEIGHT) / static_cast<float>(size.y)
     });
 }
+
+inline static sf::String utf8(const std::string& text)
+{
+    return sf::String::fromUtf8(text.begin(), text.end());
+}
+
+inline static void centerTextX(sf::Text& text){
+    auto bounds = text.getLocalBounds();
+
+    text.setOrigin({
+        bounds.position.x + bounds.size.x / 2.f,
+        bounds.position.y + bounds.size.y / 2.f
+    });
+
+    text.setPosition({960.f, text.getPosition().y});
+}

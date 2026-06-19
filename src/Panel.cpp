@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <string>
+#include <cmath>
 
 #pragma region 设置
 void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
@@ -18,13 +19,13 @@ void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
 
     // ===== title =====
     title.emplace(*font);
-    title->setString("Settings");
+    title->setString(utf8("设置"));
     title->setCharacterSize(42);
     title->setPosition({820.f, 315.f});
 
     // ===== music =====
     musicLabel.emplace(*font);
-    musicLabel->setString("Music");
+    musicLabel->setString(utf8("音乐"));
     musicLabel->setCharacterSize(26);
 
     musicValue.emplace(*font);
@@ -33,7 +34,7 @@ void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
 
     // ===== sfx =====
     sfxLabel.emplace(*font);
-    sfxLabel->setString("SFX");
+    sfxLabel->setString(utf8("音效"));
     sfxLabel->setCharacterSize(26);
 
     sfxValue.emplace(*font);
@@ -42,12 +43,12 @@ void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
 
     // ===== sliders =====
     musicSlider.pos = {720.f, 465.f};
-    musicSlider.label = "Music";
+    musicSlider.label = ("音乐");
     musicSlider.value = musicVolume;
     musicSlider.valueText = &*musicValue;
 
     sfxSlider.pos = {720.f, 575.f};
-    sfxSlider.label = "SFX";
+    sfxSlider.label = ("音效");
     sfxSlider.value = sfxVolume;
     sfxSlider.valueText = &*sfxValue;
 }
@@ -119,10 +120,9 @@ bool SettingPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     return true;
 }
 
-void SettingPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
-{
+bool SettingPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
     if (!visible)
-        return;
+        return false;
 
     if (draggingSlider == SliderTarget::Music){
         SetMusicVolume(SliderValueFromX(mousePos.x, 720.f, 360.f));
@@ -131,10 +131,16 @@ void SettingPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
     if (draggingSlider == SliderTarget::Sfx){
         SetSfxVolume(SliderValueFromX(mousePos.x, 720.f, 360.f));
     }
+
+    return true;
 }
 
-void SettingPanel::HandleMouseReleased(){
-    draggingSlider = SliderTarget::None;
+bool SettingPanel::HandleMouseReleased(){
+    if(draggingSlider != SliderTarget::None){
+        draggingSlider = SliderTarget::None;
+        return true;
+    }
+    return false;
 }
 
 void SettingPanel::DrawSlider(sf::RenderWindow& window, const Slider& slider){
@@ -156,7 +162,7 @@ void SettingPanel::DrawSlider(sf::RenderWindow& window, const Slider& slider){
 
     // label（仍然建议缓存成 sf::Text，但这里轻量构造）
     sf::Text labelText(*font);
-    labelText.setString(slider.label);
+    labelText.setString(utf8(slider.label));
     labelText.setCharacterSize(26);
     labelText.setPosition({slider.pos.x - 100.f, slider.pos.y + 16.f});
     window.draw(labelText);
@@ -208,41 +214,54 @@ void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
     //veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
+
+    titleText.emplace(*font); 
+    titleText->setString(utf8("背包")); 
+    titleText->setCharacterSize(60); 
+    titleText->setFillColor(sf::Color::Black); 
+    titleText->setPosition({780.f, 250.f}); 
+    centerTextX(*titleText);
 }
 
 void BackpackPanel::SetCards(const std::vector<PileType>& c){
     cards.clear();
-    int k1 = 0, k2 = 0;
-    for(int i = 0; i < c.size(); i++){
+
+    int n = (int)c.size();
+    if (n == 0) return;
+
+    float baseX = 960.f;
+    float baseY = 525.f;
+    float spacingX = 128.f;
+
+    float center = (n - 1) / 2.f;
+
+    for (int i = 0; i < n; i++)
+    {
+        float offset = i - center;
+        float t = (n == 1) ? 0.f : offset / center; // [-1,1]
+
         RenderCard cv;
         cv.texType = cardTexMap.at(c[i]);
         cv.sprite.emplace(rm->getTexture(cv.texType));
+
         const auto size = cv.sprite->getTexture().getSize();
         cv.sprite->setOrigin({size.x * 0.5f, size.y * 0.5f});
         cv.sprite->setScale({0.58f, 0.58f});
-        if(c[i] == PileType::Strike){
-            cv.pos = {410.f + k1 * 128.f, 525.f + k1 * 7.f}; // 位置（X轴间隔128，Y轴微调） 
-            cv.rotation = -7.f + k1 * 1.5f; // 旋转（扇形展开）
-            cards.push_back(cv);
-            k1++;
-        }
-    }
-    for(int i = 0; i < c.size(); i++){
-        RenderCard cv;
-        cv.texType = cardTexMap.at(c[i]);
-        cv.sprite.emplace(rm->getTexture(cv.texType));
-        const auto size = cv.sprite->getTexture().getSize();
-        cv.sprite->setOrigin({size.x * 0.5f, size.y * 0.5f});
-        cv.sprite->setScale({0.58f, 0.58f});
-        if(c[i] == PileType::Defend){
-            cv.pos = {1010.f + k2 * 128.f, 525.f + k2 * 7.f}; // 位置（X轴间隔128，Y轴微调） 
-            cv.rotation = -7.f + k2 * 1.5f; // 旋转（扇形展开）
-            cards.push_back(cv);
-            k2++;
-        }
-    }
-    if(k1 + k2 < c.size()){
-        std::cout<<"BackpackPanel:has undefined draw type"<<std::endl;
+
+        // =========================
+        // ✔ 位置（对称弧）
+        // =========================
+        cv.pos = {
+            baseX + offset * spacingX,
+            baseY + (t * t) * 40.f
+        };
+
+        // =========================
+        // ✔ 旋转（真正对称关键）
+        // =========================
+        cv.rotation = t * 12.f;
+
+        cards.push_back(cv);
     }
 }
 
@@ -256,14 +275,16 @@ bool BackpackPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     return true;
 }
 
-void BackpackPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
-    for (auto& card : cards){
+bool BackpackPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
+    for (int i = 0; i < cards.size(); ++i){
+        auto& card = cards[i];
         card.hovering = false;
         // hover
         if (card.sprite->getGlobalBounds().contains(mousePos)){
             card.hovering = true;
         }
     }
+    return true;
 }
 
 void BackpackPanel::Draw(sf::RenderWindow& window){
@@ -289,12 +310,7 @@ void BackpackPanel::Draw(sf::RenderWindow& window){
     }
 
     if (hasFont) {
-        sf::Text titleText(*font); 
-        titleText.setString("Backpack"); 
-        titleText.setCharacterSize(60); 
-        titleText.setFillColor(sf::Color::Black); 
-        titleText.setPosition({780.f, 250.f}); 
-        window.draw(titleText);
+        window.draw(*titleText);
     }
 }
 #pragma endregion
@@ -314,6 +330,13 @@ void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     //veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
+
+    titleText.emplace(*font); 
+    titleText->setString(utf8("弃牌池")); 
+    titleText->setCharacterSize(60); 
+    titleText->setFillColor(sf::Color::White); 
+    titleText->setPosition({780.f, 120.f}); 
+    centerTextX(*titleText);
 }
 
 void DiscardPilePanel::SetCards(const std::vector<PileType>& c){
@@ -363,12 +386,7 @@ void DiscardPilePanel::Draw(sf::RenderWindow& window){
     }
 
     if (hasFont) {
-        sf::Text titleText(*font); 
-        titleText.setString("Discard Pile"); 
-        titleText.setCharacterSize(60); 
-        titleText.setFillColor(sf::Color::White); 
-        titleText.setPosition({780.f, 100.f}); 
-        window.draw(titleText);
+        window.draw(*titleText);
     }
 }
 
@@ -389,6 +407,13 @@ void DealCardPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     //veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
+
+    titleText.emplace(*font); 
+    titleText->setString(utf8("发牌池")); 
+    titleText->setCharacterSize(60); 
+    titleText->setFillColor(sf::Color::White); 
+    titleText->setPosition({750.f, 120.f}); 
+    centerTextX(*titleText);
 }
 
 void DealCardPanel::SetCards(const std::vector<PileType>& c){
@@ -438,12 +463,7 @@ void DealCardPanel::Draw(sf::RenderWindow& window){
     }
 
     if (hasFont) {
-        sf::Text titleText(*font); 
-        titleText.setString("Deal Card Pile"); 
-        titleText.setCharacterSize(60); 
-        titleText.setFillColor(sf::Color::White); 
-        titleText.setPosition({750.f, 100.f}); 
-        window.draw(titleText);
+        window.draw(*titleText);
     }
 }
 #pragma endregion
@@ -458,6 +478,13 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     actionPoints.emplace(rm->getTexture(TextureType::StatusBox));
     actionPoints->setScale({0.5f, 0.8f});
     actionPoints->setPosition({350.f, 750.f});
+
+    
+    pointText.emplace(*font);
+    pointText->setFillColor(sf::Color::Black);
+    //pointText->setStyle(sf::Text::Bold);
+    pointText->setCharacterSize(29);
+    pointText->setPosition({360.f, 765.f});
 }
 
 void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
@@ -678,33 +705,51 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
     return false;
 }
 
-void CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
+bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
 {
-    if (!visible) return;
+    if (!visible) return false;
 
     hoveredIndex = -1;
 
-    for (int i = 0; i < cards.size(); i++)
+    for (int i = (int)cards.size() - 1; i >= 0; --i)
     {
         if (!CanInteract(cards[i]))
-            continue; // ⭐动画中直接跳过
+            continue;
 
-        sf::Sprite sprite(rm->getTexture(cards[i].texType));
-        const auto size = sprite.getTexture().getSize();
+        const auto& c = cards[i];
 
-        sf::FloatRect bounds(
-            {cards[i].basePosition.x - size.x * 0.5f,
-             cards[i].basePosition.y - size.y * 0.5f},
-            {static_cast<float>(size.x),
-             static_cast<float>(size.y)}
-        );
+        sf::Sprite sprite(rm->getTexture(c.texType));
+        const auto texSize = sprite.getTexture().getSize();
 
-        if (bounds.contains(mousePos))
+        float w = texSize.x * c.scale;
+        float h = texSize.y * c.scale;
+
+        // 1. 计算中心
+        sf::Vector2f center = c.basePosition;
+
+        // 2. 平移到中心坐标
+        sf::Vector2f d = mousePos - center;
+
+        float rad = c.rotation * 3.1415926f / 180.f;
+
+        // 3. 逆旋转
+        float cosA = std::cos(-rad);
+        float sinA = std::sin(-rad);
+
+        sf::Vector2f local;
+        local.x = d.x * cosA - d.y * sinA;
+        local.y = d.x * sinA + d.y * cosA;
+
+        // 4. 判断 AABB（注意 scale）
+        if (std::abs(local.x) <= w * 0.5f &&
+            std::abs(local.y) <= h * 0.5f)
         {
             hoveredIndex = i;
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
 void CardsInHandPanel::Draw(sf::RenderWindow& window){
@@ -713,16 +758,8 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window){
     window.draw(*actionPoints);
 
     if (font){
-        sf::Text title(*font);
-
-        title.setFillColor(sf::Color::Black);
-        title.setString("points:" + std::to_string(points));
-
-        title.setCharacterSize(30);
-
-        title.setPosition({360.f, 765.f});
-
-        window.draw(title);
+        pointText->setString(utf8("行动点：") + std::to_string(points));
+        window.draw(*pointText);
     }
 
     for(int i = 0; i < cards.size(); i++) {
