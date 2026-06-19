@@ -70,6 +70,7 @@ public:
     void waitPlayerInput(int idx, Enemy& enemy);
     void turnsOver();//手牌-》弃牌堆
     void EnemyTurn();       // 敌人行动，然后切回玩家
+    std::vector<PileType> getCardsPile();
 
 
     

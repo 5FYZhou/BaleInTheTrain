@@ -4,27 +4,27 @@ void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vec
 {
     StartBattle(Enemies, Cards, player);
     std::vector<EventType> Btevents;
-    
-        // 检测玩家和敌人血量
-        if (state.playerHP == 0)
-        {
-            Btevents.push_back(EventType::EndBattle);
-        }
-        bool allEnemiesIsDie = true;
-        for (auto it : state.enemies)
-        {
-            if (it.cur_health > 0)
-                allEnemiesIsDie = false;
-        }
-        if (allEnemiesIsDie == true)
-        {
-            Btevents.push_back(EventType::EndBattle);
-        }
 
-        // 更新
-        BattleUpdate();
-        // 渲染
-    
+    // 检测玩家和敌人血量
+    if (state.playerHP == 0)
+    {
+        Btevents.push_back(EventType::EndBattle);
+    }
+    bool allEnemiesIsDie = true;
+    for (auto it : state.enemies)
+    {
+        if (it.cur_health > 0)
+            allEnemiesIsDie = false;
+    }
+    if (allEnemiesIsDie == true)
+    {
+        Btevents.push_back(EventType::EndBattle);
+    }
+
+    // 更新
+    BattleUpdate();
+    // 渲染
+
     // 玩家选择战利品后进行卡组，药水，钥匙等更新
     // updatecards();
     // updatepotion;
@@ -37,11 +37,9 @@ void BattleLogic::BattleUpdate()
     // 玩家回合部分逻辑
     if (state.isPlayerTurn)
     {
-        
     }
     else
     { // 敌人回合
-        
     }
 }
 
@@ -92,6 +90,7 @@ void BattleLogic::waitPlayerInput(int idx)
     {
     case PileType::Defend:
         state.defend_num += 5;
+        state.handCards.erase(state.handCards.begin() + idx);
         break;
 
     default:
@@ -99,7 +98,6 @@ void BattleLogic::waitPlayerInput(int idx)
     }
 
     // 删除卡牌
-    state.handCards.erase(state.handCards.begin() + idx);
 }
 void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
 {
@@ -109,6 +107,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     {
     case PileType::Strike:
         enemy.cur_health -= 6;
+        state.handCards.erase(state.handCards.begin() + idx);
         break;
 
     default:
@@ -116,10 +115,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     }
 
     // 删除卡牌
-    state.handCards.erase(state.handCards.begin() + idx);
 }
-
-
 
 bool BattleLogic::BattleFinished(Player &player)
 {
@@ -175,7 +171,6 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     state.isPlayerTurn = true;
 
     events.push_back({EventType::PlayerTurn});
-
 }
 
 void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
@@ -216,4 +211,13 @@ int getRandomInt(int min, int max)
     static std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dist(min, max);
     return dist(gen);
+}
+
+std::vector<PileType> BattleLogic::getCardsPile()
+{
+    std::vector<PileType> v;
+    for(auto it: state.handCards){
+        v.push_back(it.name);
+    }
+    return v;
 }

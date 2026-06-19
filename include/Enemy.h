@@ -67,29 +67,56 @@ class Enemy {
 inline std::vector<Plan> MakePlans(std::initializer_list<Plan> list) {
     return std::vector<Plan>(list);
 }
-const std::vector<enemy_data> g_prefabEnemies = {
+// 使用 unordered_map 存储预制敌人数据，键为 EnemyType
+const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
     // 示例1：列车员
-   enemy_data {
-        EnemyType::Train_attendant,
-        "列车员",
-        40,
-        std::vector<Plan>({
-            {6, PlanType::attack},   // 攻击
-            {4, PlanType::defend},   // 防御
-            {8, PlanType::attack},  
-            {4, PlanType::defend},
-            {10, PlanType::attack},
-            {4, PlanType::defend},
-            {12, PlanType::attack},
-            {4, PlanType::defend},
-            {14, PlanType::attack},
-            {4, PlanType::defend},
-        })
+    {EnemyType::Train_attendant, 
+     enemy_data{
+         EnemyType::Train_attendant,
+         "列车员",
+         40,
+         std::vector<Plan>({
+             {6, PlanType::attack},
+             {4, PlanType::defend},
+             {8, PlanType::attack},
+             {4, PlanType::defend},
+             {10, PlanType::attack},
+             {4, PlanType::defend},
+             {12, PlanType::attack},
+             {4, PlanType::defend},
+             {14, PlanType::attack},
+             {4, PlanType::defend},
+         })
+     }
     },
     
     // 示例2：光之怪物
-   
+    {EnemyType::LightMonster,
+     enemy_data{
+         EnemyType::LightMonster,
+         "光之怪物",
+         50,
+         std::vector<Plan>({
+             {5, PlanType::attack},
+             {3, PlanType::defend},
+             {7, PlanType::attack},
+             {3, PlanType::defend},
+         })
+     }
+    },
+    
     // 示例3：票务怪物
-   
-   
+    {EnemyType::TicketMonster,
+     enemy_data{
+         EnemyType::TicketMonster,
+         "票务怪物",
+         30,
+         std::vector<Plan>({
+             {4, PlanType::attack},
+             {5, PlanType::defend},
+             {6, PlanType::attack},
+             {5, PlanType::defend},
+         })
+     }
+    },
 };

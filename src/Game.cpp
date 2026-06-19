@@ -279,15 +279,14 @@ void Game::HandleEvents(const GameEvent& event){
             {
                 auto panel = uiMgr.Get<CardsInHandPanel>();
                 if(panel->HasSelectedCard()){
-                    if(btLogic.state.isPlayerTurn) break;
+                    if(!btLogic.state.isPlayerTurn) break;
                     // 出牌
                     auto [type, idx] = panel->GetSelectedCard();
                     std::cout<<"event: click Enemy & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
                     btLogic.waitPlayerInput(idx,*sceneMgr.GetScene().GetEnemy());
-                    // 如果出牌 删除该牌
-                    cardsOnPlayer.erase(cardsOnPlayer.begin() + idx);
+                   
                     // 重新绘制
-                    panel->SetCards(cardsOnPlayer, 1);
+                    panel->SetCards(btLogic.getCardsPile(), 1);
                     panel->SetHasSelected(false);
                 }
             }
@@ -301,9 +300,8 @@ void Game::HandleEvents(const GameEvent& event){
                     auto [type, idx] = panel->GetSelectedCard();
                     std::cout<<"event: click Player & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
                     btLogic.waitPlayerInput(idx);
-                    // 如果出牌 删除该牌
                     // 重新绘制
-                    panel->SetCards(cardsOnPlayer, 50);
+                    panel->SetCards(btLogic.getCardsPile(), 50);
                     panel->SetHasSelected(false);
                 }
             }
@@ -343,17 +341,19 @@ void Game::HandleEvents(const GameEvent& event){
             playerFaceBeforeBattle = player.GetFacing();
             playerXBeforeBattle = player.GetPos().x;
             sceneMgr.LoadScene(SceneType::Battle, [this]{
-                uiMgr.Get<CardsInHandPanel>()->SetCards(cardsOnPlayer, 5, true);
+                uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getCardsPile(), 5, true);
                 uiMgr.Open(PanelType::CardsInHand);
                 player.SetFacing(1);
             });
-            btLogic.StartBattle({Enemy(g_prefabEnemies[0])},player.cards,player);
+            btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(),player.cards,player);
             std::cout<<"Event:beginBattle"<<std::endl;
             break;
         //玩家回合
         case EventType::PlayerTurn:
+            std::cout<<"Event: start play"<<std::endl;
             btLogic.PilePre();                // 抽牌
             btLogic.PlayerStatusSettlement(); // 玩家状态结算
+            break;
         // 结束玩家回合，开始敌人回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;

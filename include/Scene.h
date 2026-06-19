@@ -75,6 +75,7 @@ public:
     TextureType GetBgTextrue() const { return bgTex; }
     virtual const Enemy* GetEnemy() const{ return nullptr; }
     virtual Enemy* GetEnemy() { return nullptr; }
+    virtual std::vector<Enemy>* GetEnemyV() {return nullptr;}
 
     virtual void EnemyDrop() { return; }
 
@@ -113,9 +114,24 @@ class GameScene : public Scene {
 private:
     int idx;
     Enemy enemy;
+    std::vector<Enemy> ev;
+    // 辅助函数：根据 EnemyType 从预制表中创建 Enemy
+    void InitEnemy(Enemy e) {
+        auto it = g_prefabEnemies.find(e.ty);
+        if (it != g_prefabEnemies.end()) {
+            const enemy_data& data = it->second;
+            e.cur_health = data.maxHP;  // 设置当前血量
+            e.sum_health = data.maxHP;
+            e.allPlans = data.plans;
+            return;
+        }
+        // 如果没有找到，返回默认敌人或抛出异常
+        throw std::runtime_error("Enemy type not found in prefab!");
+    }
 public:
     GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i), 
      enemy(enemyInScene[idx].first, enemyInScene[idx].second) { 
+        InitEnemy(enemy);
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
         interactables.clear();
@@ -124,10 +140,12 @@ public:
         }
         interactables.push_back({TextureType::BackpackIcon, {1695.f, 25.f}, {179, 190}, {0.45f, 0.45f}, EventType::OpenBackpackIcon});
         interactables.push_back({TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings});
+        ev.push_back(enemy);
     }
     
     const Enemy* GetEnemy() const override { return &enemy; }
     Enemy* GetEnemy() override { return &enemy; }
+    std::vector<Enemy>* GetEnemyV() override {return &ev;}
 
     void EnemyDrop() override {
         //enemy.dead = true;
@@ -200,6 +218,7 @@ public:
 class BattleScene : public Scene {
 private:
     Enemy* enemy = nullptr;
+    std::vector<Enemy> ev;
 public:
     BattleScene(std::vector<GameEvent>& e) : Scene(e) { 
         type = SceneType::Battle; 
@@ -222,8 +241,12 @@ public:
             return;
         }
         enemy = e; 
+        ev.clear();
+        ev.push_back(*e);
     }
     const Enemy* GetEnemy() const override { return enemy; }
+    Enemy* GetEnemy() override { return enemy; }
+    std::vector<Enemy>* GetEnemyV() override {return &ev;}
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
         if(enemy->bound.contains(mousePos)){
