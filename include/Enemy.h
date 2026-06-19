@@ -1,5 +1,6 @@
 #pragma once
 #include "Constants.h"
+#include "BuffAndDebuff"
 #include <string>
 
 // 敌人类型对应{敌人位置，掉落物，绘制血量偏移}
@@ -37,7 +38,7 @@ class Enemy {
         int defend_num = 0;
         bool dead; // 是否死亡
         std::vector<Plan> allPlans; // 回合计划（0-攻击，1-防御，2-增益，3-减益）
-        std::vector<StatusType> StatusEffect; // 状态效果（如中毒、虚弱等）
+        Buff_Debuff_Vec buff_debuffs; // 状态效果（如中毒、虚弱等）
         std::vector<ItemType> droppedItems; // 被击败后掉落的物品
 
     public:

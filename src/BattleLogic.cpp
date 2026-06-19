@@ -1,19 +1,5 @@
 #include "BattleLogic.h"
 
-void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vector<Card> &Cards, Player &player)
-{
-    StartBattle(Enemies, Cards, player);
-    std::vector<EventType> Btevents;
-
-    // 更新
-    // 渲染
-
-    // 玩家选择战利品后进行卡组，药水，钥匙等更新
-    // updatecards();
-    // updatepotion;
-    //.....
-}
-
 void BattleLogic::PilePre()
 {
     state.TurnCount += 1;

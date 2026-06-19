@@ -4,17 +4,16 @@
 #include "Card.h"
 #include "Player.h"
 #include "Input.h"
+#include "BuffAndDebuff"
 #include <random>
 #include<iostream>
 int getRandomInt(int min, int max); //生成随机数
 struct BattleState {
-    //输赢状态
-    bool isWin = false;
-    bool isLose = false;
-
+   
     int playerHP, maxHP;    // 玩家血量
     //std::vector<Potion> potions; //药水
     //std::vector<Relic> relics;    //遗物
+
 
     int cardSum; //卡牌总数
 
@@ -35,6 +34,8 @@ struct BattleState {
 
     //战斗相关buff/debuff/能力
     int defend_num = 0;
+    Buff_Debuff_Vec buff_debuffs;
+
 
 
     ////////// 临时交互状态
@@ -56,7 +57,6 @@ private:
 public:
     BattleState state;
     std::vector<GameEvent> events;
-    void BattleLogicManager(const std::vector<Enemy>& initialEnemies, std::vector<Card>& Cards,  Player& player);
     void HandleInput(const sf::Vector2f& mousePos);
 
     //场景-》战斗数据传递
