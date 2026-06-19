@@ -9,12 +9,7 @@ inline const std::unordered_map<EnemyType, std::tuple<sf::Vector2f, std::vector<
     { EnemyType::TicketMonster, {{ 176, 294 },{}, -30} }
 };
 
-enum class PlanType{
-    attack,
-    defend,
-    buff,
-    debuff,
-};
+
 struct Plan{
     int num_of_att_ot_def;
     PlanType plantype;

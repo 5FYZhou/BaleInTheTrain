@@ -182,6 +182,23 @@ void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const T
     window.draw(sprite);
 }
 
+void Renderer::DrawEnemyPlan(sf::RenderWindow& window, PlanType type, int num, sf::Vector2f pos){
+    sf::Sprite sp(rm.getTexture(planTexMap.at(type)));
+    sp.setPosition(pos);
+    sp.setScale({0.7f, 0.7f});
+    window.draw(sp);
+
+    pos.x += 60;
+    pos.y += 10;
+    sf::Text t(*font);
+    t.setString(std::to_string(num));
+    t.setPosition(pos);
+    t.setFillColor(sf::Color::White);
+    t.setCharacterSize(30);
+    window.draw(t);
+}
+
+
 void Renderer::DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr){
     if (!textHintMgr.IsActive()) {
         return;
@@ -243,9 +260,7 @@ void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileT
     }
 }
 
-void Renderer::DrawCenteredText(sf::RenderWindow& window,
-                                const std::string& text,
-                                float alpha)
+void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha)
 {
     sf::Text t(*font);
     t.setString(text);
@@ -268,3 +283,4 @@ void Renderer::DrawCenteredText(sf::RenderWindow& window,
 
     window.draw(t);
 }
+

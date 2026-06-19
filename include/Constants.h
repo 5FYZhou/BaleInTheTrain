@@ -35,6 +35,9 @@ enum class TextureType {
     LightMonster, //车灯怪
     TicketMonster, //车票怪
     TyreMosnter, //轮胎怪
+
+    PlanAttack, // 敌人攻击意图
+    PlanDefend
 };
 
 // Sound/audio types for resource management.
@@ -107,10 +110,17 @@ enum class StatusType{
 };
 
 enum class EnemyType{
-   Train_attendant, //列车员
+    Train_attendant, //列车员
     LightMonster, //车灯怪
     TicketMonster, //车票怪
     TyreMosnter, //轮胎怪
+};
+
+enum class PlanType{
+    attack,
+    defend,
+    buff,
+    debuff,
 };
 
 enum class PileType{
@@ -154,6 +164,14 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
     { EnemyType::LightMonster, TextureType::LightMonster },
     { EnemyType::TicketMonster, TextureType::TicketMonster },
     { EnemyType::TyreMosnter, TextureType::TyreMosnter }
+};
+
+// 敌人意图映射纹理类型
+inline const std::unordered_map<PlanType, TextureType> planTexMap = {
+    { PlanType::attack, TextureType::PlanAttack },
+    { PlanType::defend, TextureType::PlanDefend },
+    { PlanType::buff, TextureType::PlanDefend },
+    { PlanType::debuff, TextureType::PlanDefend }
 };
 
 // 场景物品类型映射卡牌类型

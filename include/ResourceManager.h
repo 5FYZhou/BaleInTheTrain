@@ -163,7 +163,12 @@ public:
             {TextureType::Train_attendant, {"/乘务员1.png", "/乘务员2.png"}},
             {TextureType::LightMonster, {"/车灯1.png", "/车灯2.png"}},
             {TextureType::TicketMonster, {"/车票1.png", "/车票2.png"}},
-            {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}}
+            {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}},
+
+            //敌人意图
+            {TextureType::PlanAttack, {"/敌方攻击.png"}},
+            {TextureType::PlanDefend, {"/敌方防御.png"}}
+            
         };
 
         soundEffectPath = {
