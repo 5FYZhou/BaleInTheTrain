@@ -116,13 +116,14 @@ private:
     Enemy enemy;
     std::vector<Enemy> ev;
     // 辅助函数：根据 EnemyType 从预制表中创建 Enemy
-    void InitEnemy(Enemy e) {
+    void InitEnemy(Enemy& e) {
         auto it = g_prefabEnemies.find(e.ty);
         if (it != g_prefabEnemies.end()) {
             const enemy_data& data = it->second;
             e.cur_health = data.maxHP;  // 设置当前血量
             e.sum_health = data.maxHP;
             e.allPlans = data.plans;
+    std::cout<<"GameScene"<<e.allPlans.size()<<std::endl;
             return;
         }
         // 如果没有找到，返回默认敌人或抛出异常

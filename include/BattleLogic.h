@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Input.h"
 #include <random>
+#include<iostream>
 int getRandomInt(int min, int max); //生成随机数
 struct BattleState {
     //输赢状态

@@ -249,6 +249,8 @@ public:
             return;
         }
         hasSelectedCard = f; 
+        selectedIndex = -1;
+        hoveredIndex = -1; 
     }
 
     bool HandleMousePressed(const sf::Vector2f& mousePos) override;

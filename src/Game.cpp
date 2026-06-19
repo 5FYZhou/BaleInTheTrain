@@ -340,23 +340,34 @@ void Game::HandleEvents(const GameEvent& event){
         case EventType::BeginBattle:
             playerFaceBeforeBattle = player.GetFacing();
             playerXBeforeBattle = player.GetPos().x;
+            btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(),player.cards,player);
             sceneMgr.LoadScene(SceneType::Battle, [this]{
                 uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getCardsPile(), 5, true);
                 uiMgr.Open(PanelType::CardsInHand);
                 player.SetFacing(1);
             });
-            btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(),player.cards,player);
             std::cout<<"Event:beginBattle"<<std::endl;
+            std::cout<<player.cards.size()<<
+            "Blgic"<<btLogic.state.handCards.size()<<" "<<
+                btLogic.state.dealPile.size()<<" "<<
+                btLogic.state.discardPile.size()<<" "<<std::endl;
+            
             break;
         //玩家回合
         case EventType::PlayerTurn:
             std::cout<<"Event: start play"<<std::endl;
             btLogic.PilePre();                // 抽牌
+            std::cout<<player.cards.size()<<
+            "PPBlgic"<<btLogic.state.handCards.size()<<" "<<
+                btLogic.state.dealPile.size()<<" "<<
+                btLogic.state.discardPile.size()<<" "<<std::endl;
             btLogic.PlayerStatusSettlement(); // 玩家状态结算
             break;
         // 结束玩家回合，开始敌人回合
         case EventType::EndTurn:
             std::cout<<"Event: end turn"<<std::endl;
+            btLogic.state.isPlayerTurn = false;
+            if(!btLogic.state.isPlayerTurn) std::cout<<"!player"<<std::endl;
             btLogic.turnsOver();
             btLogic.EnemyTurn();
 

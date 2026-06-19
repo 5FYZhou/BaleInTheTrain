@@ -461,6 +461,7 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
 }
 
 void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
+    std::cout<<"CardsInHandPanel:setCards"<<c.size()<<std::endl;
     points = point;
     hoveredIndex = -1;
     selectedIndex = -1;
