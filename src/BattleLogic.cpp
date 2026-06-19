@@ -55,10 +55,6 @@ void BattleLogic::PilePre()
             state.discardPile.erase(state.discardPile.begin() + i);
         }
     }
-    std::cout << "Blgic:"<<state.handCards.size()<<" "<<
-               state.dealPile.size()<<" "<<
-                state.discardPile.size()<<" "<<std::endl;
-    std::cout << "state.dealNums:" << state.dealNums << std::endl;
     // 从抽牌堆中抽牌,恢复行动点
     for (int i = 0; i < state.dealNums; ++i)
     {
@@ -67,7 +63,6 @@ void BattleLogic::PilePre()
         state.handCards.push_back(state.dealPile[rd]);
         state.dealPile.erase(state.dealPile.begin() + rd);
     }
-    std::cout << "BattleLogic::PilePre end" << std::endl;
 }
 
 void BattleLogic::turnsOver()
@@ -191,7 +186,6 @@ void BattleLogic::EnemyTurn(Player &player) // 敌人行动，然后切回玩家
     // 敌人行动逻辑
     for (auto &enemy : state.enemies)
     {
-        std::cout<<"BattleLogic::EnemyTurn,plans:"<<enemy.allPlans.size()<<std::endl;
         PlanType ty = enemy.allPlans[state.TurnCount - 1].plantype;
         int data = enemy.allPlans[state.TurnCount - 1].num_of_att_ot_def;
         switch (ty)

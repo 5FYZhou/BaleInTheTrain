@@ -123,7 +123,6 @@ private:
             e.cur_health = data.maxHP;  // 设置当前血量
             e.sum_health = data.maxHP;
             e.allPlans = data.plans;
-    std::cout<<"GameScene"<<e.allPlans.size()<<std::endl;
             return;
         }
         // 如果没有找到，返回默认敌人或抛出异常

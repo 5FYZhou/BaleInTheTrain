@@ -376,10 +376,11 @@ void Game::HandleEvents(const GameEvent &event)
         playerXBeforeBattle = player.GetPos().x;
         btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(), player.cards, player);
         sceneMgr.LoadScene(SceneType::Battle, [this]
-                           {
-                uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
-                uiMgr.Open(PanelType::CardsInHand);
-                player.SetFacing(1); });
+        {
+            uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
+            uiMgr.Open(PanelType::CardsInHand);
+            player.SetFacing(1); 
+        });
         std::cout << "Event:beginBattle" << std::endl;
         std::cout << player.cards.size() << "Blgic" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
 
@@ -410,12 +411,13 @@ void Game::HandleEvents(const GameEvent &event)
         if (event.val == 0)
         {
             sceneMgr.LoadGameBeforeBattle([this]
-                                          {
-                    uiMgr.Close(PanelType::CardsInHand);
-                    player.SetFacing(playerFaceBeforeBattle);
-                    player.SetFeet({playerXBeforeBattle, PlayerGroundY});
-                    player.ResetToStand();
-                    player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP); });
+            {
+                uiMgr.Close(PanelType::CardsInHand);
+                player.SetFacing(playerFaceBeforeBattle);
+                player.SetFeet({playerXBeforeBattle, PlayerGroundY});
+                player.ResetToStand();
+                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
+            });
         }
         // 失败
         else if (event.val == 1)
