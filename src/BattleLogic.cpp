@@ -101,7 +101,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     // 删除卡牌
 }
 
-bool BattleLogic::BattleFinished(std::vector<Enemy> eys)
+bool BattleLogic::BattleFinished(std::vector<Enemy*> eys)
 {
     // 检测玩家和敌人血量
     if (state.playerHP <= 0)
@@ -111,13 +111,13 @@ bool BattleLogic::BattleFinished(std::vector<Enemy> eys)
     }
     for (auto &it : eys)
     {
-        if (it.cur_health > 0)
+        if (it->cur_health > 0)
         {
-            std::cout << "no die" << it.cur_health<< std::endl;
+            std::cout << "no die" << it->cur_health<< std::endl;
             return false;
         }
         else{
-            it.dead = true;
+            it->dead = true;
         }
     }
     std::cout << "die" << std::endl;

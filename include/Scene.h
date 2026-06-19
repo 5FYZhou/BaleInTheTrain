@@ -148,23 +148,57 @@ public:
     std::vector<Enemy>* GetEnemyV() override {return &ev;}
 
     void EnemyDrop() override {
-        //enemy.dead = true;
         if(!enemy.dead) return;
+
+        std::cout << "EnemyDrop " << enemy.droppedItems.size() << std::endl;
+
         static std::random_device rd;
         static std::mt19937 gen(rd());
 
-        constexpr float DROP_RADIUS = 50.f;
+        constexpr float DROP_RADIUS = 120.f;      // 原来50太小
+        constexpr float MIN_DISTANCE = 100.f;     // Star宽90，高109
 
-        std::uniform_real_distribution<float> angleDist(0.f, 2.f * 3.1415926f);
-        std::uniform_real_distribution<float> radiusDist(0.f, DROP_RADIUS);
+        std::uniform_real_distribution<float> angleDist(
+            0.f, 2.f * 3.1415926f
+        );
+        std::uniform_real_distribution<float> radiusDist(
+            0.f, DROP_RADIUS
+        );
+
+        std::vector<sf::Vector2f> usedPositions;
 
         for(auto& item : enemy.droppedItems){
-            float angle = angleDist(gen);
-            float radius = radiusDist(gen);
+            sf::Vector2f dropPos;
 
-            sf::Vector2f dropPos = enemy.position;
-            dropPos.x += std::cos(angle) * radius;
-            dropPos.y += std::sin(angle) * radius;
+            bool found = false;
+
+            for(int attempt = 0; attempt < 50 && !found; ++attempt){
+                float angle = angleDist(gen);
+                float radius = radiusDist(gen);
+
+                dropPos = enemy.position;
+                dropPos.x += std::cos(angle) * radius;
+                dropPos.y += std::sin(angle) * radius;
+
+                bool overlap = false;
+
+                for(const auto& pos : usedPositions){
+                    float dx = pos.x - dropPos.x;
+                    float dy = pos.y - dropPos.y;
+
+                    float distSq = dx * dx + dy * dy;
+
+                    if(distSq < MIN_DISTANCE * MIN_DISTANCE){
+                        overlap = true;
+                        break;
+                    }
+                }
+
+                if(!overlap){
+                    found = true;
+                    usedPositions.push_back(dropPos);
+                }
+            }
 
             interactables.push_back({
                 TextureType::Star,

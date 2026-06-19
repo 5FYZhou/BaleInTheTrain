@@ -52,7 +52,7 @@ public:
     void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
         , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
 
-    void DrawEnemyPlan(sf::RenderWindow& window, PlanType type, int num, sf::Vector2f pos);
+    void DrawItemWithNum(sf::RenderWindow& window, TextureType type, int num, sf::Vector2f pos);
     
     void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);

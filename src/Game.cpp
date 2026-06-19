@@ -322,7 +322,7 @@ void Game::HandleEvents(const GameEvent &event)
                 panel->SetHasSelected(false);
 
                 //检查敌人是否死亡
-                btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
+                btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
             }
         }
         break;
@@ -341,7 +341,7 @@ void Game::HandleEvents(const GameEvent &event)
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
                 //检查敌人是否死亡
-                btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
+                btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
             }
         }
         break;
@@ -407,7 +407,7 @@ void Game::HandleEvents(const GameEvent &event)
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
         btLogic.EnemyTurn(player);
-        btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
+        btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
         break;
     // 结束对局
     case EventType::EndBattle:
@@ -467,6 +467,7 @@ void Game::Draw()
         }
     }
 
+    // 敌人意图
     if (curSceneType == SceneType::Battle){
         const Enemy* e = sceneMgr.GetScene().GetEnemy();
         int num = e->allPlans[btLogic.state.TurnCount - 1].num_of_att_ot_def;
@@ -474,7 +475,16 @@ void Game::Draw()
         sf::Vector2f pos = e->position;
         pos.x += 40;
         pos.y -= 100;
-        renderer.DrawEnemyPlan(window, type, num, pos);
+        renderer.DrawItemWithNum(window, planTexMap.at(type), num, pos);
+
+        // 玩家防御
+        if(btLogic.state.defend_num > 0){
+            int num = btLogic.state.defend_num;
+            sf::Vector2f pos = player.feet;
+            pos.x -= 30;
+            pos.y -= 450;
+            renderer.DrawItemWithNum(window, TextureType::PlayerDefend, num, pos);
+        }
     }
 
     // UI面板

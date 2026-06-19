@@ -1,6 +1,5 @@
 #pragma once
 #include "Constants.h"
-#include "BattleUI.h"
 #include "Enemy.h"
 #include "Card.h"
 #include "Player.h"
@@ -62,7 +61,7 @@ public:
 
     //场景-》战斗数据传递
     void StartBattle(const std::vector<Enemy>& initialEnemies, const std::vector<Card>& Cards,  Player& player);
-    bool BattleFinished(std::vector<Enemy> eys);//战斗结束结算画面，战斗-》场景数据传递
+    bool BattleFinished(std::vector<Enemy*> eys);//战斗结束结算画面，战斗-》场景数据传递
 
     void PilePre();
     void PlayerStatusSettlement();//玩家状态结算

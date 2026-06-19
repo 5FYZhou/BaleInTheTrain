@@ -182,8 +182,8 @@ void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const T
     window.draw(sprite);
 }
 
-void Renderer::DrawEnemyPlan(sf::RenderWindow& window, PlanType type, int num, sf::Vector2f pos){
-    sf::Sprite sp(rm.getTexture(planTexMap.at(type)));
+void Renderer::DrawItemWithNum(sf::RenderWindow& window, TextureType type, int num, sf::Vector2f pos){
+    sf::Sprite sp(rm.getTexture(type));
     sp.setPosition(pos);
     sp.setScale({0.7f, 0.7f});
     window.draw(sp);
