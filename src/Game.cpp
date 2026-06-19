@@ -320,6 +320,9 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
+
+                //检查敌人是否死亡
+                btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
             }
         }
         break;
@@ -337,6 +340,8 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
+                //检查敌人是否死亡
+                btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
             }
         }
         break;
@@ -402,7 +407,7 @@ void Game::HandleEvents(const GameEvent &event)
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
         btLogic.EnemyTurn(player);
-
+        btLogic.BattleFinished({*sceneMgr.GetScene().GetEnemy()});
         break;
     // 结束对局
     case EventType::EndBattle:

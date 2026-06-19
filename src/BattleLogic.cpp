@@ -5,42 +5,13 @@ void BattleLogic::BattleLogicManager(const std::vector<Enemy> &Enemies, std::vec
     StartBattle(Enemies, Cards, player);
     std::vector<EventType> Btevents;
 
-    // 检测玩家和敌人血量
-    if (state.playerHP == 0)
-    {
-        Btevents.push_back(EventType::EndBattle);
-    }
-    bool allEnemiesIsDie = true;
-    for (auto it : state.enemies)
-    {
-        if (it.cur_health > 0)
-            allEnemiesIsDie = false;
-    }
-    if (allEnemiesIsDie == true)
-    {
-        Btevents.push_back(EventType::EndBattle);
-    }
-
     // 更新
-    BattleUpdate();
     // 渲染
 
     // 玩家选择战利品后进行卡组，药水，钥匙等更新
     // updatecards();
     // updatepotion;
     //.....
-}
-
-void BattleLogic::BattleUpdate()
-{
-
-    // 玩家回合部分逻辑
-    if (state.isPlayerTurn)
-    {
-    }
-    else
-    { // 敌人回合
-    }
 }
 
 void BattleLogic::PilePre()
@@ -59,7 +30,7 @@ void BattleLogic::PilePre()
     for (int i = 0; i < state.dealNums; ++i)
     {
         state.actionPoints = 3;
-        int rd = getRandomInt(0, state.dealPile.size()-1);
+        int rd = getRandomInt(0, state.dealPile.size() - 1);
         state.handCards.push_back(state.dealPile[rd]);
         state.dealPile.erase(state.dealPile.begin() + rd);
     }
@@ -69,7 +40,7 @@ void BattleLogic::turnsOver()
 {
     state.isPlayerTurn = false;
     // 手牌丢到弃牌堆中
-    state.discardPile.insert(state.discardPile.end(),state.handCards.begin(),state.handCards.end());
+    state.discardPile.insert(state.discardPile.end(), state.handCards.begin(), state.handCards.end());
     state.handCards.clear();
 }
 
@@ -85,15 +56,16 @@ void BattleLogic::waitPlayerInput(int idx)
     switch (ty)
     {
     case PileType::Defend:
-        if(state.actionPoints<1){
-            std::cout <<"行动点不足" << std::endl;
-            break; 
+        if (state.actionPoints < 1)
+        {
+            std::cout << "行动点不足" << std::endl;
+            break;
         }
-        state.defend_num += 5;     
+        state.defend_num += 5;
         state.actionPoints--;
         state.discardPile.push_back(state.handCards[idx]);
         state.handCards.erase(state.handCards.begin() + idx);
-        
+
         break;
 
     default:
@@ -109,11 +81,14 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     switch (ty)
     {
     case PileType::Strike:
-        if(state.actionPoints<1){
-            std::cout <<"行动点不足" << std::endl;
-            break; 
+        if (state.actionPoints < 1)
+        {
+            std::cout << "行动点不足" << std::endl;
+            break;
         }
         enemy.cur_health -= 6;
+        if (enemy.cur_health < 0)
+            enemy.cur_health = 0;
         state.actionPoints--;
         state.discardPile.push_back(state.handCards[idx]);
         state.handCards.erase(state.handCards.begin() + idx);
@@ -126,23 +101,30 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     // 删除卡牌
 }
 
-bool BattleLogic::BattleFinished(Player &player)
+bool BattleLogic::BattleFinished(std::vector<Enemy> eys)
 {
-    if (state.isWin)
+    // 检测玩家和敌人血量
+    if (state.playerHP <= 0)
     {
-        // 显示选择战利品的界面
-
-        player.SetHP(state.playerHP, state.maxHP);
+        events.push_back({EventType::EndBattle, 1});
         return true;
     }
-    if (state.isLose)
+    for (auto &it : eys)
     {
-        // 显示战斗失败的界面
-
-        player.SetHP(state.playerHP, state.maxHP);
-        return true;
+        if (it.cur_health > 0)
+        {
+            std::cout << "no die" << it.cur_health<< std::endl;
+            return false;
+        }
+        else{
+            it.dead = true;
+        }
     }
-    return false;
+    std::cout << "die" << std::endl;
+    
+    events.push_back({EventType::EndBattle, 0});
+
+    return true;
 }
 
 void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
@@ -171,7 +153,7 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     {
         state.dealPile.push_back(it);
     }
-  
+
     state.cardIsUsed = false;
 
     // 初始化回合
@@ -195,12 +177,14 @@ void BattleLogic::EnemyTurn(Player &player) // 敌人行动，然后切回玩家
             {
                 state.playerHP -= (data - state.defend_num);
                 state.defend_num = 0;
-                player.currentHP = state.playerHP;
             }
             else
             {
                 state.defend_num -= data;
             }
+            if (state.playerHP < 0)
+                state.playerHP = 0;
+            player.currentHP = state.playerHP;
             break;
 
         case PlanType::defend:
@@ -208,7 +192,6 @@ void BattleLogic::EnemyTurn(Player &player) // 敌人行动，然后切回玩家
         default:
             break;
         }
-
     }
 
     // 切回玩家回合A
@@ -227,7 +210,8 @@ int getRandomInt(int min, int max)
 std::vector<PileType> BattleLogic::getHandCardsPile()
 {
     std::vector<PileType> v;
-    for(auto it: state.handCards){
+    for (auto it : state.handCards)
+    {
         v.push_back(it.name);
     }
     return v;
@@ -235,7 +219,8 @@ std::vector<PileType> BattleLogic::getHandCardsPile()
 std::vector<PileType> BattleLogic::getdisCardPile()
 {
     std::vector<PileType> v;
-    for(auto it: state.discardPile){
+    for (auto it : state.discardPile)
+    {
         v.push_back(it.name);
     }
     return v;
@@ -243,7 +228,8 @@ std::vector<PileType> BattleLogic::getdisCardPile()
 std::vector<PileType> BattleLogic::getdealCardsPile()
 {
     std::vector<PileType> v;
-    for(auto it: state.dealPile){
+    for (auto it : state.dealPile)
+    {
         v.push_back(it.name);
     }
     return v;
