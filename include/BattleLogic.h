@@ -62,8 +62,7 @@ public:
 
     //场景-》战斗数据传递
     void StartBattle(const std::vector<Enemy>& initialEnemies, const std::vector<Card>& Cards,  Player& player);
-    void BattleUpdate();//抽手牌，恢复行动点
-    bool BattleFinished(Player &player);//战斗结束结算画面，战斗-》场景数据传递
+    bool BattleFinished(std::vector<Enemy> eys);//战斗结束结算画面，战斗-》场景数据传递
 
     void PilePre();
     void PlayerStatusSettlement();//玩家状态结算
