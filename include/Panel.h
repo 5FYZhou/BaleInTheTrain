@@ -14,7 +14,7 @@ struct CardView {
     PileType cardType;
     TextureType texType;
 
-    sf::Vector2f basePosition;
+    sf::Vector2f basePosition = {-100, -100};
     float rotation = 0.f;
 
     CardAnimState state = CardAnimState::Idle;

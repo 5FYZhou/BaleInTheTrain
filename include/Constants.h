@@ -37,7 +37,10 @@ enum class TextureType {
     TyreMosnter, //轮胎怪
 
     PlanAttack, // 敌人攻击意图
-    PlanDefend
+    PlanDefend,
+
+    PlayerAttack,
+    PlayerDefend
 };
 
 // Sound/audio types for resource management.

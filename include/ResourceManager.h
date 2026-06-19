@@ -167,8 +167,11 @@ public:
 
             //敌人意图
             {TextureType::PlanAttack, {"/敌方攻击.png"}},
-            {TextureType::PlanDefend, {"/敌方防御.png"}}
+            {TextureType::PlanDefend, {"/敌方防御.png"}},
             
+            //玩家效果
+            {TextureType::PlayerAttack, {"/我方攻击.png"}},
+            {TextureType::PlayerDefend, {"/我方防御.png"}}
         };
 
         soundEffectPath = {

@@ -464,8 +464,8 @@ void Game::Draw()
 
     if (curSceneType == SceneType::Battle){
         const Enemy* e = sceneMgr.GetScene().GetEnemy();
-        int num = e->allPlans[btLogic.state.TurnCount].num_of_att_ot_def;
-        PlanType type = e->allPlans[btLogic.state.TurnCount].plantype;
+        int num = e->allPlans[btLogic.state.TurnCount - 1].num_of_att_ot_def;
+        PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;
         pos.x += 40;
         pos.y -= 100;
