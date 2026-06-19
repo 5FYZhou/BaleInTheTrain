@@ -74,12 +74,8 @@ void BattleLogic::turnsOver()
 {
     state.isPlayerTurn = false;
     // 手牌丢到弃牌堆中
-    for (int i = 0; i < state.handCards.size(); ++i)
-    {
-        state.discardPile.push_back(state.handCards[i]);
-        state.discardPileCount++;
-        state.handCards.erase(state.handCards.begin() + i);
-    }
+    state.discardPile.insert(state.discardPile.end(),state.handCards.begin(),state.handCards.end());
+    state.handCards.clear();
 }
 
 void BattleLogic::PlayerStatusSettlement() // 玩家状态结算
@@ -94,8 +90,15 @@ void BattleLogic::waitPlayerInput(int idx)
     switch (ty)
     {
     case PileType::Defend:
-        state.defend_num += 5;
+        if(state.actionPoints<1){
+            std::cout <<"行动点不足" << std::endl;
+            break; 
+        }
+        state.defend_num += 5;     
+        state.actionPoints--;
+        state.discardPile.push_back(state.handCards[idx]);
         state.handCards.erase(state.handCards.begin() + idx);
+        
         break;
 
     default:
@@ -111,7 +114,13 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     switch (ty)
     {
     case PileType::Strike:
+        if(state.actionPoints<1){
+            std::cout <<"行动点不足" << std::endl;
+            break; 
+        }
         enemy.cur_health -= 6;
+        state.actionPoints--;
+        state.discardPile.push_back(state.handCards[idx]);
         state.handCards.erase(state.handCards.begin() + idx);
         break;
 
@@ -167,8 +176,7 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     {
         state.dealPile.push_back(it);
     }
-    state.dealPileCount = Cards.size();
-    state.discardPileCount = 0;
+  
     state.cardIsUsed = false;
 
     // 初始化回合
@@ -219,10 +227,26 @@ int getRandomInt(int min, int max)
     return dist(gen);
 }
 
-std::vector<PileType> BattleLogic::getCardsPile()
+std::vector<PileType> BattleLogic::getHandCardsPile()
 {
     std::vector<PileType> v;
     for(auto it: state.handCards){
+        v.push_back(it.name);
+    }
+    return v;
+}
+std::vector<PileType> BattleLogic::getdisCardPile()
+{
+    std::vector<PileType> v;
+    for(auto it: state.discardPile){
+        v.push_back(it.name);
+    }
+    return v;
+}
+std::vector<PileType> BattleLogic::getdealCardsPile()
+{
+    std::vector<PileType> v;
+    for(auto it: state.dealPile){
         v.push_back(it.name);
     }
     return v;

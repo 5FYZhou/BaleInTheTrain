@@ -23,9 +23,9 @@ struct BattleState {
 
     int actionPoints, maxActionPoints;  //行动点
 
-    int dealPileCount; //当前抽牌堆数
+    //int dealPileCount; //当前抽牌堆数
     int dealNums = 5; //每回合开始抽牌数, 默认是5
-    int discardPileCount; //当前弃牌堆数
+    //int discardPileCount; //当前弃牌堆数
     std::vector<Card> dealPile; //抽牌堆
     std::vector<Card> handCards;    //手牌
     std::vector<Card> discardPile;  //弃牌堆
@@ -71,7 +71,9 @@ public:
     void waitPlayerInput(int idx, Enemy& enemy);
     void turnsOver();//手牌-》弃牌堆
     void EnemyTurn();       // 敌人行动，然后切回玩家
-    std::vector<PileType> getCardsPile();
+    std::vector<PileType> getHandCardsPile();
+    std::vector<PileType> getdisCardPile();
+    std::vector<PileType> getdealCardsPile();
 
 
     
