@@ -186,12 +186,12 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
     events.push_back({EventType::PlayerTurn});
 }
 
-void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
+void BattleLogic::EnemyTurn(Player &player) // 敌人行动，然后切回玩家
 {
     // 敌人行动逻辑
     for (auto &enemy : state.enemies)
     {
-        std::cout<<"BattleLogic::EnemyTurn"<<enemy.allPlans.size()<<std::endl;
+        std::cout<<"BattleLogic::EnemyTurn,plans:"<<enemy.allPlans.size()<<std::endl;
         PlanType ty = enemy.allPlans[state.TurnCount - 1].plantype;
         int data = enemy.allPlans[state.TurnCount - 1].num_of_att_ot_def;
         switch (ty)
@@ -201,6 +201,7 @@ void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
             {
                 state.playerHP -= (data - state.defend_num);
                 state.defend_num = 0;
+                player.currentHP = state.playerHP;
             }
             else
             {
@@ -213,10 +214,12 @@ void BattleLogic::EnemyTurn() // 敌人行动，然后切回玩家
         default:
             break;
         }
+
     }
 
     // 切回玩家回合A
     state.isPlayerTurn = true;
+    events.push_back({EventType::PlayerTurn});
 }
 
 int getRandomInt(int min, int max)
