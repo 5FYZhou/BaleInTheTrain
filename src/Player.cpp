@@ -27,6 +27,12 @@ void Player::InitCards(){
     }
 }
 
+void Player::AddCards(PileType p){
+    int idx = cards.size();
+    // 暂定全1
+    cards.push_back({idx, p, 1});
+}
+
 void Player::Move(int direction, float dt, bool canTranslate) {
     if(direction == 0){
         ResetToStand();

@@ -37,6 +37,8 @@ public:
 
     void Init(int fc);
     void InitCards();
+    void AddCards(PileType p);
+
     // Getters
     sf::Vector2f GetFeet() const { return feet; }
     sf::Vector2f GetPos() const { return sf::Vector2f(feet.x, feet.y - height); }
@@ -48,6 +50,13 @@ public:
     int GetCurrentHP() const { return currentHP; }
     int GetMaxHP() const { return maxHP; }
     float GetNextX(int dir, float dt) const { return feet.x + speed * dir * dt;; }
+    std::vector<PileType> GetPileCards() const {
+        std::vector<PileType> pv;
+        for(const auto& c : cards){
+            pv.push_back(c.name);
+        }
+        return pv;
+    }
 
     // Setters
     void SetFeet(sf::Vector2f newFeet) { feet = newFeet; }

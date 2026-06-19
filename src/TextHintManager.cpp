@@ -6,15 +6,15 @@
 namespace {
 std::vector<std::string> DefaultIntroDialog() {
     return {
-        "Bale:\n...Where am I? After that impact, the whole carriage went strangely quiet.",
-        "Bale:\nWhy is nobody here? The train has stopped. I should try opening the door.",
-        "Bale:\nThe door is locked. To leave, I need to find a key or enough fragments to make one.",
-        "Bale:\nThere is a backpack here. It has five Strike 6 cards and five Defend 5 cards inside.",
-        "Bale:\nThese cards may help in a fight. I will keep them and check the next carriage."
+        "Bale:\n……这是哪？刚才那阵撞击之后，整节车厢都安静得不正常。",
+        "Bale:\n怎么没有人？大家都去哪里了？车子停下来了，试试打开门。",
+        "Bale:\n门被锁住了。想离开这里，必须找到钥匙，或者能拼成钥匙的碎片。",
+        "Bale:\n这里有个背包。里面放着5张“打击6点”和5张“防御5点”的卡牌。",
+        "Bale:\n这些牌也许能在战斗里派上用场。先收好。接下来，去别的车厢看看。"
     };
 }
 }
-const std::string TextHintManager::DOOR_HINT_TEXT = "A door with three locks";
+const std::string TextHintManager::DOOR_HINT_TEXT = "一扇有三把锁的门";
 
 TextHintManager::TextHintManager()
     : dialogTexts(DefaultIntroDialog())

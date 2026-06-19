@@ -40,7 +40,6 @@ private:
     BattleLogic btLogic;
     
     Player player;
-    std::vector<PileType> cardsOnPlayer;
     int playerMoveDir;
     int keyCnt;
     float playerXBeforeBattle;
