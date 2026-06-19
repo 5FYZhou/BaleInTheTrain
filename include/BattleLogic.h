@@ -4,7 +4,7 @@
 #include "Card.h"
 #include "Player.h"
 #include "Input.h"
-#include "BuffAndDebuff"
+#include "BuffAndDebuff.h"
 #include <random>
 #include<iostream>
 int getRandomInt(int min, int max); //生成随机数
@@ -64,8 +64,9 @@ public:
     bool BattleFinished(std::vector<Enemy*> eys);//战斗结束结算画面，战斗-》场景数据传递
 
     void PilePre();
+    void TakePile(int n); // 抽n张牌
     void PlayerStatusSettlement();//玩家状态结算
-    void waitPlayerInput(int idx);//出牌效果执行
+    void waitPlayerInput(int idx, Player& player);//出牌效果执行
     void waitPlayerInput(int idx, Enemy& enemy);
     void turnsOver();//手牌-》弃牌堆
     void EnemyTurn(Player &player);       // 敌人行动，然后切回玩家

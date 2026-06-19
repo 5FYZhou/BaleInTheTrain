@@ -1,6 +1,6 @@
 #pragma once
 #include "Constants.h"
-#include "BuffAndDebuff"
+#include "BuffAndDebuff.h"
 #include <string>
 
 // 敌人类型对应{敌人位置，掉落物，绘制血量偏移}

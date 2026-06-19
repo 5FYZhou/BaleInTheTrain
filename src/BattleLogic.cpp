@@ -22,6 +22,25 @@ void BattleLogic::PilePre()
     }
 }
 
+void BattleLogic::TakePile(int n){
+    // 检测抽牌堆是否满足抽牌数，否则将弃牌堆中的牌全部加入抽牌堆
+    if (state.dealNums > state.dealPile.size())
+    {
+        for (int i = 0; i < state.discardPile.size(); ++i)
+        {
+            state.dealPile.push_back(state.discardPile[i]);
+            state.discardPile.erase(state.discardPile.begin() + i);
+        }
+    }
+    // 从抽牌堆中抽牌,恢复行动点
+    for (int i = 0; i < n; ++i)
+    {
+        int rd = getRandomInt(0, state.dealPile.size() - 1);
+        state.handCards.push_back(state.dealPile[rd]);
+        state.dealPile.erase(state.dealPile.begin() + rd);
+    }
+}
+
 void BattleLogic::turnsOver()
 {
     state.isPlayerTurn = false;
@@ -35,7 +54,7 @@ void BattleLogic::PlayerStatusSettlement() // 玩家状态结算
     state.defend_num = 0;
 }
 
-void BattleLogic::waitPlayerInput(int idx)
+void BattleLogic::waitPlayerInput(int idx, Player& player)
 {
     PileType ty = state.handCards[idx].name;
     // 卡牌效果
@@ -49,11 +68,16 @@ void BattleLogic::waitPlayerInput(int idx)
         }
         state.defend_num += 5;
         state.actionPoints--;
-        state.discardPile.push_back(state.handCards[idx]);
-        state.handCards.erase(state.handCards.begin() + idx);
 
         break;
-
+    case PileType::Sacrifice:
+        state.playerHP -= 6;
+        player.currentHP = state.playerHP;
+        state.actionPoints += 3;
+        TakePile(3);
+        state.discardPile.push_back(state.handCards[idx]);
+        state.handCards.erase(state.handCards.begin() + idx);
+        break;
     default:
         break;
     }

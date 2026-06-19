@@ -103,7 +103,7 @@ struct GameEvent {
     float val = -1.f;
 };
 
-enum class StatusType{
+enum class BuffDebuffType{
     None,
     easy_to_attack, //易伤（受到的伤害增加）
     power_up, //力量

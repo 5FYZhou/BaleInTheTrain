@@ -335,7 +335,7 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Player & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx);
+                btLogic.waitPlayerInput(idx, player);
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
