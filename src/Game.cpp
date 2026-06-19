@@ -2,7 +2,7 @@
 #include <iostream>
 
 Game::Game() 
-    : renderer(rm, uiManager), player(), scene(), fadeManager() {
+    : renderer(rm, uiMgr), player(), sceneMgr() {
     windowWidth = 1920;
     windowHeight = 1080;
 
@@ -13,7 +13,22 @@ Game::Game()
     }), "Bale In The Train", WindowStyle);
 
     window.setFramerateLimit(60);
-    gameState = GameState::MENU;
+    uiMgr.Init(rm);
+    audioMgr.Initialize(rm);
+    audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
+    audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
+    textHintMgr.Initialize(&audioMgr);
+    player.Init(rm.getTextureCount(TextureType::Player));
+    renderer.Init();
+    sceneMgr.SetCurScene(SceneType::Menu);
+
+    sf::Text warm(rm.getFont());
+warm.setString("Settings Music SFX 0123456789%");
+window.draw(warm);
+uiMgr.Open(PanelType::Setting);
+    uiMgr.DrawPanels(window);
+window.display();
+uiMgr.Close(PanelType::Setting);
 }
 
 Game::~Game() {
@@ -27,45 +42,7 @@ void Game::Run() {
         float dt = timeSystem.GetDeltaTime();
 
         // Handle events
-        while (const std::optional event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
-                window.close();
-            }
-
-            if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
-                if (key->scancode == sf::Keyboard::Scancode::Escape) {
-                    if (scene.GetCurrentScene() == SceneType::Game) {
-                        BeginFadeTo(SceneType::Menu);
-                    } else {
-                        window.close();
-                    }
-                }
-            }
-
-            if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
-                if (mouse->button != sf::Mouse::Button::Left || fadeManager.IsFading()) {
-                    continue;
-                }
-
-                const sf::Vector2f mousePos{
-                    static_cast<float>(mouse->position.x),
-                    static_cast<float>(mouse->position.y)
-                };
-
-                if (scene.GetCurrentScene() == SceneType::Menu) {
-                    if (renderer.GetStartButton().bounds.contains(mousePos)) {
-                        BeginFadeTo(SceneType::Game);
-                        gameState = GameState::GAME;
-                    } else if (renderer.GetSettingsButton().bounds.contains(mousePos)) {
-                        BeginFadeTo(SceneType::Settings);
-                    } else if (renderer.GetExitButton().bounds.contains(mousePos)) {
-                        window.close();
-                    }
-                } else if (scene.GetCurrentScene() == SceneType::Settings) {
-                    BeginFadeTo(SceneType::Menu);
-                }
-            }
-        }
+        HandleInput(dt);
 
         // Update logic
         Logic(dt);
@@ -76,140 +53,386 @@ void Game::Run() {
 }
 
 void Game::Init() {
-    // Initialize renderer
-    renderer.Init();
+    player.SetHP(100, 100);
 
-    // Setup player initial state (player stores texture keys, renderer draws)
-    player.SetFeet({PlayerStartX, PlayerGroundY});
-    player.SetHeight(PlayerHeight);
-    player.SetSpeed(PlayerSpeed);
-    //player.SetFrame(PlayerFrame::Stand);
-    player.SetTextureIndex(0);
+    keyCnt = 0;
 
-    // Initialize UI
-    uiManager.Init(rm);
-    uiManager.SetHP(100, 100);
-
-    // Set initial scene
-    scene.SetCurrentScene(SceneType::Menu);
-    scene.SetCurrentCarriage(0);
+    // 暂时指定卡片
+    cardsOnPlayer = { PileType::Strike, PileType::Defend, PileType::Defend, PileType::Strike, PileType::Strike};
+    player.InitCards();
 }
 
-void Game::Logic(float dt) {
-    // Update fade effect
-    fadeManager.Update(dt);
-
-    if (fadeManager.GetState() == FadeState::None) {
-        // Complete transition after fade-in finishes
-        if (scene.GetPendingScene() != scene.GetCurrentScene() ||
-            scene.GetPendingCarriage() != scene.GetCurrentCarriage()) {
-            CompleteFadeTransition();
+void Game::HandleInput(float dt){
+    while (const std::optional event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
+            window.close();
         }
 
-        // Normal game logic
-        if (scene.GetCurrentScene() == SceneType::Game) {
-            UpdatePlayer(dt);
+        if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+            if (key->scancode == sf::Keyboard::Scancode::Escape) {
+                if (uiMgr.IsOpen(PanelType::Setting)) {
+                    uiMgr.Close(PanelType::Setting);
+                    audioMgr.PlaySound(SoundEffect::Back);
+                }
+                if (uiMgr.IsOpen(PanelType::Backpack)) {
+                    uiMgr.Close(PanelType::Backpack);
+                    audioMgr.PlaySound(SoundEffect::Back);
+                }
+                if (uiMgr.IsOpen(PanelType::DealCard)) {
+                    uiMgr.Close(PanelType::DealCard);
+                    audioMgr.PlaySound(SoundEffect::Back);
+                }
+                if (uiMgr.IsOpen(PanelType::Discard)) {
+                    uiMgr.Close(PanelType::Discard);
+                    audioMgr.PlaySound(SoundEffect::Back);
+                }
+                if(sceneMgr.GetCurSceneType() == SceneType::Menu) {
+                    window.close();
+                }
+            } 
+            else if (sceneMgr.GetCurSceneType() == SceneType::Game &&
+                       textHintMgr.IsActive() &&
+                       (key->scancode == sf::Keyboard::Scancode::Space ||
+                        key->scancode == sf::Keyboard::Scancode::Enter)) {
+                textHintMgr.AdvanceDialog();
+            }
+        }
+
+        if (const auto* mouseMove = event->getIf<sf::Event::MouseMoved>()) {
+            uiMgr.HandleMouseMoved({
+                static_cast<float>(mouseMove->position.x),
+                static_cast<float>(mouseMove->position.y)
+            });
+        }
+
+        if (const auto* mouseRelease = event->getIf<sf::Event::MouseButtonReleased>()) {
+            if (mouseRelease->button == sf::Mouse::Button::Left) {
+                uiMgr.HandleMouseReleased();
+            }
+        }
+
+        if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
+            if (mouse->button != sf::Mouse::Button::Left || sceneMgr.IsFading()) {
+                continue;
+            }
+
+            const sf::Vector2i mousePosi = sf::Mouse::getPosition(window);
+            const sf::Vector2f mousePos{
+                static_cast<float>(mousePosi.x),
+                static_cast<float>(mousePosi.y)
+            };
+
+            // 如果有UI面板是打开的或处理了该鼠标点击 跳过场景处理鼠标点击
+            if(uiMgr.HandleMousePressed(mousePos)) 
+                return;
+
+            if (sceneMgr.GetCurSceneType() == SceneType::Game && textHintMgr.IsActive()) {
+                textHintMgr.AdvanceDialog();
+                continue;
+            }
+
+            sceneMgr.GetScene().ProcessInput(mousePos);
         }
     }
-}
 
-void Game::UpdatePlayer(float dt) {
-    bool playerMoving = false;
-    int movementDirection = 0;
-
+    playerMoveDir = 0;
     // Check keyboard input
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left)) {
-        movementDirection -= 1;
+        playerMoveDir -= 1;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right)) {
-        movementDirection += 1;
+        playerMoveDir += 1;
     }
+    
+}
 
-    if (movementDirection != 0) {
-        playerMoving = true;
-        player.SetFacing(movementDirection);
-        player.Move(movementDirection, dt);
-
-        sf::Vector2f newFeet = player.GetFeet();
-
-        // Check carriage transitions
-        if (newFeet.x <= Scene::GetLeftExitX()) {
-            if (scene.CanGoLeft()) {
-                BeginCarriageFade(scene.GetCurrentCarriage() - 1, 
-                                 Scene::GetRightEntryX(), -1);
+void Game::Logic(float dt) {
+    sceneMgr.Update(dt);
+    textHintMgr.Update(dt);
+    audioMgr.Update();
+    uiMgr.Update(dt);
+    if (!sceneMgr.IsFading() && !textHintMgr.IsActive() && !uiMgr.BlockInput()) {
+        if (sceneMgr.GetCurSceneType() == SceneType::Game) {
+            // 没撞墙
+            float nextX = player.GetNextX(playerMoveDir, dt);
+            bool canMove = sceneMgr.CheckChangeGameScene(nextX, keyCnt);
+            if(canMove){
+                player.Move(playerMoveDir, dt);
             }
-            newFeet.x = Scene::GetLeftExitX();
-        } else if (newFeet.x >= Scene::GetRightExitX()) {
-            if (scene.CanGoRight()) {
-                BeginCarriageFade(scene.GetCurrentCarriage() + 1, 
-                                 Scene::GetLeftEntryX(), 1);
-            }
-            newFeet.x = Scene::GetRightExitX();
         }
-
-        player.SetFeet(newFeet);
     }
-
-    // Update player animation state
-    player.SetMoving(playerMoving);
-    if (!playerMoving) {
-        player.ResetToStand();
-    }
-
-    player.UpdateSpritePosition();
-}
-
-void Game::BeginFadeTo(SceneType nextScene) {
-    if (fadeManager.IsFading()) {
-        return;
-    }
-
-    scene.SetPendingScene(nextScene);
-    scene.SetPendingCarriage(scene.GetCurrentCarriage());
-    pendingPlayerFeet = player.GetFeet();
-    pendingPlayerFacing = player.GetFacing();
     
-    fadeManager.StartFadeOut();
+    ProcessEvents();
 }
 
-void Game::BeginCarriageFade(int nextCarriage, float nextX, int nextFacing) {
-    if (fadeManager.IsFading()) {
-        return;
+void Game::ProcessEvents() {
+    std::vector<GameEvent>& eventsInScene = sceneMgr.GetEvents();
+    for (const auto& event : eventsInScene) {
+        HandleEvents(event);
     }
+    eventsInScene.clear();
 
-    scene.SetPendingScene(SceneType::Game);
-    scene.SetPendingCarriage(nextCarriage);
-    pendingPlayerFeet = {nextX, PlayerGroundY};
-    pendingPlayerFacing = nextFacing;
-    
-    fadeManager.StartFadeOut();
+    std::vector<GameEvent>& eventsInUI = uiMgr.GetEvents();
+    for (const auto& event : eventsInUI) {
+        HandleEvents(event);
+    }
+    eventsInUI.clear();
+
+    std::vector<GameEvent>& eventsInBl = btLogic.events;
+    for (const auto& event : eventsInBl) {
+        HandleEvents(event);
+    }
+    eventsInBl.clear();
 }
 
-void Game::CompleteFadeTransition() {
-    scene.SetCurrentScene(scene.GetPendingScene());
-    scene.SetCurrentCarriage(scene.GetPendingCarriage());
-    player.SetFeet(pendingPlayerFeet);
-    player.SetFacing(pendingPlayerFacing);
+void Game::HandleEvents(const GameEvent& event){
+    switch (event.type) {
+        #pragma region 切场景,UI,音乐
+        // 切换到游戏场景
+        case EventType::StartGame:
+            sceneMgr.LoadScene(SceneType::Game);
+            textHintMgr.StartDialog();
+            audioMgr.PlaySound(SoundEffect::MenuButton);
+            break;
+        // 退出游戏
+        case EventType::ExitGame:
+            window.close();
+            break;
+        // 走到车厢开头/末尾时钥匙数量不足
+        case EventType::KeysInsufficient:
+            std::cout<<"Event::KeysInsufficient"<<std::endl;
+            textHintMgr.ShowDoorHint();
+            break;
+        // 钥匙足够打开门
+        case EventType::Win:
+            std::cout<<"Event::Win"<<std::endl;
+            sceneMgr.LoadScene(SceneType::Win);
+            break;
+        case EventType::ReturnMenu:
+            std::cout<<"Event::ReturnMenu"<<std::endl;
+            sceneMgr.LoadScene(SceneType::Menu);
+            Init();
+            break;
+
+        // 打开设置面板
+        case EventType::OpenSettings:
+        {
+            //std::cout<<"Event::opensettings"<<std::endl;
+            //uiMgr.OpenSettingsPopup();
+            auto t0 = clock();
+
+            // 打开设置
+            uiMgr.Open(PanelType::Setting);
+
+            auto t1 = clock();
+            //std::cout << "OpenSettings cost: "<< (t1 - t0) << std::endl;
+            audioMgr.PlaySound(SoundEffect::MenuButton);
+        }
+            break;
+        // 打开背包面板
+        case EventType::OpenBackpackIcon:
+            std::cout<<"Event::openbackpack"<<std::endl;
+            uiMgr.Get<BackpackPanel>()->SetCards(cardsOnPlayer);
+            uiMgr.Open(PanelType::Backpack);
+            break;
+        // 打开弃牌池
+        case EventType::OpenDiscardPile:
+            std::cout<<"Event::openDiscard"<<std::endl;
+            uiMgr.Get<DiscardPilePanel>()->SetCards(cardsOnPlayer);
+            uiMgr.Open(PanelType::Discard);
+            break;
+        // 打开发牌池
+        case EventType::OpenDealCardPanel:
+            std::cout<<"Event::openDealcard"<<std::endl;
+            uiMgr.Get<DealCardPanel>()->SetCards(cardsOnPlayer);
+            uiMgr.Open(PanelType::DealCard);
+            break;
+
+        // 修改音效音量
+        case EventType::SfxVolumeChange:
+            audioMgr.SetSfxVolume(event.val);
+            break;
+        // 修改音乐音量
+        case EventType::MusicVolumeChange:
+            audioMgr.SetMusicVolume(event.val);
+            break;
+        #pragma endregion
+        
+        // 进入新游戏/战斗场景时 重置玩家位置
+        case EventType::ResetPlayerPos:
+            player.SetFeet({event.val, PlayerGroundY});
+            if(event.val == PlayerStartX){
+                player.SetFacing(1);
+            }
+            player.ResetToStand();
+            std::cout<< "Event: Reset player position to: " << player.GetFeet().x << std::endl;
+            break; 
+        // 场景中的交互物品点击
+        case EventType::ItemClicked:
+        {
+            ItemType itemtype = static_cast<ItemType>(event.val);
+            switch (itemtype)
+            {
+            case ItemType::Enemy:
+            {
+                auto panel = uiMgr.Get<CardsInHandPanel>();
+                if(panel->HasSelectedCard()){
+                    if(!btLogic.state.isPlayerTurn) break;
+                    // 出牌
+                    auto [type, idx] = panel->GetSelectedCard();
+                    std::cout<<"event: click Enemy & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    btLogic.waitPlayerInput(idx,*sceneMgr.GetScene().GetEnemy());
+                   
+                    // 重新绘制
+                    panel->SetCards(btLogic.getCardsPile(), 1);
+                    panel->SetHasSelected(false);
+                }
+            }
+                break;
+            case ItemType::Player:
+            {
+                auto panel = uiMgr.Get<CardsInHandPanel>();
+                if(panel->HasSelectedCard()){
+                    if(!btLogic.state.isPlayerTurn) break;
+                    // 出牌
+                    auto [type, idx] = panel->GetSelectedCard();
+                    std::cout<<"event: click Player & play card:"<<static_cast<int>(type)<<" idx:"<<idx<<std::endl;
+                    btLogic.waitPlayerInput(idx);
+                    // 重新绘制
+                    panel->SetCards(btLogic.getCardsPile(), 50);
+                    panel->SetHasSelected(false);
+                }
+            }
+                break;
+            case ItemType::Key:
+                std::cout<<"Event: get one key"<<std::endl;
+                keyCnt++;
+                uiMgr.PushNotification("Obtain a key", itemTexMap.at(itemtype));
+                break;
+                
+            case ItemType::Strike: //打击0
+            case ItemType::Defend: //防御1
+            case ItemType::Rage: //暴走2
+            case ItemType::Shrug_off: //耸肩无视3
+            case ItemType::Heavy_strike: //痛击4
+            case ItemType::Anger: //愤怒5
+            case ItemType::Continuous_punches: //连续拳6
+            case ItemType::Observe_weaknesses: //观察弱点7
+            case ItemType::Activate_muscles: //活动肌肉8
+            case ItemType::Revitalize_spirit: //重振精神9
+            case ItemType::Metallization: //金属化10
+            case ItemType::Unstoppable: //势不可挡11
+            case ItemType::Rampart: //壁垒12
+            case ItemType::Sacrifice: //祭品13
+                std::cout<< "Event : hitcard:"<<event.val<<std::endl; 
+                // 给玩家加卡牌
+                cardsOnPlayer.push_back(itemPileMap.at(itemtype));
+                uiMgr.PushNotification("Obtain a card", itemTexMap.at(itemtype));
+                break;
+            default:
+                break;
+            }
+        }
+            break;
+        // 开始战斗
+        case EventType::BeginBattle:
+            playerFaceBeforeBattle = player.GetFacing();
+            playerXBeforeBattle = player.GetPos().x;
+            btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(),player.cards,player);
+            sceneMgr.LoadScene(SceneType::Battle, [this]{
+                uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getCardsPile(), 5, true);
+                uiMgr.Open(PanelType::CardsInHand);
+                player.SetFacing(1);
+            });
+            std::cout<<"Event:beginBattle"<<std::endl;
+            std::cout<<player.cards.size()<<
+            "Blgic"<<btLogic.state.handCards.size()<<" "<<
+                btLogic.state.dealPile.size()<<" "<<
+                btLogic.state.discardPile.size()<<" "<<std::endl;
+            
+            break;
+        //玩家回合
+        case EventType::PlayerTurn:
+            std::cout<<"Event: start play"<<std::endl;
+            btLogic.PilePre();                // 抽牌
+            std::cout<<player.cards.size()<<
+            "PPBlgic"<<btLogic.state.handCards.size()<<" "<<
+                btLogic.state.dealPile.size()<<" "<<
+                btLogic.state.discardPile.size()<<" "<<std::endl;
+            btLogic.PlayerStatusSettlement(); // 玩家状态结算
+            break;
+        // 结束玩家回合，开始敌人回合
+        case EventType::EndTurn:
+            std::cout<<"Event: end turn"<<std::endl;
+            btLogic.state.isPlayerTurn = false;
+            if(!btLogic.state.isPlayerTurn) std::cout<<"!player"<<std::endl;
+            btLogic.turnsOver();
+            btLogic.EnemyTurn();
+
+            break;
+        // 结束对局
+        case EventType::EndBattle:
+            std::cout<<"Event: EndBattle"<<std::endl;
+            // 胜利
+            if(event.val == 0){
+                sceneMgr.LoadGameBeforeBattle([this]{
+                    uiMgr.Close(PanelType::CardsInHand);
+                    player.SetFacing(playerFaceBeforeBattle);
+                    player.SetFeet({playerXBeforeBattle, PlayerGroundY});
+                    player.ResetToStand();
+                    player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
+                });
+            }
+            // 失败
+            else if(event.val == 1){
+                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
+
+            }
+            break;
+        default:
+            break;
+        }
 }
 
 void Game::Draw() {
+    sf::Clock c;
     window.clear();
 
-    SceneType currentScene = scene.GetCurrentScene();
+    SceneType curSceneType = sceneMgr.GetCurSceneType();
     
-    if (currentScene == SceneType::Menu) {
-        renderer.DrawMenu(window);
-    } else if (currentScene == SceneType::Game) {
-        renderer.DrawGame(window, player);
-    } else if (currentScene == SceneType::Settings) {
-        renderer.DrawSettings(window);
+    // 绘制场景
+    renderer.DrawScene(window, sceneMgr.GetScene());
+    
+    if(curSceneType == SceneType::Game || curSceneType == SceneType::Battle){
+        renderer.DrawPlayer(window, player);
     }
 
-    if (fadeManager.GetAlpha() > 0.f) {
-        renderer.DrawFadeOverlay(window, static_cast<std::uint8_t>(fadeManager.GetAlpha()));
+    if(curSceneType == SceneType::Game) {
+        renderer.DrawDialog(window, textHintMgr);
+        renderer.DrawCardRewards(window, cardsOnPlayer, textHintMgr.GetRewardAlpha());
+        if (textHintMgr.IsMovementHintVisible()) {
+            renderer.DrawMovementHint(window);
+        }
+        if (textHintMgr.IsDoorHintVisible()) {
+            renderer.DrawCenteredText(
+                window,
+                textHintMgr.GetDoorHintText(),
+                textHintMgr.GetDoorHintAlpha()
+            );
+        }
+    }
+
+    // UI面板
+    uiMgr.DrawPanels(window);
+    uiMgr.DrawNotifications(window);
+
+    // 切场景遮罩
+    if (sceneMgr.GetFadeAlpha() > 0.f) {
+        renderer.DrawFadeOverlay(window, static_cast<std::uint8_t>(sceneMgr.GetFadeAlpha()));
     }
 
     window.display();
+    //std::cout << "frame: " << c.restart().asMilliseconds() << "\n";
 }

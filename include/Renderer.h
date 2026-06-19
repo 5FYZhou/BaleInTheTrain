@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Constants.h"
+#include "TextHintManager.h"
+#include "Enemy.h"
 #include "ResourceManager.h"
 #include "Player.h"
 #include "UIManager.h"
@@ -15,28 +17,27 @@ class Renderer {
 private:
     ResourceManager& rm;
     UIManager& uiManager;
+    const sf::Font* font;
     
-    // Background sprites - using pointers to avoid default constructor issue
-    sf::Sprite* menuBackground = nullptr;
-    sf::Sprite* gameBackground = nullptr;
-    sf::Sprite* title = nullptr;
+    // player HP
+    sf::Sprite* statusBox = nullptr;
+    sf::RectangleShape hpBack;
+    sf::RectangleShape hpBar;
+    sf::Text* hpText = nullptr;
 
-    // Menu buttons
-    Button* startButton = nullptr;
-    Button* settingsButton = nullptr;
-    Button* exitButton = nullptr;
+    // UI
+    sf::Sprite* dialogBox = nullptr;
+    sf::Text* dialogText = nullptr;
+    sf::Text* dialogHintText = nullptr;
+    sf::Text* movementHintText = nullptr;
 
     // Fade overlay
     sf::RectangleShape fadeOverlay;
 
-    // Window dimensions
-    unsigned int windowWidth = 1920;
-    unsigned int windowHeight = 1080;
-
     // Helper methods
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
-    void scaleToWindow(sf::Sprite& sprite);
-    Button makeCenteredButton(const sf::Texture& texture, float centerY);
+    //Button makeCenteredButton(const sf::Texture& texture, float centerY);
+    void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
 
 public:
     Renderer(ResourceManager& rm, UIManager& ui);
@@ -45,21 +46,15 @@ public:
     void Init();
     
     // Main drawing methods
-    void DrawMenu(sf::RenderWindow& window);
-    void DrawGame(sf::RenderWindow& window, const Player& player);
-    void DrawSettings(sf::RenderWindow& window);
+    void DrawPlayer(sf::RenderWindow& window, const Player& player);
+    void DrawScene(sf::RenderWindow& window, const Scene& scene);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
+    void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
+        , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
 
-    // Getters for button bounds
-    const Button& GetStartButton() const { return *startButton; }
-    const Button& GetSettingsButton() const { return *settingsButton; }
-    const Button& GetExitButton() const { return *exitButton; }
+    void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
+    void DrawMovementHint(sf::RenderWindow& window);
+    void DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsV, float alpha);
 
-    // Window size
-    unsigned int GetWindowWidth() const { return windowWidth; }
-    unsigned int GetWindowHeight() const { return windowHeight; }
-    void SetWindowSize(unsigned int w, unsigned int h) {
-        windowWidth = w;
-        windowHeight = h;
-    }
+    void DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha);
 };

@@ -1,15 +1,17 @@
 #pragma once
 
+#include "AudioManager.h"
 #include "Constants.h"
-#include "TimeSystem.h"
-#include "Renderer.h"
+#include "TextHintManager.h"
 #include "Input.h"
-#include "Scene.h"
-#include "ResourceManager.h"
 #include "Player.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
+#include "SceneManager.h"
+#include "TimeSystem.h"
+#include "BattleLogic.h"
 #include "UIManager.h"
-#include "FadeManager.h"
-#include <windows.h>
+#include <SFML/Graphics.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -28,48 +30,35 @@ private:
     unsigned int windowHeight = 1080;
     RenderWindow window;
 
-    GameState gameState = GameState::MENU;
-
-    // Game systems
     ResourceManager rm;
     Renderer renderer;
-    Input input;
     TimeSystem timeSystem;
-    UIManager uiManager;
-    FadeManager fadeManager;
-
-    // Game objects
+    UIManager uiMgr;
+    SceneManager sceneMgr;
+    AudioManager audioMgr;
+    TextHintManager textHintMgr;
+    BattleLogic btLogic;
+    
     Player player;
-    Scene scene;
+    std::vector<PileType> cardsOnPlayer;
+    int playerMoveDir;
+    int keyCnt;
+    float playerXBeforeBattle;
+    int playerFaceBeforeBattle;
 
-    // Game constants
-    static constexpr float PlayerGroundY = 1028.f;
-    static constexpr float PlayerHeight = 454.f;
-    static constexpr float PlayerStartX = 350.f;
-    static constexpr float PlayerSpeed = 430.f;
-
-    // Game state variables
-    sf::Vector2f pendingPlayerFeet = {PlayerStartX, PlayerGroundY};
-    int pendingPlayerFacing = 1;
-
-    // Main loop methods
     void Init();
     void Logic(float dt);
-    void HandleInput();
-    void UpdatePlayer(float dt);
-    void UpdateScene();
+    void HandleInput(float dt);
+    void ProcessEvents();
+    void HandleEvents(const GameEvent& event);
     void Draw();
 
-    // Fade transition control
-    void BeginFadeTo(SceneType nextScene);
-    void BeginCarriageFade(int nextCarriage, float nextX, int nextFacing);
-    void CompleteFadeTransition();
-
-    // Saved game interface
     GameData GetGameData() const {
         GameData data;
         return data;
     }
+
     void SetGameData(const GameData& data) {
+        (void)data;
     }
 };

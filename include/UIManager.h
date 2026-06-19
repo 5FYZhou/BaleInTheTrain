@@ -1,50 +1,156 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include "Constants.h"
 #include "ResourceManager.h"
+#include "Panel.h"
+#include <SFML/Graphics.hpp>
+#include <algorithm>
+
+struct Notification {
+    std::optional<sf::Sprite> bg;
+    std::optional<sf::Sprite> icon;
+    sf::Text text;
+
+    Notification(const sf::Font& font)
+        : text(font)
+    {}
+
+    float timer = 0.f;
+    sf::Vector2f pos;
+    float alpha = 255.f;
+
+    enum class State {
+        Entering,
+        Stay,
+        Exiting
+    } state = State::Entering;
+};
 
 class UIManager {
 private:
-    // Sprites - using pointers
-    sf::Sprite* statusBox = nullptr;
-    sf::Sprite* potionIcon1 = nullptr;
-    sf::Sprite* potionIcon2 = nullptr;
-    sf::Sprite* potionIcon3 = nullptr;
-    sf::Sprite* cubeIcon = nullptr;
-    sf::Sprite* settingsIcon = nullptr;
+    ResourceManager* resourceManager = nullptr;
+    std::vector<GameEvent> events;
+    std::vector<Notification> notifications;
+    PanelManager panels;
 
-    // HP system
-    sf::RectangleShape hpBack, hpBar;
-    sf::Text* hpText = nullptr;
-    int currentHP = 100;
-    int maxHP = 100;
-    bool hasFont = false;
-    sf::Font font;
+    const sf::Font* font = nullptr;
 
-    // Window size
-    float windowWidth = 1920.f;
-    float windowHeight = 1080.f;
+    void UpdateNotifications(float dt){
+        for (auto& n : notifications){
+            n.timer += dt;
 
+            if (n.state == Notification::State::Entering){
+                n.pos.x += 800.f * dt; // 从左滑入
+
+                if (n.pos.x >= 50.f) {
+                    n.pos.x = 50.f;
+                    n.state = Notification::State::Stay;
+                    n.timer = 0.f;
+                }
+            }
+            else if (n.state == Notification::State::Stay){
+                if (n.timer >= 2.0f) {
+                    n.state = Notification::State::Exiting;
+                }
+            }
+            else if (n.state == Notification::State::Exiting) {
+                n.pos.y -= 200.f * dt;  // 向上飘
+
+                n.alpha -= 300.f * dt;
+
+                if (n.alpha <= 0.f) {
+                    n.alpha = 0.f;
+                    n.state = Notification::State::Stay; // 标记删除
+                }
+            }
+        }
+
+        // 删除结束通知
+        notifications.erase(
+        std::remove_if(notifications.begin(), notifications.end(),
+            [](const Notification& n) {
+                return n.alpha <= 0.f;
+            }),
+            notifications.end()
+        );
+    }
 public:
-    UIManager();
-    ~UIManager();
 
-    // Initialization
-    bool Init(ResourceManager& rm);
-    bool LoadFont();
+    UIManager(){}
+    std::vector<GameEvent>& GetEvents(){ return events; }
 
-    // HP management
-    void SetHP(int current, int max);
-    void TakeDamage(int damage);
-    void Heal(int amount);
-    int GetCurrentHP() const { return currentHP; }
-    int GetMaxHP() const { return maxHP; }
+    void Init(ResourceManager& rm){
+        resourceManager = &rm;
+        font = &rm.getFont();
 
-    // Drawing
-    void Draw(sf::RenderWindow& window);
+        panels.AddPanel<SettingPanel>(events)->Init(rm, font);
+        panels.AddPanel<BackpackPanel>(events)->Init(rm, font);
+        panels.AddPanel<DiscardPilePanel>(events)->Init(rm, font);
+        panels.AddPanel<DealCardPanel>(events)->Init(rm, font);
+        panels.AddPanel<CardsInHandPanel>(events)->Init(rm, font);
+    }
 
-    // Getters for UI elements
-    sf::Sprite* GetStatusBox() const { return statusBox; }
-    sf::Sprite* GetSettingsIcon() const { return settingsIcon; }
+    void Update(float dt){
+        panels.Update(dt);
+        UpdateNotifications(dt);
+    }
+
+    #pragma region 面板
+    bool BlockInput(){ return panels.BlocksInput(); }
+
+    bool HandleMousePressed(const sf::Vector2f& pos) { return panels.HandleMousePressed(pos); }
+    void HandleMouseMoved(const sf::Vector2f& pos) { panels.HandleMouseMoved(pos); }
+    void HandleMouseReleased() { panels.HandleMouseReleased(); }
+
+    void DrawPanels(sf::RenderWindow& window){ panels.Draw(window); }
+
+    void Open(PanelType type){ panels.Open(type); }
+    void Close(PanelType type){ panels.Close(type); }
+    bool IsOpen(PanelType type){ return panels.IsOpen(type); }
+    template<typename T>
+    T* Get() { return panels.Get<T>(); }
+    #pragma endregion
+
+    void PushNotification(const std::string& text, TextureType icon){
+        notifications.emplace_back(*font);
+        Notification& n = notifications.back();
+
+        n.text.setFont(*font);
+        n.text.setString(text);
+        n.text.setCharacterSize(24);
+
+        n.icon.emplace(resourceManager->getTexture(icon));
+        n.bg.emplace(resourceManager->getTexture(TextureType::NotificationBG));
+        n.bg->setScale({0.7, 0.7});
+        if(icon == TextureType::Key){
+            n.icon->setScale({0.55, 0.55});
+        }
+        else{
+            n.icon->setScale({0.18, 0.18});
+        }
+
+        n.pos = {-400.f, 300.f}; // 左侧外面起点
+        n.state = Notification::State::Entering;
+
+        //notifications.push_back(n);
+    }
+
+    void DrawNotifications(sf::RenderWindow& window){
+        for (auto& n : notifications){
+            sf::Color c(255,255,255,static_cast<std::uint8_t>(n.alpha));
+
+            n.bg->setPosition(n.pos);
+            n.icon->setPosition(n.pos + sf::Vector2f(30,20));
+            n.text.setPosition(n.pos + sf::Vector2f(110,40));
+
+            n.bg->setColor(c);
+            n.icon->setColor(c);
+            n.text.setFillColor(c);
+
+            window.draw(*n.bg);
+            window.draw(*n.icon);
+            window.draw(n.text);
+        }
+    }
+
 };

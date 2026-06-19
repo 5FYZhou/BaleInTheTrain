@@ -9,9 +9,35 @@ Player::Player()
 Player::~Player() {
 }
 
-void Player::Move(int direction, float dt) {
-    feet.x += speed * direction * dt;
+void Player::Init(int fc){
+    frameCount = fc;
+    SetFeet({PlayerStartX, PlayerGroundY});
+    SetFacing(1);
+    SetHeight(PlayerHeight);
+    SetSpeed(430.f);
+    //player.SetFrame(PlayerFrame::Stand);
+    SetTextureIndex(0);
+}
+void Player::InitCards(){
+    for(int i = 0;i<5;++i){
+        cards.push_back({i,PileType::Strike,1});
+    }
+    for(int i = 5; i < 10;++i){
+        cards.push_back({i,PileType::Defend,1});
+    }
+}
+
+void Player::Move(int direction, float dt, bool canTranslate) {
+    if(direction == 0){
+        ResetToStand();
+        isMoving = false;
+        return;
+    }
+    if(canTranslate)
+        feet.x += speed * direction * dt;
+    SetFacing(direction);
     UpdateFrame(dt);
+    isMoving = true;
 }
 
 void Player::ClampPosition(float minX, float maxX) {
@@ -23,10 +49,21 @@ void Player::UpdateFrame(float dt) {
     walkTimer += dt;
     if(walkTimer >= frameSpeed){
         walkTimer = 0.f;
-        textureIndex = (textureIndex + 1) % 3; // Cycle through 3 frames
+        textureIndex = (textureIndex + 1) % frameCount; // Cycle through 3 frames
     }
 }
 
-void Player::UpdateSpritePosition() {
-    // Player stores feet position; rendering happens in Renderer.
+void Player::SetHP(int current, int max){
+    currentHP = std::clamp(current, 0, std::max(1, max));
+    maxHP = std::max(1, max);
+}
+
+void Player::TakeDamage(int damage)
+{
+    SetHP(currentHP - damage, maxHP);
+}
+
+void Player::Heal(int amount)
+{
+    SetHP(currentHP + amount, maxHP);
 }
