@@ -70,7 +70,7 @@ public:
     void waitPlayerInput(int idx);//出牌效果执行
     void waitPlayerInput(int idx, Enemy& enemy);
     void turnsOver();//手牌-》弃牌堆
-    void EnemyTurn();       // 敌人行动，然后切回玩家
+    void EnemyTurn(Player &player);       // 敌人行动，然后切回玩家
     std::vector<PileType> getHandCardsPile();
     std::vector<PileType> getdisCardPile();
     std::vector<PileType> getdealCardsPile();

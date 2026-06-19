@@ -5,7 +5,7 @@
 #include "Card.h"
 
 class Player {
-private:
+public:
     // Position and movement
     sf::Vector2f feet;          // Player's foot position (ground level)
     int facing = 1;             // Direction: 1 = right, -1 = left

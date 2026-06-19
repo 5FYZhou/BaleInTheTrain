@@ -388,8 +388,9 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::PlayerTurn:
         std::cout << "Event: start play" << std::endl;
         btLogic.PilePre(); // 抽牌
-
         btLogic.PlayerStatusSettlement(); // 玩家状态结算
+        uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
+
         break;
     // 结束玩家回合，开始敌人回合
     case EventType::EndTurn:
@@ -399,9 +400,7 @@ void Game::HandleEvents(const GameEvent &event)
         //std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
-        if (!btLogic.state.isPlayerTurn)
-            std::cout << "!player" << std::endl;
-        btLogic.EnemyTurn();
+        btLogic.EnemyTurn(player);
 
         break;
     // 结束对局
