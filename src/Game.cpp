@@ -335,7 +335,7 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Player & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx, player);
+                btLogic.waitPlayerInput(idx, player, sceneMgr.GetScene().GetEnemy());
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
@@ -401,11 +401,11 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::EndTurn:
         std::cout << "Event: end turn" << std::endl;
 
-        btLogic.turnsOver();
+        btLogic.turnsOver(sceneMgr.GetScene().GetEnemy());
         //std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
-        btLogic.EnemyTurn(player);
+        btLogic.EnemyTurn(player, *sceneMgr.GetScene().GetEnemy());
         btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
         break;
     // 结束对局
