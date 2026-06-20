@@ -322,6 +322,7 @@ void Game::HandleEvents(const GameEvent &event)
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Enemy & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
                 btLogic.waitPlayerInput(idx, *sceneMgr.GetScene().GetEnemy());
+                player.currentHP = (btLogic.state.playerHP);
 
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
@@ -476,7 +477,7 @@ void Game::Draw()
     // 敌人意图
     if (curSceneType == SceneType::Battle){
         const Enemy* e = sceneMgr.GetScene().GetEnemy();
-        int num = e->allPlans[btLogic.state.TurnCount - 1].num_of_att_ot_def;
+        int num = e->allPlans[btLogic.state.TurnCount - 1].data;
         PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;
         pos.x += 40;

@@ -117,13 +117,16 @@ enum class EnemyType{
     LightMonster, //车灯怪
     TicketMonster, //车票怪
     TyreMosnter, //轮胎怪
+    Past_YOU, //过去死亡的你
 };
 
 enum class PlanType{
     attack,
     defend,
-    buff,
-    debuff,
+    easy_to_attack, //易伤（受到的伤害增加）
+    power_up, //力量
+    thorns, //反伤（受到攻击时对攻击者造成伤害）
+    vulnerable, //虚弱（攻击造成的伤害降低）
 };
 
 enum class PileType{
@@ -173,8 +176,10 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
 inline const std::unordered_map<PlanType, TextureType> planTexMap = {
     { PlanType::attack, TextureType::PlanAttack },
     { PlanType::defend, TextureType::PlanDefend },
-    { PlanType::buff, TextureType::PlanDefend },
-    { PlanType::debuff, TextureType::PlanDefend }
+    { PlanType::easy_to_attack, TextureType::PlanDefend },
+    { PlanType::power_up, TextureType::PlanDefend },
+    { PlanType::thorns, TextureType::PlanDefend },
+    { PlanType::vulnerable, TextureType::PlanDefend },
 };
 
 // 场景物品类型映射卡牌类型
