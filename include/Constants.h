@@ -287,3 +287,4 @@ inline static void centerTextX(sf::Text& text){
 
     text.setPosition({960.f, text.getPosition().y});
 }
+
