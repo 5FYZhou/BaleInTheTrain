@@ -35,6 +35,7 @@ void TextHintManager::ResetState()
     introRewardFading = false;
     movementHintVisible = false;
     movementHintTimer = 0.f;
+    rewardAnimTriggered = false;
 }
 
 void TextHintManager::StartDialog()
@@ -59,22 +60,25 @@ void TextHintManager::StartDialog(const std::vector<std::string>& dialogs)
 
 void TextHintManager::AdvanceDialog()
 {
-    if (!isActive) {
-        return;
-    }
+    if (!isActive) return;
 
     PlayDialogSound();
 
-    if (currentIndex == INTRO_BACKPACK_INDEX) {
-        introRewardFading = true;
-        introRewardAlpha = 255.f;
+    // ⭐触发动画（只一次）
+    if (currentIndex == INTRO_BACKPACK_INDEX)
+    {
+        if (!rewardAnimTriggered)
+        {
+            rewardAnimTriggered = true;
+            //rewardAnim.Start(playerRewardCards); // 或外部调用
+        }
     }
+    if (currentIndex == INTRO_BACKPACK_INDEX) { introRewardFading = true; introRewardAlpha = 255.f; }
 
-    if (currentIndex + 1 < dialogTexts.size()) {
+    if (currentIndex + 1 < dialogTexts.size())
         ++currentIndex;
-    } else {
+    else
         EndDialog();
-    }
 }
 
 void TextHintManager::EndDialog()
@@ -135,12 +139,15 @@ void TextHintManager::UpdateMovementHint(float dt)
     }
 }
 
+
 void TextHintManager::Update(float dt)
 {
     UpdateRewardFade(dt);
     UpdateMovementHint(dt);
     UpdateDoorHint(dt);
+    rewardAnim.Update(dt);
 }
+
 
 void TextHintManager::PlayDialogSound()
 {

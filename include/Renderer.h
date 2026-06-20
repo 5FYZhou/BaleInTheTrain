@@ -37,7 +37,6 @@ private:
     // Helper methods
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
     //Button makeCenteredButton(const sf::Texture& texture, float centerY);
-    void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
     CardView MakeFanCard( PileType type, int index, int count, sf::Vector2f center, float yOffset, float spacingX, float angleRange){
         CardView cv;
         cv.texType = cardTexMap.at(type);
@@ -64,6 +63,7 @@ private:
     void Init();
     
     // Main drawing methods
+    void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
     void DrawPlayer(sf::RenderWindow& window, const Player& player);
     void DrawScene(sf::RenderWindow& window, const Scene& scene);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);

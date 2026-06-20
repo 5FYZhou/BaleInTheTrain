@@ -452,6 +452,18 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
+        if(textHintMgr.ShouldShowRewardCards()){
+            //textHintMgr.introRewardFading = false;
+            auto& rewardAni = textHintMgr.rewardAnim;
+            rewardAni.Set(player.GetPileCards());
+        }
+        if(textHintMgr.ShouldStartRewardAnimation()){
+            textHintMgr.rewardAnim.Start();
+        }
+        for (auto& a : textHintMgr.rewardAnim.anims)
+    {
+        //renderer.DrawCard(window, a.card, a.card.alpha);
+    }
         renderer.DrawCardRewards(window, player.GetPileCards(), textHintMgr.GetRewardAlpha());
         if (textHintMgr.IsMovementHintVisible())
         {

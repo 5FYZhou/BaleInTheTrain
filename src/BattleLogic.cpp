@@ -24,7 +24,7 @@ void BattleLogic::PilePre()
 
 void BattleLogic::TakePile(int n){
     // 检测抽牌堆是否满足抽牌数，否则将弃牌堆中的牌全部加入抽牌堆
-    if (state.dealNums > state.dealPile.size())
+    if (n > state.dealPile.size())
     {
         for (int i = 0; i < state.discardPile.size(); ++i)
         {
@@ -32,7 +32,7 @@ void BattleLogic::TakePile(int n){
             state.discardPile.erase(state.discardPile.begin() + i);
         }
     }
-    // 从抽牌堆中抽牌,恢复行动点
+    // 从抽牌堆中抽牌
     for (int i = 0; i < n; ++i)
     {
         int rd = getRandomInt(0, state.dealPile.size() - 1);
@@ -123,14 +123,12 @@ bool BattleLogic::BattleFinished(std::vector<Enemy*> eys)
     {
         if (it->cur_health > 0)
         {
-            std::cout << "no die" << it->cur_health<< std::endl;
             return false;
         }
         else{
             it->dead = true;
         }
     }
-    std::cout << "die" << std::endl;
     
     events.push_back({EventType::EndBattle, 0});
 
