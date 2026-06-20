@@ -195,11 +195,9 @@ void Game::Logic(float dt)
     // 判断是否显示对话奖励卡牌
     if(textHintMgr.ShouldShowRewardCards()){
         uiMgr.rewardAni.Set(player.GetPileCards());
-        std::cout<<"A"<<uiMgr.rewardAni.cards.size()<<std::endl;
     }
     if(textHintMgr.ShouldStartRewardAnimation()){
         uiMgr.rewardAni.Start();
-        std::cout<<"B"<<uiMgr.rewardAni.cards.size()<<std::endl;
     }
     ProcessEvents();
 }
@@ -504,6 +502,16 @@ void Game::Draw()
     // UI面板
     uiMgr.DrawPanels(window);
     uiMgr.DrawNotifications(window);
+    for (auto& p : uiMgr.textPrompt.prompts)
+        {
+            renderer.DrawText(
+                window,
+                p->text,
+                p->position,
+                p->size,
+                p->alpha
+            );
+        }
 
     // 切场景遮罩
     if (sceneMgr.GetFadeAlpha() > 0.f)

@@ -267,3 +267,32 @@ void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& tex
     window.draw(t);
 }
 
+void Renderer::DrawText(
+    sf::RenderWindow& window,
+    const std::string& text,
+    sf::Vector2f position,
+    unsigned size,
+    float alpha)
+{
+    sf::Text sfText(*font);
+
+    sfText.setString(text);
+    sfText.setCharacterSize(size);
+
+    auto bounds = sfText.getLocalBounds();
+
+    sfText.setOrigin({
+        bounds.position.x + bounds.size.x * 0.5f,
+        bounds.position.y + bounds.size.y * 0.5f
+    });
+
+    sfText.setPosition(position);
+
+    auto color = sfText.getFillColor();
+    color.a = static_cast<std::uint8_t>(
+        std::clamp(alpha, 0.f, 255.f));
+
+    sfText.setFillColor(color);
+
+    window.draw(sfText);
+}

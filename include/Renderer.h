@@ -75,4 +75,10 @@ private:
     void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);
     void DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha);
+void DrawText(
+    sf::RenderWindow& window,
+    const std::string& text,
+    sf::Vector2f position,
+    unsigned size,
+    float alpha);
 };

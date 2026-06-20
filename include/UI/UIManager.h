@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <UI/AnimationManager.h>
 #include <UI/RewardAnimation.h>
+#include <UI/TextPromptManager.h>
 
 struct Notification {
     std::optional<sf::Sprite> bg;
@@ -80,6 +81,7 @@ private:
 public:
     AnimationManager aniMgr;
     RewardAnimation rewardAni{aniMgr};
+    TextPromptManager textPrompt{aniMgr};
 
     UIManager(){}
     std::vector<GameEvent>& GetEvents(){ return events; }
@@ -99,6 +101,7 @@ public:
         panels.Update(dt);
         UpdateNotifications(dt);
         aniMgr.Update(dt);
+        textPrompt.Update(dt);
     }
 
     #pragma region 面板

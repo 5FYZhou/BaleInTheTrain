@@ -127,6 +127,8 @@ private:
     std::unordered_map<int, Vec2Preset> vec2Presets;
 
     bool started = false;
+    float delay = 0.f;
+    float delayTimer = 0.f;
 
 public:
     const auto &GetTracks() const { return tracks; }
@@ -140,8 +142,17 @@ public:
         vec2Presets.clear();
 
         finished = false;
-    }
 
+        started = false;
+        playing = false;
+
+        delay = 0.f;
+        delayTimer = 0.f;
+    }
+    void SetDelay(float sec)
+    {
+        delay = sec;
+    }
     //------------------------------------------
     // 带参数版本
     //------------------------------------------
@@ -207,22 +218,64 @@ public:
     void Start()
     {
         std::cout << "Animation:start" << std::endl;
+
         playing = true;
-        for (auto &t : tracks)
-            t->Start();
+
+        started = false;
+        delayTimer = 0.f;
+
+        if (delay <= 0.f)
+        {
+            started = true;
+
+            for (auto &t : tracks)
+                t->Start();
+        }
     }
 
     void Update(float dt)
     {
+        if (!playing)
+            return;
+
+        //----------------------------------
+        // 延迟阶段
+        //----------------------------------
+
+        if (!started)
+        {
+            delayTimer += dt;
+
+            if (delayTimer >= delay)
+            {
+                started = true;
+
+                for (auto &t : tracks)
+                    t->Start();
+            }
+
+            return;
+        }
+
+        //----------------------------------
+        // 正常播放
+        //----------------------------------
+
         for (auto &t : tracks)
             t->Update(dt);
 
-        tracks.erase(std::remove_if(tracks.begin(), tracks.end(),
-                                    [](auto &t)
-                                    { return t->Finished(); }),
-                     tracks.end());
+        tracks.erase(
+            std::remove_if(
+                tracks.begin(),
+                tracks.end(),
+                [](auto &t)
+                {
+                    return t->Finished();
+                }),
+            tracks.end());
 
         finished = tracks.empty();
+
         if (finished)
         {
             playing = false;
@@ -235,6 +288,14 @@ public:
     bool IsIdle() const
     {
         return tracks.empty() && floatPresets.empty() && vec2Presets.empty();
+    }
+    bool IsWaiting() const
+    {
+        return playing && !started;
+    }
+    bool HasStarted() const
+    {
+        return started;
     }
 };
 
@@ -275,8 +336,7 @@ public:
 
         if (it->second->playing)
         {
-            std::cout << "[Warning] Animation '" << name
-                      << "' is currently playing.\n";
+            //std::cout << "[Warning] Animation '" << name << "' is currently playing.\n";
         }
 
         return it->second;
@@ -306,4 +366,3 @@ public:
         return it != animations.end() && it->second->playing;
     }
 };
-
