@@ -186,6 +186,13 @@ void Game::Logic(float dt)
         }
     }
 
+    // 判断是否显示对话奖励卡牌
+    if(textHintMgr.ShouldShowRewardCards()){
+        textHintMgr.rewardAnim.Set(player.GetPileCards());
+    }
+    if(textHintMgr.ShouldStartRewardAnimation()){
+        textHintMgr.rewardAnim.Start();
+    }
     ProcessEvents();
 }
 
@@ -452,25 +459,13 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
-        if(textHintMgr.ShouldShowRewardCards()){
-            //textHintMgr.introRewardFading = false;
-            auto& rewardAni = textHintMgr.rewardAnim;
-            rewardAni.Set(player.GetPileCards());
+        for (auto& a : textHintMgr.rewardAnim.anims) {
+            renderer.DrawCard(window, a.card, a.card.alpha);
         }
-        if(textHintMgr.ShouldStartRewardAnimation()){
-            textHintMgr.rewardAnim.Start();
-        }
-        for (auto& a : textHintMgr.rewardAnim.anims)
-    {
-        //renderer.DrawCard(window, a.card, a.card.alpha);
-    }
-        renderer.DrawCardRewards(window, player.GetPileCards(), textHintMgr.GetRewardAlpha());
-        if (textHintMgr.IsMovementHintVisible())
-        {
+        if (textHintMgr.IsMovementHintVisible()) {
             renderer.DrawMovementHint(window);
         }
-        if (textHintMgr.IsDoorHintVisible())
-        {
+        if (textHintMgr.IsDoorHintVisible()) {
             renderer.DrawCenteredText(
                 window,
                 textHintMgr.GetDoorHintText(),

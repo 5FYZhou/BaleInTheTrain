@@ -29,6 +29,7 @@ public:
     };
 
     std::vector<RewardCardAnim> anims;
+    bool hasInit = false;
 
 private:
     float Ease(float t)
@@ -36,7 +37,7 @@ private:
         return t * t * (3.f - 2.f * t);
     }
 
-    sf::Vector2f backpack = {1695.f, 25.f};
+    sf::Vector2f backpack = {1735.f, 67.f};
 
     // =========================
     // ⭐ 扇形生成（只负责摆出来）
@@ -65,11 +66,11 @@ private:
 
 public:
 
-    // =========================================================
     // ⭐ ① 入口1：只“出现扇形卡牌”
-    // =========================================================
     void Set(const std::vector<PileType>& cards)
     {
+        if(hasInit) return;
+        hasInit = true;
         anims.clear();
 
         sf::Vector2f strikeCenter = {960.f, 380.f};
@@ -97,21 +98,13 @@ public:
                 RewardCardAnim a;
                 a.card.texType = fan.texType;
 
-                // ⭐只负责“显示位置”
-                a.startPos = fan.basePosition;
-                a.endPos = fan.basePosition; // 不动
-
                 a.card.basePosition = fan.basePosition;
+                a.card.alpha = 255.f;
+                a.card.rotation = fan.rotation;
+                a.card.scale = 0.58f;
 
-                a.startScale = 0.58f;
-                a.endScale = 0.58f;
-
-                a.startAlpha = 255.f;
-                a.endAlpha = 255.f;
-
-                a.duration = 0.001f; // 不动画
-
-                a.active = true;
+                a.active = false;
+                a.done = false;
 
                 anims.push_back(a);
             }
@@ -121,9 +114,7 @@ public:
         build(defend, defendCenter);
     }
 
-    // =========================================================
     // ⭐ ② 入口2：开始“收集动画”
-    // =========================================================
     void Start()
     {
         for (auto& a : anims)
@@ -134,10 +125,10 @@ public:
             a.t = 0.f;
             a.duration = 0.7f;
 
-            a.startScale = 0.58f;
+            a.startScale = a.card.scale;
             a.endScale = 0.0f;
 
-            a.startAlpha = 255.f;
+            a.startAlpha = a.card.alpha;
             a.endAlpha = 0.f;
 
             a.active = true;
@@ -145,9 +136,7 @@ public:
         }
     }
 
-    // =========================================================
     // ⭐ Update（统一执行动画）
-    // =========================================================
     void Update(float dt)
     {
         for (auto& a : anims)
@@ -187,8 +176,8 @@ public:
 class TextHintManager {
 public:
     RewardAnimation rewardAnim;
-    bool introRewardFading = false;
-bool rewardAnimTriggered = false;
+    bool rewardAnimTriggered = false;
+    bool needToShowCard = true;
     TextHintManager();
     ~TextHintManager() = default;
 
@@ -203,30 +192,26 @@ bool rewardAnimTriggered = false;
     std::size_t GetCurrentIndex() const { return currentIndex; }
     const std::string& GetCurrentText() const;
 
-    bool IsShowingReward() const { return introRewardAlpha > 0.f; }
-    float GetRewardAlpha() const { return introRewardAlpha; }
-    void StartRewardFade();
-    void UpdateRewardFade(float dt);
-    bool ShouldShowRewardCards() const
-{
-    return isActive && currentIndex >= INTRO_BACKPACK_INDEX;
-}
-bool ShouldStartRewardAnimation() const
-{
-    // 进入该句对话瞬间触发一次
-    return isActive &&
-           currentIndex == INTRO_BACKPACK_INDEX &&
-           !introRewardFading;
-}
+    bool ShouldShowRewardCards() {
+        if(needToShowCard && isActive && currentIndex == INTRO_BACKPACK_INDEX){
+            rewardAnimTriggered = true;
+           needToShowCard = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStartRewardAnimation() {
+        if(rewardAnimTriggered && isActive && currentIndex > INTRO_BACKPACK_INDEX){
+            rewardAnimTriggered = false;
+            return true;
+        }
+        return false;
+    }
 
     bool IsMovementHintVisible() const { return movementHintVisible; }
     void ShowMovementHint();
     void HideMovementHint();
     void UpdateMovementHint(float dt);
-
-    bool ShouldShowReward() const {
-        return isActive && currentIndex == INTRO_BACKPACK_INDEX && !introRewardFading;
-    }
 
     void ShowDoorHint();
     void HideDoorHint();
@@ -242,8 +227,6 @@ private:
     std::vector<std::string> dialogTexts;
     bool isActive = false;
     std::size_t currentIndex = 0;
-
-    float introRewardAlpha = 0.f;
 
     bool movementHintVisible = false;
     float movementHintTimer = 0.f;
