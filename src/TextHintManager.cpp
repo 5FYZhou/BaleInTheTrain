@@ -1,5 +1,5 @@
-#include "TextHintManager.h"
-#include "AudioManager.h"
+#include "UI/TextHintManager.h"
+#include "Tools/AudioManager.h"
 
 #include <algorithm>
 
@@ -109,7 +109,6 @@ void TextHintManager::Update(float dt)
 {
     UpdateMovementHint(dt);
     UpdateDoorHint(dt);
-    rewardAnim.Update(dt);
 }
 
 

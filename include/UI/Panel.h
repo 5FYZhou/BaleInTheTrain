@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include "Constants.h"
-#include "ResourceManager.h"
+#include "Tools/ResourceManager.h"
 
 enum class PanelType { None = 0, Setting, Backpack, Discard, DealCard, CardsInHand };
 enum class PanelLayer { Bottom = 0, Middle, Top, Count };

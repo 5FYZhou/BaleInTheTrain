@@ -29,6 +29,12 @@ Game::Game()
     uiMgr.DrawPanels(window);
     window.display();
     uiMgr.Close(PanelType::Setting);
+
+    ctx.ui = &uiMgr;
+    ctx.scene = &sceneMgr;
+    //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
+    ctx.rm = &rm;
+    ctx.audio = &audioMgr;
 }
 
 Game::~Game()
@@ -188,10 +194,10 @@ void Game::Logic(float dt)
 
     // 判断是否显示对话奖励卡牌
     if(textHintMgr.ShouldShowRewardCards()){
-        textHintMgr.rewardAnim.Set(player.GetPileCards());
+        uiMgr.rewardAni.Set(player.GetPileCards());
     }
     if(textHintMgr.ShouldStartRewardAnimation()){
-        textHintMgr.rewardAnim.Start();
+        uiMgr.rewardAni.Start();
     }
     ProcessEvents();
 }
@@ -460,8 +466,8 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
-        for (auto& a : textHintMgr.rewardAnim.anims) {
-            renderer.DrawCard(window, a.card, a.card.alpha);
+        for (auto& a : uiMgr.rewardAni.cards) {
+            renderer.DrawCard(window, a, a.alpha);
         }
         if (textHintMgr.IsMovementHintVisible()) {
             renderer.DrawMovementHint(window);
@@ -497,6 +503,16 @@ void Game::Draw()
     // UI面板
     uiMgr.DrawPanels(window);
     uiMgr.DrawNotifications(window);
+    for (auto& p : uiMgr.textPrompt.prompts)
+        {
+            renderer.DrawText(
+                window,
+                p->text,
+                p->position,
+                p->size,
+                p->alpha
+            );
+        }
 
     // 切场景遮罩
     if (sceneMgr.GetFadeAlpha() > 0.f)

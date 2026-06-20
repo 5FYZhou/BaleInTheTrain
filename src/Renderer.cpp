@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include <iomanip>
 #include <memory>
 #include <algorithm>
@@ -243,64 +243,6 @@ void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float al
     window.draw(sprite);
 }
 
-void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsT, float alpha)
-{
-    if (alpha <= 0.f) return;
-
-    int strikeIndex = 0;
-    int defendIndex = 0;
-
-    std::vector<PileType> strikeCards;
-    std::vector<PileType> defendCards;
-
-    for (auto c : cardsT)
-    {
-        if (c == PileType::Strike) strikeCards.push_back(c);
-        else if (c == PileType::Defend) defendCards.push_back(c);
-    }
-
-    // =========================
-    // ⭐ Strike（上排扇形）
-    // =========================
-    for (int i = 0; i < strikeCards.size(); i++)
-    {
-        CardView cv = MakeFanCard(
-            strikeCards[i],
-            i,
-            (int)strikeCards.size(),
-            {960.f, 380.f},   // ⭐屏幕中心上方
-            0.f,
-            80.f,
-            18.f
-        );
-
-        DrawCard(window, cv, alpha);
-    }
-
-    // =========================
-    // ⭐ Defend（下排扇形）
-    // =========================
-    for (int i = 0; i < defendCards.size(); i++)
-    {
-        CardView cv = MakeFanCard(
-            defendCards[i],
-            i,
-            (int)defendCards.size(),
-            {960.f, 500.f},   // ⭐屏幕中心下方
-            0.f,
-            80.f,
-            18.f
-        );
-
-        DrawCard(window, cv, alpha);
-    }
-
-    if (strikeCards.size() + defendCards.size() != cardsT.size())
-    {
-        std::cout << "Renderer: undefined card type\n";
-    }
-}
-
 void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha)
 {
     sf::Text t(*font);
@@ -325,3 +267,32 @@ void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& tex
     window.draw(t);
 }
 
+void Renderer::DrawText(
+    sf::RenderWindow& window,
+    const std::string& text,
+    sf::Vector2f position,
+    unsigned size,
+    float alpha)
+{
+    sf::Text sfText(*font);
+
+    sfText.setString(text);
+    sfText.setCharacterSize(size);
+
+    auto bounds = sfText.getLocalBounds();
+
+    sfText.setOrigin({
+        bounds.position.x + bounds.size.x * 0.5f,
+        bounds.position.y + bounds.size.y * 0.5f
+    });
+
+    sfText.setPosition(position);
+
+    auto color = sfText.getFillColor();
+    color.a = static_cast<std::uint8_t>(
+        std::clamp(alpha, 0.f, 255.f));
+
+    sfText.setFillColor(color);
+
+    window.draw(sfText);
+}
