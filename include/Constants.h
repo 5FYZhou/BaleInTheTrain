@@ -263,6 +263,27 @@ struct GameData {
     int level = 0;
 };
 
+enum class CardAnimState { Idle, Entering, Exiting };
+struct CardView {
+    PileType cardType;
+    TextureType texType;
+
+    sf::Vector2f basePosition = {-100, -100};
+    float rotation = 0.f;
+    float alpha;
+
+    CardAnimState state = CardAnimState::Idle;
+
+    sf::Vector2f animStart;
+    sf::Vector2f animEnd;
+    float animTime = 0.f;
+
+    float scale = 0.7f;
+    float startScale = 0.7f;
+    float targetScale = 0.7f;
+
+    float startRotation = 0.f;
+};
 
 inline static void scaleToWindow(sf::Sprite& sprite){
     const auto size = sprite.getTexture().getSize();
@@ -288,3 +309,13 @@ inline static void centerTextX(sf::Text& text){
     text.setPosition({960.f, text.getPosition().y});
 }
 
+inline static void centerSpriteX(sf::Sprite& text){
+    auto bounds = text.getLocalBounds();
+
+    text.setOrigin({
+        bounds.position.x + bounds.size.x / 2.f,
+        bounds.position.y + bounds.size.y / 2.f
+    });
+
+    text.setPosition({960.f, text.getPosition().y});
+}

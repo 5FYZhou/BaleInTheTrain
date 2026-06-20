@@ -8,26 +8,7 @@
 enum class PanelType { None = 0, Setting, Backpack, Discard, DealCard, CardsInHand };
 enum class PanelLayer { Bottom = 0, Middle, Top, Count };
 
-enum class CardAnimState { Idle, Entering, Exiting };
-struct CardView {
-    PileType cardType;
-    TextureType texType;
 
-    sf::Vector2f basePosition = {-100, -100};
-    float rotation = 0.f;
-
-    CardAnimState state = CardAnimState::Idle;
-
-    sf::Vector2f animStart;
-    sf::Vector2f animEnd;
-    float animTime = 0.f;
-
-    float scale = 0.7f;
-    float startScale = 0.7f;
-    float targetScale = 0.7f;
-
-    float startRotation = 0.f;
-};
 
 class Panel {
 protected:

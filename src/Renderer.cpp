@@ -61,8 +61,9 @@ void Renderer::Init() {
     hpText->setPosition({92.f, 35.f});
 
     dialogBox = new sf::Sprite(rm.getTexture(TextureType::DialogBox));
-    dialogBox->setPosition({260.f, 770.f});
+    dialogBox->setPosition({260.f, 870.f});
     dialogBox->setScale({1.0f, 1.0f});
+    centerSpriteX(*dialogBox);
 
     dialogText = new sf::Text(*font);
     dialogText->setCharacterSize(30);
@@ -74,7 +75,7 @@ void Renderer::Init() {
     dialogHintText->setString(utf8("点击鼠标左键 / 空格 / 回车 继续"));
     dialogHintText->setCharacterSize(22);
     dialogHintText->setFillColor(sf::Color(230, 230, 230, 210));
-    dialogHintText->setPosition({1335.f, 940.f});
+    dialogHintText->setPosition({1335.f, 920.f});
 
     movementHintText = new sf::Text(*font);
     movementHintText->setString(utf8("按 A / D 或方向键左右移动"));
@@ -221,14 +222,24 @@ void Renderer::DrawMovementHint(sf::RenderWindow& window){
     }
 }
 
-void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float alpha){
+void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float alpha)
+{
     sf::Sprite sprite(rm.getTexture(card.texType));
+
     const auto size = sprite.getTexture().getSize();
-    sprite.setOrigin({static_cast<float>(size.x) * 0.5f, static_cast<float>(size.y) * 0.5f});
+    sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
+
     sprite.setPosition(card.basePosition);
-    sprite.setScale({0.58f, 0.58f});
+
+    float scale = (card.scale > 0.f) ? card.scale : 0.58f;
+    sprite.setScale({scale, scale});
+
     sprite.setRotation(sf::degrees(card.rotation));
-    sprite.setColor(sf::Color(255, 255, 255, static_cast<std::uint8_t>(std::clamp(alpha, 0.f, 255.f))));
+
+    sf::Color c = sprite.getColor();
+    c.a = static_cast<std::uint8_t>(std::clamp(alpha, 0.f, 255.f));
+    sprite.setColor(c);
+
     window.draw(sprite);
 }
 
@@ -293,7 +304,7 @@ void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileT
 void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha)
 {
     sf::Text t(*font);
-    t.setString(text);
+    t.setString(utf8(text));
     t.setCharacterSize(40);
 
     t.setFillColor(sf::Color(255, 255, 255,

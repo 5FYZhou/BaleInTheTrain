@@ -17,9 +17,7 @@ std::vector<std::string> DefaultIntroDialog() {
 const std::string TextHintManager::DOOR_HINT_TEXT = "一扇有三把锁的门";
 
 TextHintManager::TextHintManager()
-    : dialogTexts(DefaultIntroDialog())
-{
-}
+    : dialogTexts(DefaultIntroDialog()){}
 
 void TextHintManager::Initialize(AudioManager* audioMgr)
 {
@@ -31,10 +29,10 @@ void TextHintManager::ResetState()
 {
     isActive = false;
     currentIndex = 0;
-    introRewardAlpha = 0.f;
-    introRewardFading = false;
     movementHintVisible = false;
     movementHintTimer = 0.f;
+    rewardAnimTriggered = false;
+    needToShowCard = true;
 }
 
 void TextHintManager::StartDialog()
@@ -45,8 +43,6 @@ void TextHintManager::StartDialog()
 
     isActive = true;
     currentIndex = 0;
-    introRewardAlpha = 0.f;
-    introRewardFading = false;
     movementHintVisible = false;
     movementHintTimer = 0.f;
 }
@@ -59,22 +55,14 @@ void TextHintManager::StartDialog(const std::vector<std::string>& dialogs)
 
 void TextHintManager::AdvanceDialog()
 {
-    if (!isActive) {
-        return;
-    }
+    if (!isActive) return;
 
     PlayDialogSound();
 
-    if (currentIndex == INTRO_BACKPACK_INDEX) {
-        introRewardFading = true;
-        introRewardAlpha = 255.f;
-    }
-
-    if (currentIndex + 1 < dialogTexts.size()) {
+    if (currentIndex + 1 < dialogTexts.size())
         ++currentIndex;
-    } else {
+    else
         EndDialog();
-    }
 }
 
 void TextHintManager::EndDialog()
@@ -93,25 +81,6 @@ const std::string& TextHintManager::GetCurrentText() const
 
     static const std::string empty;
     return empty;
-}
-
-void TextHintManager::StartRewardFade()
-{
-    introRewardFading = true;
-    introRewardAlpha = 255.f;
-}
-
-void TextHintManager::UpdateRewardFade(float dt)
-{
-    if (introRewardFading) {
-        introRewardAlpha -= DIALOG_FADE_OUT_SPEED * dt;
-        if (introRewardAlpha <= 0.f) {
-            introRewardAlpha = 0.f;
-            introRewardFading = false;
-        }
-    } else if (isActive && currentIndex == INTRO_BACKPACK_INDEX && introRewardAlpha < 255.f) {
-        introRewardAlpha = std::min(255.f, introRewardAlpha + DIALOG_FADE_IN_SPEED * dt);
-    }
 }
 
 void TextHintManager::ShowMovementHint()
@@ -135,12 +104,14 @@ void TextHintManager::UpdateMovementHint(float dt)
     }
 }
 
+
 void TextHintManager::Update(float dt)
 {
-    UpdateRewardFade(dt);
     UpdateMovementHint(dt);
     UpdateDoorHint(dt);
+    rewardAnim.Update(dt);
 }
+
 
 void TextHintManager::PlayDialogSound()
 {
