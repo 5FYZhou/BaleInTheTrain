@@ -10,6 +10,8 @@
 #include <random>
 #include <vector>
 
+class TextPromptManager;
+
 int getRandomInt(int min, int max);
 
 struct BattleState {
@@ -32,6 +34,7 @@ struct BattleState {
     bool isPlayerTurn = true;
 
     int defend_num = 0;
+    int thornsdata = 0; //被攻击时造成的反伤
     Buff_Debuff_Vec buff_debuff_vec;
 
     // Persistent and turn-scoped combat effects.
@@ -64,10 +67,13 @@ private:
     void DealDirectDamage(Enemy& enemy, int damage);
     void DealDirectDamage(int damage);
     void GainBlock(int amount, Enemy* enemy);
+    void sufferThorns(Enemy &enemy,int damage);
+    void sufferThorns(int damage);
 
 public:
     BattleState state;
     std::vector<GameEvent> events;
+    TextPromptManager* text;
 
     void StartBattle(const std::vector<Enemy>& initialEnemies,
                      const std::vector<Card>& cards,

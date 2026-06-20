@@ -37,7 +37,7 @@ private:
     unsigned int windowHeight = 1080;
     RenderWindow window;
     
-    GameContext ctx;
+    //GameContext ctx;
     ResourceManager rm;
     Renderer renderer;
     TimeSystem timeSystem;

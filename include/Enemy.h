@@ -11,7 +11,7 @@ inline const std::unordered_map<EnemyType, std::tuple<sf::Vector2f, std::vector<
 
 struct Plan
 {
-    int num_of_att_ot_def;
+    int data;
     PlanType plantype;
 };
 struct enemy_data
@@ -36,10 +36,13 @@ public:
 
     int sum_health; // 总生命值
     int cur_health; // 当前生命值
-    int defend_num = 0;
     bool dead;                          // 是否死亡
+
     std::vector<Plan> allPlans;         // 回合计划（0-攻击，1-防御，2-增益，3-减益）
-    int strength = 0;
+    
+    int strength = 0;   //攻击时增加对应的力量值
+    int thornsdata = 0;  //被攻击时造成的反伤
+    int defend_num = 0;
     Buff_Debuff_Vec buff_debuff_vec;       // 状态效果（如中毒、虚弱等）
     std::vector<ItemType> droppedItems; // 被击败后掉落的物品
 
@@ -164,10 +167,15 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
          "车灯",
          50,
          std::vector<Plan>({
-             {5, PlanType::attack},
-             {3, PlanType::defend},
-             {7, PlanType::attack},
-             {3, PlanType::defend},
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7,PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
          })}},
 
     // 示例3：车票怪
@@ -175,11 +183,53 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
      enemy_data{
          EnemyType::TicketMonster,
          "车票怪",
-         30,
+         60,
          std::vector<Plan>({
-             {4, PlanType::attack},
-             {5, PlanType::defend},
-             {6, PlanType::attack},
-             {5, PlanType::defend},
+             {8, PlanType::attack},
+             {2, PlanType::power_up},
+             {8, PlanType::attack},
+             {3, PlanType::power_up},
+             {8, PlanType::attack},
+             {10, PlanType::attack},
+             {3, PlanType::power_up},
+             {10, PlanType::attack},
+             {8,PlanType::defend},
          })}},
+    //车轮怪
+    {EnemyType::TicketMonster,
+     enemy_data{
+         EnemyType::TicketMonster,
+         "车轮怪",
+         50,
+         std::vector<Plan>({
+             {2, PlanType::thorns},
+             {5, PlanType::attack},
+             {2, PlanType::thorns},
+             {6, PlanType::attack},
+             {3, PlanType::thorns},
+             {8, PlanType::attack},
+             {10, PlanType::attack},
+             {3, PlanType::thorns},
+             {7, PlanType::attack},
+             {10,PlanType::defend},
+         })}},
+    //过去死亡的你
+    {EnemyType::Past_YOU,
+     enemy_data{
+         EnemyType::Past_YOU,
+         "？？？（█澶辫触鑰�）",
+         100,
+         std::vector<Plan>({
+             {4, PlanType::thorns},
+             {10, PlanType::attack},
+             {8, PlanType::attack},
+             {3, PlanType::power_up},
+             {2, PlanType::vulnerable},
+             {8, PlanType::attack},
+             {10, PlanType::attack},
+             {3, PlanType::easy_to_attack},
+             {7, PlanType::attack},
+             {10,PlanType::defend},
+         })}},
+
 };

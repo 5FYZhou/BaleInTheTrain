@@ -30,13 +30,12 @@ Game::Game()
     window.display();
     uiMgr.Close(PanelType::Setting);
 
-    ctx.ui = &uiMgr;
-    ctx.scene = &sceneMgr;
+    //ctx.ui = &uiMgr;
+    //ctx.scene = &sceneMgr;
     //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
-    ctx.rm = &rm;
-    ctx.audio = &audioMgr;
-
-    playerDeadCnt = 0;
+    //ctx.rm = &rm;
+    //ctx.audio = &audioMgr;
+    btLogic.text = &uiMgr.textPrompt;
 }
 
 Game::~Game()
@@ -69,11 +68,8 @@ void Game::Init()
 
     keyCnt = 0;
 
-    if(playerDeadCnt == 0)
-        player.InitCards();
-    else{
-        sceneMgr.AddGhost(ghost.gameSceneID, {ghost.posX, PlayerGroundY}, ghost.keyNum);
-    }
+    // 暂时指定卡片
+    player.InitCards();
 }
 
 void Game::HandleInput(float dt)
@@ -250,7 +246,6 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::KeysInsufficient:
         std::cout << "Event::KeysInsufficient" << std::endl;
         textHintMgr.ShowDoorHint();
-        uiMgr.textPrompt.Show("一扇", PromptStyle::Center);
         break;
     // 钥匙足够打开门
     case EventType::Win:
@@ -334,6 +329,7 @@ void Game::HandleEvents(const GameEvent &event)
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Enemy & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
                 btLogic.waitPlayerInput(idx, *sceneMgr.GetScene().GetClickEnemy());
+                player.currentHP = (btLogic.state.playerHP);
 
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
@@ -446,12 +442,6 @@ void Game::HandleEvents(const GameEvent &event)
         else if (event.val == 1)
         {
             player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
-            ghost.gameSceneID = sceneMgr.GetGameSceneIdx();
-            ghost.keyNum = keyCnt;
-            ghost.posX = playerXBeforeBattle;
-            if(++playerDeadCnt > 1){
-
-            }
         }
         break;
     default:
@@ -494,7 +484,7 @@ void Game::Draw()
     // 敌人意图
     if (curSceneType == SceneType::Battle){
         const Enemy* e = sceneMgr.GetScene().GetClickEnemy();
-        int num = e->allPlans[btLogic.state.TurnCount - 1].num_of_att_ot_def;
+        int num = e->allPlans[btLogic.state.TurnCount - 1].data;
         PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;
         pos.x += 40;

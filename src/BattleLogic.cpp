@@ -1,4 +1,5 @@
 #include "BattleLogic.h"
+#include "UI/TextPromptManager.h"
 
 #include <algorithm>
 
@@ -270,6 +271,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
             return;
         DealDamage(enemy, 6);
         DiscardPlayedCard(idx);
+        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
         break;
 
     case PileType::Rage:
@@ -278,6 +280,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
         DealDamage(enemy, 8 + state.rampageBonus);
         state.rampageBonus += 5;
         DiscardPlayedCard(idx);
+        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
         break;
 
     case PileType::Heavy_strike:
@@ -286,12 +289,14 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
         DealDamage(enemy, 8);
         enemy.buff_debuff_vec.Add({2, BuffDebuffType::easy_to_attack});
         DiscardPlayedCard(idx);
+        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
         break;
 
     case PileType::Anger:
         DealDamage(enemy, 6);
         state.discardPile.push_back(state.handCards[idx]);
         DiscardPlayedCard(idx);
+        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
         break;
 
     case PileType::Continuous_punches:
@@ -299,6 +304,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
             return;
         DealDamage(enemy, 2, 4);
         DiscardPlayedCard(idx);
+        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
         break;
 
     case PileType::Observe_weaknesses:
@@ -342,6 +348,7 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
                               const std::vector<Card> &cards,
                               Player &player)
 {
+    text->Show("AAAA", PromptStyle::Center);
     state = BattleState{};
     state.playerHP = player.GetCurrentHP();
     state.maxHP = player.GetMaxHP();
@@ -372,13 +379,26 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
     {
     case PlanType::attack:
     {
-        int damage = std::max(0, plan.num_of_att_ot_def);
+        int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
+        if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
         player.currentHP = state.playerHP;
         break;
     }
     case PlanType::defend:
-        enemy.defend_num += plan.num_of_att_ot_def;
+        enemy.defend_num += plan.data;
+        break;
+    case PlanType::easy_to_attack:
+        state.buff_debuff_vec.Add({plan.data,BuffDebuffType::easy_to_attack});
+        break;
+    case PlanType::power_up:
+        enemy.strength += plan.data;
+        break;
+    case PlanType::thorns:
+        enemy.thornsdata += plan.data;
+        break;
+    case PlanType::vulnerable:
+        state.buff_debuff_vec.Add({plan.data,BuffDebuffType::vulnerable});
         break;
     default:
         break;
@@ -429,4 +449,12 @@ bool BattleLogic::HasStatus(const std::vector<BDinfo> buff_debuffs, BuffDebuffTy
             return true;
     }
     return false;
+}
+
+void BattleLogic::sufferThorns(Enemy &enemy,int damage){
+    enemy.cur_health -= damage;
+}
+
+void BattleLogic::sufferThorns(int damage){
+    state.playerHP -= damage;
 }
