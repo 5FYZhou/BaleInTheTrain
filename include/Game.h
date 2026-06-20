@@ -1,16 +1,17 @@
 #pragma once
 
-#include "AudioManager.h"
+#include "Tools/AudioManager.h"
 #include "Constants.h"
-#include "TextHintManager.h"
+#include "UI/TextHintManager.h"
 #include "Input.h"
 #include "Player.h"
 #include "Renderer.h"
-#include "ResourceManager.h"
-#include "SceneManager.h"
-#include "TimeSystem.h"
+#include "Tools/ResourceManager.h"
+#include "Scene/SceneManager.h"
+#include "Tools/TimeSystem.h"
 #include "BattleLogic.h"
-#include "UIManager.h"
+#include "UI/UIManager.h"
+#include "GameContext.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <unordered_map>
@@ -29,7 +30,8 @@ private:
     unsigned int windowWidth = 1920;
     unsigned int windowHeight = 1080;
     RenderWindow window;
-
+    
+    GameContext ctx;
     ResourceManager rm;
     Renderer renderer;
     TimeSystem timeSystem;

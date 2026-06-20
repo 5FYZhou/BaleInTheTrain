@@ -1,4 +1,4 @@
-#include "Panel.h"
+#include "UI/Panel.h"
 
 #include <algorithm>
 #include <unordered_map>

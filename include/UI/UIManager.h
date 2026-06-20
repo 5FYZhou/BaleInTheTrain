@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Constants.h"
-#include "ResourceManager.h"
+#include "Tools/ResourceManager.h"
 #include "Panel.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <UI/AnimationManager.h>
+#include <UI/RewardAnimation.h>
 
 struct Notification {
     std::optional<sf::Sprite> bg;
@@ -31,6 +33,7 @@ private:
     ResourceManager* resourceManager = nullptr;
     std::vector<GameEvent> events;
     std::vector<Notification> notifications;
+
     PanelManager panels;
 
     const sf::Font* font = nullptr;
@@ -75,6 +78,8 @@ private:
         );
     }
 public:
+    AnimationManager aniMgr;
+    RewardAnimation rewardAni{aniMgr};
 
     UIManager(){}
     std::vector<GameEvent>& GetEvents(){ return events; }
@@ -93,6 +98,7 @@ public:
     void Update(float dt){
         panels.Update(dt);
         UpdateNotifications(dt);
+        aniMgr.Update(dt);
     }
 
     #pragma region 面板

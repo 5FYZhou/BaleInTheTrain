@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Constants.h"
-#include "TextHintManager.h"
+#include "UI/TextHintManager.h"
 #include "Enemy.h"
-#include "ResourceManager.h"
+#include "Tools/ResourceManager.h"
 #include "Player.h"
-#include "UIManager.h"
-#include "Scene.h"
+#include "UI/UIManager.h"
+#include "Scene/Scene.h"
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include <vector>
@@ -74,6 +74,5 @@ private:
     
     void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);
-    void DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsV, float alpha);
     void DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha);
 };
