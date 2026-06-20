@@ -213,12 +213,12 @@ private:
     ResourceManager* rm = nullptr;
 
     std::vector<CardView> cards;
-    bool hasSelectedCard;
-    PileType selectedCard;
+    bool hasSelectedCard = false;
+    PileType selectedCard = PileType::Strike;
     int hoveredIndex = -1;
     int selectedIndex = -1;
 
-    int points;
+    int points = 0;
 
     std::optional<sf::Sprite> actionPoints;
     std::optional<sf::Text> pointText;

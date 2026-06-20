@@ -15,9 +15,25 @@ struct Item{
 };
 
 inline const std::vector<std::vector<Item>> itemInScene = {
-    { {{100.f, 100.f}, ItemType::Sacrifice}, {{200.f, 100.f}, ItemType::Strike} },
-    { {{100.f, 200.f}, ItemType::Strike}, {{200.f, 200.f}, ItemType::Strike}, {{150.f, 300.f}, ItemType::Defend} },
-    { {{100.f, 300.f}, ItemType::Strike}, {{200.f, 300.f}, ItemType::Strike}, {{150.f, 400.f}, ItemType::Defend}, {{150.f, 200.f}, ItemType::Key} }
+    {
+        {{550.f, 420.f}, ItemType::Rage},
+        {{780.f, 520.f}, ItemType::Shrug_off},
+        {{1010.f, 420.f}, ItemType::Heavy_strike},
+        {{1240.f, 520.f}, ItemType::Anger}
+    },
+    {
+        {{550.f, 520.f}, ItemType::Continuous_punches},
+        {{780.f, 420.f}, ItemType::Observe_weaknesses},
+        {{1010.f, 520.f}, ItemType::Activate_muscles},
+        {{1240.f, 420.f}, ItemType::Revitalize_spirit}
+    },
+    {
+        {{500.f, 420.f}, ItemType::Metallization},
+        {{720.f, 520.f}, ItemType::Unstoppable},
+        {{940.f, 420.f}, ItemType::Rampart},
+        {{1160.f, 520.f}, ItemType::Sacrifice},
+        {{1380.f, 420.f}, ItemType::Key}
+    }
 };
 
 inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {

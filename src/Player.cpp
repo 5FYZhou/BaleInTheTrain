@@ -1,67 +1,99 @@
 #include "Player.h"
-#include <cmath>
+
 #include <algorithm>
 
-Player::Player() 
-    : feet(350.f, 1028.f), height(454.f), groundY(1028.f) {
+namespace {
+
+int GetCardCost(PileType type)
+{
+    switch (type)
+    {
+    case PileType::Anger:
+    case PileType::Activate_muscles:
+    case PileType::Sacrifice:
+        return 0;
+    case PileType::Heavy_strike:
+    case PileType::Unstoppable:
+        return 2;
+    case PileType::Rampart:
+        return 3;
+    default:
+        return 1;
+    }
 }
 
-Player::~Player() {
+} // namespace
+
+Player::Player()
+    : feet(350.f, 1028.f), height(454.f), groundY(1028.f)
+{
 }
 
-void Player::Init(int fc){
-    frameCount = fc;
+Player::~Player() = default;
+
+void Player::Init(int frameCountValue)
+{
+    frameCount = frameCountValue;
     SetFeet({PlayerStartX, PlayerGroundY});
     SetFacing(1);
     SetHeight(PlayerHeight);
     SetSpeed(430.f);
-    //player.SetFrame(PlayerFrame::Stand);
     SetTextureIndex(0);
 }
-void Player::InitCards(){
-    for(int i = 0;i<5;++i){
-        cards.push_back({i,PileType::Strike,1});
-    }
-    for(int i = 5; i < 10;++i){
-        cards.push_back({i,PileType::Defend,1});
-    }
+
+void Player::InitCards()
+{
+    cards.clear();
+    for (int i = 0; i < 5; ++i)
+        cards.emplace_back(i, PileType::Strike, 1);
+
+    for (int i = 5; i < 10; ++i)
+        cards.emplace_back(i, PileType::Defend, 1);
 }
 
-void Player::AddCards(PileType p){
-    int idx = cards.size();
-    // 暂定全1
-    cards.push_back({idx, p, 1});
+void Player::AddCards(PileType type)
+{
+    const int id = static_cast<int>(cards.size());
+    cards.emplace_back(id, type, GetCardCost(type));
 }
 
-void Player::Move(int direction, float dt, bool canTranslate) {
-    if(direction == 0){
+void Player::Move(int direction, float dt, bool canTranslate)
+{
+    if (direction == 0)
+    {
         ResetToStand();
         isMoving = false;
         return;
     }
-    if(canTranslate)
+
+    if (canTranslate)
         feet.x += speed * direction * dt;
+
     SetFacing(direction);
     UpdateFrame(dt);
     isMoving = true;
 }
 
-void Player::ClampPosition(float minX, float maxX) {
-    feet.x = std::min(std::max(feet.x, minX), maxX);
+void Player::ClampPosition(float minX, float maxX)
+{
+    feet.x = std::clamp(feet.x, minX, maxX);
     feet.y = groundY;
 }
 
-void Player::UpdateFrame(float dt) {
+void Player::UpdateFrame(float dt)
+{
     walkTimer += dt;
-    if(walkTimer >= frameSpeed){
+    if (walkTimer >= frameSpeed)
+    {
         walkTimer = 0.f;
-        textureIndex = (textureIndex + 1) % frameCount; // Cycle through 3 frames
+        textureIndex = (textureIndex + 1) % frameCount;
     }
 }
 
-void Player::SetHP(int current, int max){
-    currentHP = std::clamp(current, 0, std::max(1, max));
+void Player::SetHP(int current, int max)
+{
     maxHP = std::max(1, max);
+    currentHP = std::clamp(current, 0, maxHP);
 }
 
 void Player::TakeDamage(int damage)

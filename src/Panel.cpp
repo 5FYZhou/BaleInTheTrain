@@ -489,6 +489,7 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
 
 void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
     points = point;
+    hasSelectedCard = false;
     hoveredIndex = -1;
     selectedIndex = -1;
 
@@ -692,6 +693,13 @@ void CardsInHandPanel::Update(float dt)
 
 bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
 {
+    if (!visible)
+        return false;
+
+    // Do not depend on a prior MouseMoved event. This also makes a direct
+    // click reliable when the battle scene has just finished fading in.
+    HandleMouseMoved(mousePos);
+
     if (hoveredIndex != -1)
     {
         if (!CanInteract(cards[hoveredIndex]))

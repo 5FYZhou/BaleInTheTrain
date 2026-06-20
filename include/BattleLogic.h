@@ -1,84 +1,86 @@
 #pragma once
+
+#include "BuffAndDebuff.h"
+#include "Card.h"
 #include "Constants.h"
 #include "Enemy.h"
-#include "Card.h"
 #include "Player.h"
-#include "Input.h"
-#include "BuffAndDebuff.h"
+
+#include <iostream>
 #include <random>
-#include<iostream>
-int getRandomInt(int min, int max); //生成随机数
+#include <vector>
+
+int getRandomInt(int min, int max);
+
 struct BattleState {
-   
-    int playerHP, maxHP;    // 玩家血量
-    //std::vector<Potion> potions; //药水
-    //std::vector<Relic> relics;    //遗物
+    int playerHP = 0;
+    int maxHP = 0;
+    int cardSum = 0;
 
+    std::vector<Enemy> enemies;
 
-    int cardSum; //卡牌总数
+    int actionPoints = 0;
+    int maxActionPoints = 3;
+    int dealNums = 5;
 
-    std::vector<Enemy> enemies;  // 当前场上敌人状态
+    std::vector<Card> dealPile;
+    std::vector<Card> handCards;
+    std::vector<Card> discardPile;
+    std::vector<Card> exhaustPile;
 
-    int actionPoints, maxActionPoints;  //行动点
+    int TurnCount = 0;
+    bool isPlayerTurn = true;
 
-    //int dealPileCount; //当前抽牌堆数
-    int dealNums = 5; //每回合开始抽牌数, 默认是5
-    //int discardPileCount; //当前弃牌堆数
-    std::vector<Card> dealPile; //抽牌堆
-    std::vector<Card> handCards;    //手牌
-    std::vector<Card> discardPile;  //弃牌堆
-    
-    int TurnCount; //回合数
-    bool isPlayerTurn; //是否玩家回合
-
-
-    //战斗相关buff/debuff/能力
     int defend_num = 0;
     Buff_Debuff_Vec buff_debuffs;
 
+    // Persistent and turn-scoped combat effects.
+    int strength = 0;
+    int temporaryStrength = 0;
+    int rampageBonus = 0;
+    int metallicize = 0;
+    int juggernautDamage = 0;
+    bool barricade = false;
 
+    int hoveredCardIndex = -1;
+    int selectedCardIndex = -1;
+    Card* pendingCard = nullptr;
+    bool cardIsUsed = false;
 
-    ////////// 临时交互状态
-    /*卡牌*/
-    int hoveredCardIndex = -1; // 当前悬停的手牌索引，-1表示没有悬停
-    int selectedCardIndex = -1; // 当前选中手牌索引，-1表示未选中
-    Card* pendingCard;          // 正在等待选目标的卡牌
-    bool cardIsUsed;    //选中的卡牌被使用
-    /*药水*/
-    int hoveredPotionIndex = -1; // 当前悬停药水索引，-1表示未悬停
-    int selectedPotionIndex = -1; // 当前选中药水索引，-1表示未选中
-    //Potion* pendingPotion;      // 正在等待选目标的药水
-    bool potionIsUsed;
+    int hoveredPotionIndex = -1;
+    int selectedPotionIndex = -1;
+    bool potionIsUsed = false;
 };
 
 class BattleLogic {
 private:
-    
+    bool SpendActionPoints(int cost);
+    void DiscardPlayedCard(int idx);
+    bool IsAttackCard(PileType type) const;
+    bool EnemyIntendsAttack(const Enemy& enemy) const;
+    bool EnemyHasStatus(const Enemy& enemy, BuffDebuffType type) const;
+    void DealDamage(Enemy& enemy, int baseDamage, int hitCount = 1, bool applyStrength = true);
+    void DealDirectDamage(Enemy& enemy, int damage);
+    void GainBlock(int amount, Enemy* enemy);
+
 public:
     BattleState state;
     std::vector<GameEvent> events;
-    void HandleInput(const sf::Vector2f& mousePos);
 
-    //场景-》战斗数据传递
-    void StartBattle(const std::vector<Enemy>& initialEnemies, const std::vector<Card>& Cards,  Player& player);
-    bool BattleFinished(std::vector<Enemy*> eys);//战斗结束结算画面，战斗-》场景数据传递
+    void StartBattle(const std::vector<Enemy>& initialEnemies,
+                     const std::vector<Card>& cards,
+                     Player& player);
+    bool BattleFinished(std::vector<Enemy*> enemies);
 
     void PilePre();
-    void TakePile(int n); // 抽n张牌
-    void PlayerStatusSettlement();//玩家状态结算
-    void waitPlayerInput(int idx, Player& player);//出牌效果执行
+    void TakePile(int n);
+    void PlayerStatusSettlement();
+    void waitPlayerInput(int idx, Player& player, Enemy* enemy = nullptr);
     void waitPlayerInput(int idx, Enemy& enemy);
-    void turnsOver();//手牌-》弃牌堆
-    void EnemyTurn(Player &player);       // 敌人行动，然后切回玩家
+    void turnsOver(Enemy* enemy = nullptr);
+    void EnemyTurn(Player& player, Enemy& enemy);
+
     std::vector<PileType> getHandCardsPile();
     std::vector<PileType> getdisCardPile();
     std::vector<PileType> getdealCardsPile();
-
-
-    
-    //void SelectCard(int handIndex);   // 点击手牌时调用，可能进入等待目标状态
-    //void SelectTarget(sf::Vector2i mousePos); // 多目标时根据点击确定目标
-   // void CancelSelection();     // 右键取消
-   // BattleState& GetState();    // 供Render读取
-    // ... 抽牌、弃牌、洗牌、伤害计算等内部方法
 };
