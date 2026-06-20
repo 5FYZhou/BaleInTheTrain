@@ -214,9 +214,9 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
              {10,PlanType::defend},
          })}},
     //过去死亡的你
-    {EnemyType::TicketMonster,
+    {EnemyType::Past_YOU,
      enemy_data{
-         EnemyType::TicketMonster,
+         EnemyType::Past_YOU,
          "？？？（█澶辫触鑰�）",
          100,
          std::vector<Plan>({
