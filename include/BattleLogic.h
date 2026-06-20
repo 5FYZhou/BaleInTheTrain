@@ -32,7 +32,7 @@ struct BattleState {
     bool isPlayerTurn = true;
 
     int defend_num = 0;
-    Buff_Debuff_Vec buff_debuffs;
+    Buff_Debuff_Vec buff_debuff_vec;
 
     // Persistent and turn-scoped combat effects.
     int strength = 0;
@@ -58,9 +58,11 @@ private:
     void DiscardPlayedCard(int idx);
     bool IsAttackCard(PileType type) const;
     bool EnemyIntendsAttack(const Enemy& enemy) const;
-    bool EnemyHasStatus(const Enemy& enemy, BuffDebuffType type) const;
+    bool HasStatus(const std::vector<BDinfo> buff_debuffs, BuffDebuffType type);
     void DealDamage(Enemy& enemy, int baseDamage, int hitCount = 1, bool applyStrength = true);
+    void DealDamage(int baseDamage, Enemy &enemy, bool applyStrength = true);
     void DealDirectDamage(Enemy& enemy, int damage);
+    void DealDirectDamage(int damage);
     void GainBlock(int amount, Enemy* enemy);
 
 public:

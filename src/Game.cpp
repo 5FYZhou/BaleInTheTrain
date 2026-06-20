@@ -29,6 +29,12 @@ Game::Game()
     uiMgr.DrawPanels(window);
     window.display();
     uiMgr.Close(PanelType::Setting);
+
+    ctx.ui = &uiMgr;
+    ctx.scene = &sceneMgr;
+    //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
+    ctx.rm = &rm;
+    ctx.audio = &audioMgr;
 }
 
 Game::~Game()
@@ -186,6 +192,15 @@ void Game::Logic(float dt)
         }
     }
 
+    // 判断是否显示对话奖励卡牌
+    if(textHintMgr.ShouldShowRewardCards()){
+        uiMgr.rewardAni.Set(player.GetPileCards());
+        std::cout<<"A"<<uiMgr.rewardAni.cards.size()<<std::endl;
+    }
+    if(textHintMgr.ShouldStartRewardAnimation()){
+        uiMgr.rewardAni.Start();
+        std::cout<<"B"<<uiMgr.rewardAni.cards.size()<<std::endl;
+    }
     ProcessEvents();
 }
 
@@ -452,13 +467,13 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
-        renderer.DrawCardRewards(window, player.GetPileCards(), textHintMgr.GetRewardAlpha());
-        if (textHintMgr.IsMovementHintVisible())
-        {
+        for (auto& a : uiMgr.rewardAni.cards) {
+            renderer.DrawCard(window, a, a.alpha);
+        }
+        if (textHintMgr.IsMovementHintVisible()) {
             renderer.DrawMovementHint(window);
         }
-        if (textHintMgr.IsDoorHintVisible())
-        {
+        if (textHintMgr.IsDoorHintVisible()) {
             renderer.DrawCenteredText(
                 window,
                 textHintMgr.GetDoorHintText(),

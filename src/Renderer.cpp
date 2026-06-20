@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include <iomanip>
 #include <memory>
 #include <algorithm>
@@ -61,8 +61,9 @@ void Renderer::Init() {
     hpText->setPosition({92.f, 35.f});
 
     dialogBox = new sf::Sprite(rm.getTexture(TextureType::DialogBox));
-    dialogBox->setPosition({260.f, 770.f});
+    dialogBox->setPosition({260.f, 870.f});
     dialogBox->setScale({1.0f, 1.0f});
+    centerSpriteX(*dialogBox);
 
     dialogText = new sf::Text(*font);
     dialogText->setCharacterSize(30);
@@ -74,7 +75,7 @@ void Renderer::Init() {
     dialogHintText->setString(utf8("点击鼠标左键 / 空格 / 回车 继续"));
     dialogHintText->setCharacterSize(22);
     dialogHintText->setFillColor(sf::Color(230, 230, 230, 210));
-    dialogHintText->setPosition({1335.f, 940.f});
+    dialogHintText->setPosition({1335.f, 920.f});
 
     movementHintText = new sf::Text(*font);
     movementHintText->setString(utf8("按 A / D 或方向键左右移动"));
@@ -221,79 +222,31 @@ void Renderer::DrawMovementHint(sf::RenderWindow& window){
     }
 }
 
-void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float alpha){
-    sf::Sprite sprite(rm.getTexture(card.texType));
-    const auto size = sprite.getTexture().getSize();
-    sprite.setOrigin({static_cast<float>(size.x) * 0.5f, static_cast<float>(size.y) * 0.5f});
-    sprite.setPosition(card.basePosition);
-    sprite.setScale({0.58f, 0.58f});
-    sprite.setRotation(sf::degrees(card.rotation));
-    sprite.setColor(sf::Color(255, 255, 255, static_cast<std::uint8_t>(std::clamp(alpha, 0.f, 255.f))));
-    window.draw(sprite);
-}
-
-void Renderer::DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsT, float alpha)
+void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float alpha)
 {
-    if (alpha <= 0.f) return;
+    sf::Sprite sprite(rm.getTexture(card.texType));
 
-    int strikeIndex = 0;
-    int defendIndex = 0;
+    const auto size = sprite.getTexture().getSize();
+    sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
 
-    std::vector<PileType> strikeCards;
-    std::vector<PileType> defendCards;
+    sprite.setPosition(card.basePosition);
 
-    for (auto c : cardsT)
-    {
-        if (c == PileType::Strike) strikeCards.push_back(c);
-        else if (c == PileType::Defend) defendCards.push_back(c);
-    }
+    float scale = (card.scale > 0.f) ? card.scale : 0.58f;
+    sprite.setScale({scale, scale});
 
-    // =========================
-    // ⭐ Strike（上排扇形）
-    // =========================
-    for (int i = 0; i < strikeCards.size(); i++)
-    {
-        CardView cv = MakeFanCard(
-            strikeCards[i],
-            i,
-            (int)strikeCards.size(),
-            {960.f, 380.f},   // ⭐屏幕中心上方
-            0.f,
-            80.f,
-            18.f
-        );
+    sprite.setRotation(sf::degrees(card.rotation));
 
-        DrawCard(window, cv, alpha);
-    }
+    sf::Color c = sprite.getColor();
+    c.a = static_cast<std::uint8_t>(std::clamp(alpha, 0.f, 255.f));
+    sprite.setColor(c);
 
-    // =========================
-    // ⭐ Defend（下排扇形）
-    // =========================
-    for (int i = 0; i < defendCards.size(); i++)
-    {
-        CardView cv = MakeFanCard(
-            defendCards[i],
-            i,
-            (int)defendCards.size(),
-            {960.f, 500.f},   // ⭐屏幕中心下方
-            0.f,
-            80.f,
-            18.f
-        );
-
-        DrawCard(window, cv, alpha);
-    }
-
-    if (strikeCards.size() + defendCards.size() != cardsT.size())
-    {
-        std::cout << "Renderer: undefined card type\n";
-    }
+    window.draw(sprite);
 }
 
 void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha)
 {
     sf::Text t(*font);
-    t.setString(text);
+    t.setString(utf8(text));
     t.setCharacterSize(40);
 
     t.setFillColor(sf::Color(255, 255, 255,

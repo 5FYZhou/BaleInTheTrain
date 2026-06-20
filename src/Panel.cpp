@@ -1,4 +1,4 @@
-#include "Panel.h"
+#include "UI/Panel.h"
 
 #include <algorithm>
 #include <unordered_map>
@@ -502,9 +502,7 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
     std::vector<CardView> newCards;
     std::vector<bool> usedOld(cards.size(), false);
 
-    // =========================
     // ⭐ 第一次直接弧形排列
-    // =========================
     if (first){
         cards.clear();
 
@@ -527,9 +525,7 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
         return;
     }
 
-    // =========================
     // ⭐ match existing
-    // =========================
     for (auto type : c)
     {
         bool found = false;
@@ -574,9 +570,7 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
 }
     }
 
-    // =========================
     // ⭐ 多余牌：飞出
-    // =========================
     for (int i = 0; i < cards.size(); i++)
     {
         if (!usedOld[i] && cards[i].state != CardAnimState::Exiting)
@@ -598,8 +592,7 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
     UpdateLayoutArc(); // ⭐关键
 }
 
-void CardsInHandPanel::UpdateLayoutArc()
-{
+void CardsInHandPanel::UpdateLayoutArc(){
     int n = 0;
     int total = 0;
 
@@ -637,9 +630,7 @@ void CardsInHandPanel::Update(float dt)
         float t = std::min(c.animTime, 1.f);
         float s = Smooth(t);
 
-        // =========================
         // ⭐进入动画
-        // =========================
         if (c.state == CardAnimState::Entering)
 {
     sf::Vector2f targetPos;
@@ -666,9 +657,7 @@ void CardsInHandPanel::Update(float dt)
     }
 }
 
-        // =========================
         // ⭐出牌动画
-        // =========================
         else if (c.state == CardAnimState::Exiting)
 {
     c.basePosition = Lerp(c.animStart, c.animEnd, s);
@@ -698,7 +687,7 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
 
     // Do not depend on a prior MouseMoved event. This also makes a direct
     // click reliable when the battle scene has just finished fading in.
-    HandleMouseMoved(mousePos);
+    //HandleMouseMoved(mousePos);
 
     if (hoveredIndex != -1)
     {

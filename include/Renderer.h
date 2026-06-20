@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Constants.h"
-#include "TextHintManager.h"
+#include "UI/TextHintManager.h"
 #include "Enemy.h"
-#include "ResourceManager.h"
+#include "Tools/ResourceManager.h"
 #include "Player.h"
-#include "UIManager.h"
-#include "Scene.h"
+#include "UI/UIManager.h"
+#include "Scene/Scene.h"
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include <vector>
@@ -37,7 +37,6 @@ private:
     // Helper methods
     sf::Sprite makeSprite(const sf::Texture& texture, sf::Vector2f position);
     //Button makeCenteredButton(const sf::Texture& texture, float centerY);
-    void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
     CardView MakeFanCard( PileType type, int index, int count, sf::Vector2f center, float yOffset, float spacingX, float angleRange){
         CardView cv;
         cv.texType = cardTexMap.at(type);
@@ -64,6 +63,7 @@ private:
     void Init();
     
     // Main drawing methods
+    void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
     void DrawPlayer(sf::RenderWindow& window, const Player& player);
     void DrawScene(sf::RenderWindow& window, const Scene& scene);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
@@ -74,6 +74,5 @@ private:
     
     void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);
-    void DrawCardRewards(sf::RenderWindow& window, const std::vector<PileType>& cardsV, float alpha);
     void DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha);
 };
