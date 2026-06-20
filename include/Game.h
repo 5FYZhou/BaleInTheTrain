@@ -19,6 +19,12 @@
 
 using namespace sf;
 
+struct deadPlayer{
+    int gameSceneID;
+    float posX;
+    int keyNum;
+};
+
 class Game {
 public:
     Game();
@@ -46,6 +52,8 @@ private:
     int keyCnt;
     float playerXBeforeBattle;
     int playerFaceBeforeBattle;
+    deadPlayer ghost;
+    int playerDeadCnt = 0;
 
     void Init();
     void Logic(float dt);

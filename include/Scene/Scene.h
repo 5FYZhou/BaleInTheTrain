@@ -89,8 +89,7 @@ public:
     const std::vector<SceneInteractable>& GetInteractables() const { return interactables; }
     SceneType GetType() const { return type; }
     TextureType GetBgTextrue() const { return bgTex; }
-    virtual const Enemy* GetEnemy() const{ return nullptr; }
-    virtual Enemy* GetEnemy() { return nullptr; }
+    virtual Enemy* GetClickEnemy() { return nullptr; }
     virtual std::vector<Enemy>* GetEnemyV() {return nullptr;}
 
     virtual void EnemyDrop() { return; }
@@ -129,8 +128,8 @@ public:
 class GameScene : public Scene {
 private:
     int idx;
-    Enemy enemy;
     std::vector<Enemy> ev;
+    Enemy* clickEnemy = nullptr;
     // 辅助函数：根据 EnemyType 从预制表中创建 Enemy
     void InitEnemy(Enemy& e) {
         auto it = g_prefabEnemies.find(e.ty);
@@ -145,8 +144,8 @@ private:
         throw std::runtime_error("Enemy type not found in prefab!");
     }
 public:
-    GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i), 
-     enemy(enemyInScene[idx].first, enemyInScene[idx].second) { 
+    GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i) { 
+        Enemy enemy(enemyInScene[idx].first, enemyInScene[idx].second);
         InitEnemy(enemy);
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
@@ -159,11 +158,12 @@ public:
         ev.push_back(enemy);
     }
     
-    const Enemy* GetEnemy() const override { return &enemy; }
-    Enemy* GetEnemy() override { return &enemy; }
+    Enemy* GetClickEnemy() override { return clickEnemy; }
     std::vector<Enemy>* GetEnemyV() override {return &ev;}
+    std::vector<SceneInteractable>* GetInteractables() { return &interactables; }
 
     void EnemyDrop() override {
+        for(auto& enemy : ev){
         if(!enemy.dead) return;
 
         std::cout << "EnemyDrop " << enemy.droppedItems.size() << std::endl;
@@ -225,15 +225,18 @@ public:
             });
         }
     }
+    }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
-        if(!enemy.dead && enemy.bound.contains(mousePos)){
-            GameEvent event;
-            event.type = EventType::BeginBattle;
-            event.val = static_cast<int>(enemy.ty);
-            events.push_back(event);
-            // 因为要进入战斗场景了，不再处理当前场景的点击
-            return;
+        for(auto& e : ev){
+            if(!e.dead && e.bound.contains(mousePos)){
+                GameEvent event;
+                event.type = EventType::BeginBattle;
+                event.val = static_cast<int>(e.ty);
+                events.push_back(event);
+                // 因为要进入战斗场景了，不再处理当前场景的点击
+                return;
+            }
         }
 
         std::vector<SceneInteractable> n;
@@ -261,7 +264,8 @@ public:
     }
 
     void Update(float dt) override{
-        enemy.Update(dt);
+        for(auto& enemy : ev)
+            enemy.Update(dt);
     }
 };
 
@@ -294,8 +298,7 @@ public:
         ev.clear();
         ev.push_back(*e);
     }
-    const Enemy* GetEnemy() const override { return enemy; }
-    Enemy* GetEnemy() override { return enemy; }
+    Enemy* GetClickEnemy() override { return enemy; }
     std::vector<Enemy>* GetEnemyV() override {return &ev;}
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
@@ -331,6 +334,21 @@ public:
         type = SceneType::Win; 
         interactables = {
             { false, TextureType::Win, {715.f, 349.f}}
+        };
+    }
+    void ProcessInput(const sf::Vector2f& mousePos) override {
+        GameEvent event;
+        event.type = EventType::ReturnMenu;
+        events.push_back(event);
+    }
+};
+
+class DeadScene : public Scene {
+public:
+    DeadScene(std::vector<GameEvent>& e) : Scene(e) { 
+        type = SceneType::Win; 
+        interactables = {
+            { false, TextureType::Defeat, {715.f, 349.f}}
         };
     }
     void ProcessInput(const sf::Vector2f& mousePos) override {

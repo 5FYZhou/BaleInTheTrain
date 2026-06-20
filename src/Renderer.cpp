@@ -111,7 +111,7 @@ void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
     window.draw(*hpText);
 }
 
-void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
+void Renderer::DrawScene(sf::RenderWindow& window, Scene& scene){
     // 背景
     sf::Sprite bg(rm.getTexture(scene.GetBgTextrue()));
     scaleToWindow(bg);
@@ -125,10 +125,11 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
         window.draw(sprite);
     }
     // 敌人
-    const auto& e = scene.GetEnemy();
-    if(e && !e->dead){
-        sf::Sprite es(rm.getTexture(enemyTexMap.at(e->ty), e->frameIndex));
-        es.setPosition(e->position);
+    auto es = scene.GetEnemyV();
+    for(auto& e : *es){
+    if(!e.dead){
+        sf::Sprite es(rm.getTexture(enemyTexMap.at(e.ty), e.frameIndex));
+        es.setPosition(e.position);
         window.draw(es);
 
         if(scene.GetType() == SceneType::Battle){
@@ -137,15 +138,15 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
             constexpr float BAR_HEIGHT = 12.f;
 
             float hpPercent =
-                static_cast<float>(e->cur_health) /
-                static_cast<float>(e->sum_health);
+                static_cast<float>(e.cur_health) /
+                static_cast<float>(e.sum_health);
 
             hpPercent = std::clamp(hpPercent, 0.f, 1.f);
 
             auto bounds = es.getGlobalBounds();
 
             float x = bounds.position.x + (bounds.size.x - BAR_WIDTH) * 0.5f;
-            float y = e->position.y + e->HPDrawOffset;   // SFML 3
+            float y = e.position.y + e.HPDrawOffset;   // SFML 3
 
             // 黑色背景
             sf::RectangleShape bgBar({BAR_WIDTH, BAR_HEIGHT});
@@ -168,7 +169,7 @@ void Renderer::DrawScene(sf::RenderWindow& window, const Scene& scene){
             window.draw(hpBar);
             window.draw(border);
         }
-    }
+    }}
 }
 
 void Renderer::DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha) {

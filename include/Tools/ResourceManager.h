@@ -119,6 +119,7 @@ public:
             {TextureType::SettingsButton, {"/设置选项.png"}},
             {TextureType::ExitButton, {"/退出游戏选项.png"}},
             {TextureType::Win, {"/逃离成功.png"}},
+            {TextureType::Defeat, {"/永久死亡.png"}},
 
             // 游戏界面
             {TextureType::GameBackground, {"/游戏背景备用.png"}},

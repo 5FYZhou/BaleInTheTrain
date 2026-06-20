@@ -54,6 +54,7 @@ public:
     float GetFadeAlpha() const { return fadeAlpha; }
     FadeState GetFadeState() const { return fadeState; }
     std::vector<GameEvent>& GetEvents() { return events; }
+    int GetGameSceneIdx() { return curGameIdx; }
 
     void SetCurScene(SceneType type, int idx = 0, float playerX = PlayerStartX) {
         switch (type)
@@ -82,7 +83,7 @@ public:
         }
             break;
         case SceneType::Battle:
-            battleScene.SetEnemy(curScene->GetEnemy());
+            battleScene.SetEnemy(curScene->GetClickEnemy());
             curScene = &battleScene;
             events.push_back({EventType::ResetPlayerPos, BattleX});
             break;
@@ -177,4 +178,16 @@ public:
         LoadScene(SceneType::Game, gameIdxBeforeBattle, cb);
     }
 
+    void AddGhost(int idx, sf::Vector2f pos, int keyNum){
+        GameScene* sc = nullptr;
+        if(idx == 0){ sc = &gameScene1; }
+        else if(idx == 1){ sc = &gameScene2; }
+        else{ sc = &gameScene3; }
+
+        Enemy ghost(EnemyType::TyreMosnter, pos);
+        for(int i = 0; i < keyNum; i++){
+            ghost.droppedItems.push_back( ItemType::Key );
+        }
+        sc->GetEnemyV()->push_back(ghost);
+    }
 };

@@ -139,7 +139,7 @@ public:
         const auto &cfg = styleMap.at(style);
 
         auto p = std::make_unique<Prompt>(
-            text,
+            utf8(text),
             cfg.size,
             sf::Vector2f(screenWidth * 0.5f + cfg.positionOffset.x,
                          cfg.positionOffset.y));

@@ -65,7 +65,7 @@ private:
     // Main drawing methods
     void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
     void DrawPlayer(sf::RenderWindow& window, const Player& player);
-    void DrawScene(sf::RenderWindow& window, const Scene& scene);
+    void DrawScene(sf::RenderWindow& window, Scene& scene);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
     void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
         , sf::Vector2f scale = {1.f, 1.f}, int index = 0);

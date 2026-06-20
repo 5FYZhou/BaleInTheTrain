@@ -35,6 +35,8 @@ Game::Game()
     //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
     ctx.rm = &rm;
     ctx.audio = &audioMgr;
+
+    playerDeadCnt = 0;
 }
 
 Game::~Game()
@@ -67,8 +69,11 @@ void Game::Init()
 
     keyCnt = 0;
 
-    // 暂时指定卡片
-    player.InitCards();
+    if(playerDeadCnt == 0)
+        player.InitCards();
+    else{
+        sceneMgr.AddGhost(ghost.gameSceneID, {ghost.posX, PlayerGroundY}, ghost.keyNum);
+    }
 }
 
 void Game::HandleInput(float dt)
@@ -245,6 +250,7 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::KeysInsufficient:
         std::cout << "Event::KeysInsufficient" << std::endl;
         textHintMgr.ShowDoorHint();
+        uiMgr.textPrompt.Show("一扇", PromptStyle::Center);
         break;
     // 钥匙足够打开门
     case EventType::Win:
@@ -327,14 +333,14 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Enemy & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx, *sceneMgr.GetScene().GetEnemy());
+                btLogic.waitPlayerInput(idx, *sceneMgr.GetScene().GetClickEnemy());
 
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
 
                 //检查敌人是否死亡
-                btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
+                btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
         break;
@@ -348,12 +354,12 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Player & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx, player, sceneMgr.GetScene().GetEnemy());
+                btLogic.waitPlayerInput(idx, player, sceneMgr.GetScene().GetClickEnemy());
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
                 //检查敌人是否死亡
-                btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
+                btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
         break;
@@ -414,12 +420,12 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::EndTurn:
         std::cout << "Event: end turn" << std::endl;
 
-        btLogic.turnsOver(sceneMgr.GetScene().GetEnemy());
+        btLogic.turnsOver(sceneMgr.GetScene().GetClickEnemy());
         //std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
-        btLogic.EnemyTurn(player, *sceneMgr.GetScene().GetEnemy());
-        btLogic.BattleFinished({sceneMgr.GetScene().GetEnemy()});
+        btLogic.EnemyTurn(player, *sceneMgr.GetScene().GetClickEnemy());
+        btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
         break;
     // 结束对局
     case EventType::EndBattle:
@@ -440,6 +446,12 @@ void Game::HandleEvents(const GameEvent &event)
         else if (event.val == 1)
         {
             player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
+            ghost.gameSceneID = sceneMgr.GetGameSceneIdx();
+            ghost.keyNum = keyCnt;
+            ghost.posX = playerXBeforeBattle;
+            if(++playerDeadCnt > 1){
+
+            }
         }
         break;
     default:
@@ -481,7 +493,7 @@ void Game::Draw()
 
     // 敌人意图
     if (curSceneType == SceneType::Battle){
-        const Enemy* e = sceneMgr.GetScene().GetEnemy();
+        const Enemy* e = sceneMgr.GetScene().GetClickEnemy();
         int num = e->allPlans[btLogic.state.TurnCount - 1].num_of_att_ot_def;
         PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;

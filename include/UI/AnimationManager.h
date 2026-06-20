@@ -23,7 +23,7 @@ public:
     bool playing = false;
 
     explicit Animation(std::string n = "")
-        : name(std::move(n)) { std::cout << name << std::endl; }
+        : name(std::move(n)) {}
 
 #pragma region ITack
 private:
@@ -217,8 +217,6 @@ public:
     //------------------------------------------
     void Start()
     {
-        std::cout << "Animation:start" << std::endl;
-
         playing = true;
 
         started = false;
@@ -281,6 +279,7 @@ public:
             playing = false;
         }
     }
+    
     bool HasRegisteredPreset() const
     {
         return !floatPresets.empty() || !vec2Presets.empty();
