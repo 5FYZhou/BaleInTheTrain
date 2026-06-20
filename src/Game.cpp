@@ -35,7 +35,8 @@ Game::Game()
     //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
     //ctx.rm = &rm;
     //ctx.audio = &audioMgr;
-    btLogic.text = &uiMgr.textPrompt;
+
+    btLogic.textPrompt = &uiMgr.textPrompt;
 }
 
 Game::~Game()

@@ -348,7 +348,7 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
                               const std::vector<Card> &cards,
                               Player &player)
 {
-    text->Show("AAAA", PromptStyle::Center);
+    textPrompt->Show("kkkk", PromptStyle::Center);
     state = BattleState{};
     state.playerHP = player.GetCurrentHP();
     state.maxHP = player.GetMaxHP();

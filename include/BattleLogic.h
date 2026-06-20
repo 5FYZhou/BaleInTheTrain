@@ -5,6 +5,7 @@
 #include "Constants.h"
 #include "Enemy.h"
 #include "Player.h"
+#include "UI/TextPromptManager.h"
 
 #include <iostream>
 #include <random>
@@ -73,7 +74,7 @@ private:
 public:
     BattleState state;
     std::vector<GameEvent> events;
-    TextPromptManager* text;
+    TextPromptManager* textPrompt;
 
     void StartBattle(const std::vector<Enemy>& initialEnemies,
                      const std::vector<Card>& cards,

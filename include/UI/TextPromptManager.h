@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <map>
 
-#include "AnimationManager.h"
+#include "UI/AnimationManager.h"
 
 enum class PromptStyle
 {
