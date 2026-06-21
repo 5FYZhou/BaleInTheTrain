@@ -165,6 +165,7 @@ void BattleLogic::turnsOver(Enemy *enemy)
 void BattleLogic::PlayerStatusSettlement()
 {
     state.temporaryStrength = 0;
+    state.buff_debuff_vec.Add({-2, BuffDebuffType::power_up});
     if (!state.barricade)
         state.defend_num = 0;
 
@@ -197,6 +198,7 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
 
     case PileType::Activate_muscles:
         state.temporaryStrength += 2;
+        state.buff_debuff_vec.Add({2, BuffDebuffType::power_up});
         DiscardPlayedCard(idx);
         break;
 
@@ -227,6 +229,7 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
         if (!SpendActionPoints(1))
             return;
         state.metallicize += 3;
+        state.buff_debuff_vec.Add({-1, BuffDebuffType::metallization});
         DiscardPlayedCard(idx);
         break;
 
@@ -234,13 +237,16 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
         if (!SpendActionPoints(2))
             return;
         state.juggernautDamage += 5;
+        state.buff_debuff_vec.Add({-1, BuffDebuffType::unstoppable});
         DiscardPlayedCard(idx);
+
         break;
 
     case PileType::Rampart:
         if (!SpendActionPoints(3))
             return;
         state.barricade = true;
+        state.buff_debuff_vec.Add({-1, BuffDebuffType::rampart});
         DiscardPlayedCard(idx);
         break;
 
@@ -310,8 +316,10 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     case PileType::Observe_weaknesses:
         if (!SpendActionPoints(1))
             return;
-        if (EnemyIntendsAttack(enemy))
+        if (EnemyIntendsAttack(enemy)){
             state.strength += 3;
+            state.buff_debuff_vec.Add({3, BuffDebuffType::power_up});
+        }        
         DiscardPlayedCard(idx);
         break;
 
@@ -368,6 +376,7 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
     {
         state.isPlayerTurn = true;
         events.push_back({EventType::PlayerTurn});
+        std::cout << "敌人意图为空" << std::endl;
         return;
     }
 
@@ -393,9 +402,11 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
         break;
     case PlanType::power_up:
         enemy.strength += plan.data;
+        enemy.buff_debuff_vec.Add({plan.data,BuffDebuffType::power_up});
         break;
     case PlanType::thorns:
         enemy.thornsdata += plan.data;
+        enemy.buff_debuff_vec.Add({plan.data,BuffDebuffType::thorns});
         break;
     case PlanType::vulnerable:
         state.buff_debuff_vec.Add({plan.data,BuffDebuffType::vulnerable});

@@ -120,6 +120,7 @@ enum class BuffDebuffType{
     vulnerable, //虚弱（攻击造成的伤害降低）
     thorns, //反伤（受到攻击时对攻击者造成伤害）
     metallization, //金属化
+    unstoppable, //势不可挡
 };
 
 enum class EnemyType{
