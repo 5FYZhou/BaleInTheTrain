@@ -142,6 +142,7 @@ void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
         {
             sf::Sprite es(rm.getTexture(enemyTexMap.at(e.ty), e.frameIndex));
             es.setPosition(e.position);
+            es.setScale(e.scale);
             window.draw(es);
         }
     }
@@ -321,7 +322,7 @@ void Renderer::DrawText(
 {
     sf::Text sfText(*font);
 
-    sfText.setString(text);
+    sfText.setString(utf8(text));
     sfText.setCharacterSize(size);
 
     auto bounds = sfText.getLocalBounds();

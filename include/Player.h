@@ -38,6 +38,7 @@ public:
     void Init(int fc);
     void InitCards();
     void AddCards(PileType p);
+    void ResetExceptCard();
 
     // Getters
     sf::Vector2f GetFeet() const { return feet; }
@@ -67,11 +68,7 @@ public:
     void SetSpeed(float s) { speed = s; }
     void SetTextureIndex(int index) { textureIndex = index; }
     void SetHP(int current, int max);
-
-    // Enemy
-    void TakeDamage(int damage);
-    void Heal(int amount);
-
+    
     // Movement
     void Move(int direction, float dt, bool canTranslate = true);
     void ClampPosition(float minX, float maxX);

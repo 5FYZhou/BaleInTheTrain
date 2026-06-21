@@ -357,6 +357,22 @@ public:
                 panel),
             layer.end());
     }
+    
+    void CloseAll()
+    {
+        for(auto& panel : allPanels)
+        {
+            if(panel->IsVisible())
+            {
+                panel->Close();
+            }
+        }
+
+        for(auto& layer : layerPanels)
+        {
+            layer.clear();
+        }
+    }
 
     bool IsOpen(PanelType id) const
     {

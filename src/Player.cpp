@@ -24,21 +24,23 @@ int GetCardCost(PileType type)
 
 } // namespace
 
-Player::Player()
-    : feet(350.f, 1028.f), height(454.f), groundY(1028.f)
-{
-}
+Player::Player(){}
 
 Player::~Player() = default;
 
 void Player::Init(int frameCountValue)
 {
     frameCount = frameCountValue;
+    SetSpeed(430.f);
+    ResetExceptCard();
+    SetHeight(PlayerHeight);
+}
+
+void Player::ResetExceptCard(){
     SetFeet({PlayerStartX, PlayerGroundY});
     SetFacing(1);
-    SetHeight(PlayerHeight);
-    SetSpeed(430.f);
-    SetTextureIndex(0);
+    ResetToStand();
+    currentHP = 100;
 }
 
 void Player::InitCards()
@@ -94,14 +96,4 @@ void Player::SetHP(int current, int max)
 {
     maxHP = std::max(1, max);
     currentHP = std::clamp(current, 0, maxHP);
-}
-
-void Player::TakeDamage(int damage)
-{
-    SetHP(currentHP - damage, maxHP);
-}
-
-void Player::Heal(int amount)
-{
-    SetHP(currentHP + amount, maxHP);
 }

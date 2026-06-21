@@ -202,7 +202,6 @@ void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
     font = uiFont;
     hasFont = (font != nullptr);
 
-
     background.emplace(rm->getTexture(TextureType::BackpackInterior));
     background->setPosition({0.f, 0.f});
     scaleToWindow(*background);
@@ -218,8 +217,8 @@ void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
     titleText.emplace(*font); 
     titleText->setString(utf8("背包")); 
     titleText->setCharacterSize(60); 
-    titleText->setFillColor(sf::Color::Black); 
-    titleText->setPosition({780.f, 250.f}); 
+    titleText->setFillColor(sf::Color::White); 
+    titleText->setPosition({780.f, 150.f}); 
     centerTextX(*titleText);
 }
 
@@ -229,36 +228,49 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
     int n = (int)c.size();
     if (n == 0) return;
 
-    float baseX = 960.f;
-    float baseY = 525.f;
-    float spacingX = 128.f;
+    constexpr int MAX_PER_ROW = 10;
 
-    float center = (n - 1) / 2.f;
+    float baseX = 960.f;
+    float baseY = 300.f;
+
+    float spacingX = 128.f;
+    float spacingY = 200.f;
 
     for (int i = 0; i < n; i++)
     {
-        float offset = i - center;
-        float t = (n == 1) ? 0.f : offset / center; // [-1,1]
+        int row = i / MAX_PER_ROW;
+        int col = i % MAX_PER_ROW;
+
+        int rowCount = std::min(MAX_PER_ROW, n - row * MAX_PER_ROW);
+
+        float center = (rowCount - 1) * 0.5f;
+        float offset = col - center;
+
+        float t = (rowCount <= 1)
+            ? 0.f
+            : offset / center;
 
         RenderCard cv;
         cv.texType = cardTexMap.at(c[i]);
         cv.sprite.emplace(rm->getTexture(cv.texType));
 
         const auto size = cv.sprite->getTexture().getSize();
-        cv.sprite->setOrigin({size.x * 0.5f, size.y * 0.5f});
-        cv.sprite->setScale({0.58f, 0.58f});
 
-        // =========================
-        // ✔ 位置（对称弧）
-        // =========================
+        cv.sprite->setOrigin({
+            size.x * 0.5f,
+            size.y * 0.5f
+        });
+
+        cv.sprite->setScale({
+            0.58f,
+            0.58f
+        });
+
         cv.pos = {
             baseX + offset * spacingX,
-            baseY + (t * t) * 40.f
+            baseY + row * spacingY + (t * t) * 40.f
         };
 
-        // =========================
-        // ✔ 旋转（真正对称关键）
-        // =========================
         cv.rotation = t * 12.f;
 
         cards.push_back(cv);
@@ -276,12 +288,16 @@ bool BackpackPanel::HandleMousePressed(const sf::Vector2f& mousePos){
 }
 
 bool BackpackPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
-    for (int i = 0; i < cards.size(); ++i){
+    for (int i = cards.size() - 1; i >= 0; --i){
         auto& card = cards[i];
         card.hovering = false;
+    }
+    for (int i = cards.size() - 1; i >= 0; --i){
+        auto& card = cards[i];
         // hover
         if (card.sprite->getGlobalBounds().contains(mousePos)){
             card.hovering = true;
+            return true;
         }
     }
     return true;

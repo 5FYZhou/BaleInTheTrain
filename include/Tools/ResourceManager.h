@@ -126,6 +126,7 @@ public:
             {TextureType::Player, {"/balestand1.png", "/bale1.png", "/bale2.png", "/bale3.png", "/bale4.png"}},
             {TextureType::Star, {"/星星.png"}},
             {TextureType::Key, {"/钥匙.png"}},
+            {TextureType::Ghost, {"/白魂.png"}},
             // 游戏UI
             {TextureType::StatusBox, {"/状态框.png"}},
             {TextureType::Potion1, {"/药剂1.png"}},
@@ -136,7 +137,8 @@ public:
             {TextureType::NotificationBG, {"/获得物品框.png"}},
 
             {TextureType::BackpackIcon, {"/背包.png"}},
-            {TextureType::DiscardPile, {"/弃牌池.png"}},
+            {TextureType::DiscardPileIcon, {"/弃牌池.png"}},
+            {TextureType::DealCardPileIcon, {"/发牌图标.png"}},
             {TextureType::BackpackInterior, {"/背包内部.png"}},
             {TextureType::BackButton, {"/返回键.png"}},
             {TextureType::DialogBox, {"/对话框.png"}},

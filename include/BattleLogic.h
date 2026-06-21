@@ -16,11 +16,8 @@ class TextPromptManager;
 int getRandomInt(int min, int max);
 
 struct BattleState {
-    int playerHP = 0;
-    int maxHP = 0;
+    bool battleEnded = false; // 战斗结束
     int cardSum = 0;
-
-    std::vector<Enemy> enemies;
 
     int actionPoints = 0;
     int maxActionPoints = 3;
@@ -61,33 +58,36 @@ private:
     bool SpendActionPoints(int cost);
     void DiscardPlayedCard(int idx);
     bool IsAttackCard(PileType type) const;
-    bool EnemyIntendsAttack(const Enemy& enemy) const;
+    bool EnemyIntendsAttack() const;
     bool HasStatus(const std::vector<BDinfo> buff_debuffs, BuffDebuffType type);
-    void DealDamage(Enemy& enemy, int baseDamage, int hitCount = 1, bool applyStrength = true);
-    void DealDamage(int baseDamage, Enemy &enemy, bool applyStrength = true);
-    void DealDirectDamage(Enemy& enemy, int damage);
+    void DealDamage(Enemy* enemy, int baseDamage, int hitCount = 1, bool applyStrength = true);
+    void DealDamage(int baseDamage, Enemy* enemy, bool applyStrength = true);
+    void DealDirectDamage(Enemy* enemy, int damage);
     void DealDirectDamage(int damage);
     void GainBlock(int amount, Enemy* enemy);
-    void sufferThorns(Enemy &enemy,int damage);
-    void sufferThorns(int damage);
+    void sufferThorns(Enemy* enemy, int damage);
+    void sufferThorns(Player* p, int damage);
+
+    void UpdateHP(Player* player, int add);
+    void UpdateHP(Enemy* enemy, int add);
 
 public:
     BattleState state;
     std::vector<GameEvent> events;
     TextPromptManager* textPrompt;
+    Player* player;
+    Enemy* enemy;
 
-    void StartBattle(const std::vector<Enemy>& initialEnemies,
-                     const std::vector<Card>& cards,
-                     Player& player);
-    bool BattleFinished(std::vector<Enemy*> enemies);
+    void StartBattle(Enemy* e, Player* p);
+    bool BattleFinished();
 
     void PilePre();
     void TakePile(int n);
     void PlayerStatusSettlement();
-    void waitPlayerInput(int idx, Player& player, Enemy* enemy = nullptr);
-    void waitPlayerInput(int idx, Enemy& enemy);
-    void turnsOver(Enemy* enemy = nullptr);
-    void EnemyTurn(Player& player, Enemy& enemy);
+    void ClickPlayer(int idx);
+    void ClickEnemy(int idx);
+    void turnsOver();
+    void EnemyTurn();
 
     std::vector<PileType> getHandCardsPile();
     std::vector<PileType> getdisCardPile();

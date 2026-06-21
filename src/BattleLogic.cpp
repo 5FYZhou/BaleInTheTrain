@@ -56,22 +56,23 @@ bool BattleLogic::IsAttackCard(PileType type) const
     }
 }
 
-bool BattleLogic::EnemyIntendsAttack(const Enemy &enemy) const
+bool BattleLogic::EnemyIntendsAttack() const
 {
-    if (enemy.allPlans.empty())
+    if (enemy->allPlans.empty())
         return false;
 
-    const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy.allPlans.size());
-    return enemy.allPlans[planIndex].plantype == PlanType::attack;
+    const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy->allPlans.size());
+    return enemy->allPlans[planIndex].plantype == PlanType::attack;
 }
 
-void BattleLogic::DealDirectDamage(Enemy &enemy, int damage)
+void BattleLogic::DealDirectDamage(Enemy* enemy, int damage)
 {
     damage = std::max(0, damage);
-    const int blocked = std::min(enemy.defend_num, damage);
-    enemy.defend_num -= blocked;
+    const int blocked = std::min(enemy->defend_num, damage);
+    enemy->defend_num -= blocked;
     damage -= blocked;
-    enemy.cur_health = std::max(0, enemy.cur_health - damage);
+    //enemy->cur_health = std::max(0, enemy->cur_health - damage);
+    UpdateHP(enemy, -damage);
 }
 
 void BattleLogic::DealDirectDamage(int damage)
@@ -80,18 +81,18 @@ void BattleLogic::DealDirectDamage(int damage)
     const int blocked = std::min(state.defend_num, damage);
     state.defend_num -= blocked;
     damage -= blocked;
-    state.playerHP = std::max(0, state.playerHP - damage);
+    UpdateHP(player, -damage);
 }
 
-void BattleLogic::DealDamage(Enemy &enemy, int baseDamage, int hitCount, bool applyStrength)
+void BattleLogic::DealDamage(Enemy* enemy, int baseDamage, int hitCount, bool applyStrength)
 {
-    for (int hit = 0; hit < hitCount && enemy.cur_health > 0; ++hit)
+    for (int hit = 0; hit < hitCount && enemy->cur_health > 0; ++hit)
     {
         int damage = baseDamage;
         if (applyStrength)
             damage += state.strength + state.temporaryStrength;
 
-        if (HasStatus(enemy.buff_debuff_vec.buff_debuffs, BuffDebuffType::easy_to_attack))
+        if (HasStatus(enemy->buff_debuff_vec.buff_debuffs, BuffDebuffType::easy_to_attack))
             damage = static_cast<int>(damage * 1.5);
 
         if (HasStatus(state.buff_debuff_vec.buff_debuffs, BuffDebuffType::vulnerable))
@@ -101,20 +102,21 @@ void BattleLogic::DealDamage(Enemy &enemy, int baseDamage, int hitCount, bool ap
     }
 }
 
-void BattleLogic::DealDamage(int baseDamage, Enemy &enemy, bool applyStrength)
+void BattleLogic::DealDamage(int baseDamage, Enemy* enemy, bool applyStrength)
 {
     int damage = baseDamage;
     if (applyStrength)
-        damage += enemy.strength;
+        damage += enemy->strength;
 
     if (HasStatus(state.buff_debuff_vec.buff_debuffs, BuffDebuffType::easy_to_attack))
         damage = static_cast<int>(damage * 1.5);
 
-    if (HasStatus(enemy.buff_debuff_vec.buff_debuffs, BuffDebuffType::vulnerable))
+    if (HasStatus(enemy->buff_debuff_vec.buff_debuffs, BuffDebuffType::vulnerable))
         damage = static_cast<int>(damage * 0.75);
 
     DealDirectDamage(damage);
 }
+
 void BattleLogic::GainBlock(int amount, Enemy *enemy)
 {
     if (amount <= 0)
@@ -123,7 +125,7 @@ void BattleLogic::GainBlock(int amount, Enemy *enemy)
     state.defend_num += amount;
 
     if (enemy && enemy->cur_health > 0 && state.juggernautDamage > 0)
-        DealDirectDamage(*enemy, state.juggernautDamage);
+        DealDirectDamage(enemy, state.juggernautDamage);
 }
 
 void BattleLogic::PilePre()
@@ -149,7 +151,7 @@ void BattleLogic::TakePile(int n)
     }
 }
 
-void BattleLogic::turnsOver(Enemy *enemy)
+void BattleLogic::turnsOver()
 {
     if (state.metallicize > 0)
         GainBlock(state.metallicize, enemy);
@@ -171,7 +173,7 @@ void BattleLogic::PlayerStatusSettlement()
     state.buff_debuff_vec.update();
 }
 
-void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
+void BattleLogic::ClickPlayer(int idx)
 {
     if (idx < 0 || idx >= static_cast<int>(state.handCards.size()))
         return;
@@ -245,8 +247,7 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
         break;
 
     case PileType::Sacrifice:
-        state.playerHP = std::max(0, state.playerHP - 6);
-        player.currentHP = state.playerHP;
+        UpdateHP(player, -6);
         state.actionPoints += 2;
         TakePile(3);
         DiscardPlayedCard(idx);
@@ -257,7 +258,7 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
     }
 }
 
-void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
+void BattleLogic::ClickEnemy(int idx)
 {
     if (idx < 0 || idx >= static_cast<int>(state.handCards.size()))
         return;
@@ -271,7 +272,7 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
             return;
         DealDamage(enemy, 6);
         DiscardPlayedCard(idx);
-        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
+        if(enemy->thornsdata>0) sufferThorns(player, enemy->thornsdata);
         break;
 
     case PileType::Rage:
@@ -280,23 +281,23 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
         DealDamage(enemy, 8 + state.rampageBonus);
         state.rampageBonus += 5;
         DiscardPlayedCard(idx);
-        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
+        if(enemy->thornsdata>0) sufferThorns(player, enemy->thornsdata);
         break;
 
     case PileType::Heavy_strike:
         if (!SpendActionPoints(2))
             return;
         DealDamage(enemy, 8);
-        enemy.buff_debuff_vec.Add({2, BuffDebuffType::easy_to_attack});
+        enemy->buff_debuff_vec.Add({2, BuffDebuffType::easy_to_attack});
         DiscardPlayedCard(idx);
-        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
+        if(enemy->thornsdata>0) sufferThorns(player, enemy->thornsdata);
         break;
 
     case PileType::Anger:
         DealDamage(enemy, 6);
         state.discardPile.push_back(state.handCards[idx]);
         DiscardPlayedCard(idx);
-        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
+        if(enemy->thornsdata>0) sufferThorns(player, enemy->thornsdata);
         break;
 
     case PileType::Continuous_punches:
@@ -304,13 +305,13 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
             return;
         DealDamage(enemy, 2, 4);
         DiscardPlayedCard(idx);
-        if(enemy.thornsdata>0) sufferThorns(enemy.thornsdata);
+        if(enemy->thornsdata>0) sufferThorns(player, enemy->thornsdata);
         break;
 
     case PileType::Observe_weaknesses:
         if (!SpendActionPoints(1))
             return;
-        if (EnemyIntendsAttack(enemy))
+        if (EnemyIntendsAttack())
             state.strength += 3;
         DiscardPlayedCard(idx);
         break;
@@ -320,60 +321,54 @@ void BattleLogic::waitPlayerInput(int idx, Enemy &enemy)
     }
 }
 
-bool BattleLogic::BattleFinished(std::vector<Enemy *> enemies)
+bool BattleLogic::BattleFinished()
 {
-    if (state.playerHP <= 0)
+    if (player && player->currentHP <= 0)
     {
+        if(state.battleEnded) return true;
+        std::cout<<"playerDead"<<std::endl;
         events.push_back({EventType::EndBattle, 1});
         return true;
     }
 
-    for (Enemy *enemy : enemies)
+    if (enemy && enemy->cur_health <= 0)
     {
-        if (enemy && enemy->cur_health > 0)
-            return false;
+        if(state.battleEnded) return true;
+        enemy->dead = true;
+        std::cout<<"enemyDead"<<std::endl;
+        events.push_back({EventType::EndBattle, 0});
+        return true;
     }
 
-    for (Enemy *enemy : enemies)
-    {
-        if (enemy)
-            enemy->dead = true;
-    }
-
-    events.push_back({EventType::EndBattle, 0});
-    return true;
+    return false;
 }
 
-void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
-                              const std::vector<Card> &cards,
-                              Player &player)
+void BattleLogic::StartBattle(Enemy* e, Player* p)
 {
-    textPrompt->Show("kkkk", PromptStyle::Center);
+    enemy = e;
+    player = p;
     state = BattleState{};
-    state.playerHP = player.GetCurrentHP();
-    state.maxHP = player.GetMaxHP();
-    state.cardSum = static_cast<int>(cards.size());
-    state.enemies = initialEnemies;
+    state.cardSum = player->cards.size();
     state.maxActionPoints = 3;
     state.actionPoints = state.maxActionPoints;
-    state.dealPile = cards;
+    state.dealPile = player->cards;
     state.isPlayerTurn = true;
 
     events.push_back({EventType::PlayerTurn});
 }
 
-void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
+void BattleLogic::EnemyTurn()
 {
-    if (enemy.allPlans.empty())
+    if (enemy->allPlans.empty())
     {
         state.isPlayerTurn = true;
         events.push_back({EventType::PlayerTurn});
         return;
     }
 
-    enemy.defend_num = 0;
-    const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy.allPlans.size());
-    const Plan &plan = enemy.allPlans[planIndex];
+    enemy->defend_num = 0;
+    const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy->allPlans.size());
+    const Plan &plan = enemy->allPlans[planIndex];
 
     switch (plan.plantype)
     {
@@ -382,20 +377,19 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
         int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
         if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
-        player.currentHP = state.playerHP;
         break;
     }
     case PlanType::defend:
-        enemy.defend_num += plan.data;
+        enemy->defend_num += plan.data;
         break;
     case PlanType::easy_to_attack:
         state.buff_debuff_vec.Add({plan.data,BuffDebuffType::easy_to_attack});
         break;
     case PlanType::power_up:
-        enemy.strength += plan.data;
+        enemy->strength += plan.data;
         break;
     case PlanType::thorns:
-        enemy.thornsdata += plan.data;
+        enemy->thornsdata += plan.data;
         break;
     case PlanType::vulnerable:
         state.buff_debuff_vec.Add({plan.data,BuffDebuffType::vulnerable});
@@ -404,7 +398,9 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
         break;
     }
 
-    enemy.buff_debuff_vec.update();
+    enemy->buff_debuff_vec.update();
+    
+    if(state.battleEnded) return;
     state.isPlayerTurn = true;
     events.push_back({EventType::PlayerTurn});
 }
@@ -451,10 +447,22 @@ bool BattleLogic::HasStatus(const std::vector<BDinfo> buff_debuffs, BuffDebuffTy
     return false;
 }
 
-void BattleLogic::sufferThorns(Enemy &enemy,int damage){
-    enemy.cur_health -= damage;
+void BattleLogic::sufferThorns(Enemy* e,int damage){
+    UpdateHP(e, -damage);
 }
 
-void BattleLogic::sufferThorns(int damage){
-    state.playerHP -= damage;
+void BattleLogic::sufferThorns(Player* p, int damage){
+    UpdateHP(p, -damage);
+}
+
+void BattleLogic::UpdateHP(Player* p, int add){
+    if(add <= 0) p->currentHP = std::max(0, p->currentHP + add);
+    else p->currentHP = std::min(p->currentHP + add, p->maxHP);
+    BattleFinished();
+}
+
+void BattleLogic::UpdateHP(Enemy* p, int add){
+    if(add <= 0) p->cur_health = std::max(0, p->cur_health + add);
+    else p->cur_health = std::min(p->cur_health + add, p->sum_health);
+    BattleFinished();
 }

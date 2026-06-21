@@ -11,10 +11,11 @@ enum class TextureType {
     None, 
     MenuBackground, Title, StartButton, ExitButton, SettingsButton,
     GameBackground, StatusBox, Potion1, Potion2, Potion3, Cube,
-    Player, Star, Key,
+    Player, Star, Key, Ghost,
     SettingsIcon, SettingsPanel, 
-    BackpackIcon, DiscardPile, BackpackInterior, BackButton, DialogBox, NotificationBG,
-    CloseButton, EndTurn, Win, Defeat,
+    BackpackIcon, DiscardPileIcon, DealCardPileIcon,
+    BackpackInterior, DialogBox, NotificationBG,
+    BackButton, CloseButton, EndTurn, Win, Defeat,
 
     Strike, //打击24
     Defend, //防御1
@@ -180,7 +181,7 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
     { EnemyType::LightMonster, TextureType::LightMonster },
     { EnemyType::TicketMonster, TextureType::TicketMonster },
     { EnemyType::TyreMosnter, TextureType::TyreMosnter },
-    { EnemyType::Past_YOU, TextureType::Player }
+    { EnemyType::Past_YOU, TextureType::Ghost }
 };
 
 // 敌人意图映射纹理类型

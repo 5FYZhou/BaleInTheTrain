@@ -18,7 +18,6 @@ Game::Game()
     audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
     audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
     textHintMgr.Initialize(&audioMgr);
-    player.Init(rm.getTextureCount(TextureType::Player));
     renderer.Init();
     sceneMgr.SetCurScene(SceneType::Menu);
 
@@ -37,6 +36,9 @@ Game::Game()
     // ctx.audio = &audioMgr;
 
     btLogic.textPrompt = &uiMgr.textPrompt;
+
+    player.Init(rm.getTextureCount(TextureType::Player));
+    playerDeadCnt = 0;
 }
 
 Game::~Game()
@@ -65,12 +67,10 @@ void Game::Run()
 
 void Game::Init()
 {
-    player.SetHP(100, 100);
-
-    keyCnt = 0;
-
-    // 暂时指定卡片
+    player.ResetExceptCard();
+    keyCnt = 2;
     player.InitCards();
+    playerDeadCnt = 0;
 }
 
 void Game::HandleInput(float dt)
@@ -237,6 +237,7 @@ void Game::HandleEvents(const GameEvent &event)
 #pragma region 切场景,UI,音乐
     // 切换到游戏场景
     case EventType::StartGame:
+        uiMgr.CloseAll();
         sceneMgr.LoadScene(SceneType::Game);
         textHintMgr.StartDialog();
         audioMgr.PlaySound(SoundEffect::MenuButton);
@@ -255,7 +256,9 @@ void Game::HandleEvents(const GameEvent &event)
         std::cout << "Event::Win" << std::endl;
         sceneMgr.LoadScene(SceneType::Win);
         break;
+    // 胜利/死亡场景返回菜单
     case EventType::ReturnMenu:
+        uiMgr.CloseAll();
         std::cout << "Event::ReturnMenu" << std::endl;
         sceneMgr.LoadScene(SceneType::Menu);
         Init();
@@ -331,15 +334,11 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Enemy & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx, *sceneMgr.GetScene().GetClickEnemy());
-                player.currentHP = (btLogic.state.playerHP);
+                btLogic.ClickEnemy(idx);
 
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
-
-                // 检查敌人是否死亡
-                btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
         break;
@@ -353,12 +352,10 @@ void Game::HandleEvents(const GameEvent &event)
                 // 出牌
                 auto [type, idx] = panel->GetSelectedCard();
                 std::cout << "event: click Player & play card:" << static_cast<int>(type) << " idx:" << idx << std::endl;
-                btLogic.waitPlayerInput(idx, player, sceneMgr.GetScene().GetClickEnemy());
+                btLogic.ClickPlayer(idx);
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
-                // 检查敌人是否死亡
-                btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
         break;
@@ -396,7 +393,7 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::BeginBattle:
         playerFaceBeforeBattle = player.GetFacing();
         playerXBeforeBattle = player.GetPos().x;
-        btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(), player.cards, player);
+        btLogic.StartBattle(sceneMgr.GetScene().GetClickEnemy(), &player);
         sceneMgr.LoadScene(SceneType::Battle, [this]
                            {
             uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
@@ -416,31 +413,62 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::EndTurn:
         std::cout << "Event: end turn" << std::endl;
 
-        btLogic.turnsOver(sceneMgr.GetScene().GetClickEnemy());
-        // std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
+        btLogic.turnsOver();
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
-
-        btLogic.EnemyTurn(player, *sceneMgr.GetScene().GetClickEnemy());
-        btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
+        btLogic.EnemyTurn();
+        
         break;
     // 结束对局
     case EventType::EndBattle:
+        if(btLogic.state.battleEnded) break;
         std::cout << "Event: EndBattle" << std::endl;
+        btLogic.state.battleEnded = true;
         // 胜利
         if (event.val == 0)
         {
+            sceneMgr.LoadGameBeforeBattle([this]
+                                          {
+                uiMgr.CloseAll();
+                player.SetFacing(playerFaceBeforeBattle);
+                player.SetFeet({playerXBeforeBattle, PlayerGroundY});
+                player.ResetToStand();
+        });
+        }
+        // 失败
+        else if (event.val == 1)
+        {
+            ghostInfo.gameSceneID = sceneMgr.GetGameSceneIdx();
+            ghostInfo.posX = player.feet.x;
+            ghostInfo.keyNum = keyCnt;
+            std::cout<<"deadcnt"<<playerDeadCnt<<std::endl;
+            // 彻底死亡
+            if(++playerDeadCnt > 1){
+                uiMgr.CloseAll();
+                sceneMgr.LoadScene(SceneType::Dead);
+            }
+            // 第一次死亡
+            else{
+                uiMgr.CloseAll();
+                // 添加敌人魂
+                sceneMgr.LoadFirstDie([this]{
+                    keyCnt = 0;
+                    sceneMgr.AddGhost(ghostInfo.gameSceneID, {ghostInfo.posX, PlayerGroundY - 400}, ghostInfo.keyNum);
+                    player.ResetExceptCard();
+                });
+    std::cout<<"AAAAAAA"<<std::endl;
+            }
+        }
+        // 打败魂
+        else if (event.val == 2)
+        {
+            playerDeadCnt = 0;
             sceneMgr.LoadGameBeforeBattle([this]
                                           {
                 uiMgr.Close(PanelType::CardsInHand);
                 player.SetFacing(playerFaceBeforeBattle);
                 player.SetFeet({playerXBeforeBattle, PlayerGroundY});
                 player.ResetToStand();
-                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP); });
-        }
-        // 失败
-        else if (event.val == 1)
-        {
-            player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
+            });
         }
         break;
     default:
@@ -482,6 +510,7 @@ void Game::Draw()
                 textHintMgr.GetDoorHintAlpha());
         }
     }
+    
     // 敌人意图
     if (curSceneType == SceneType::Battle)
     {

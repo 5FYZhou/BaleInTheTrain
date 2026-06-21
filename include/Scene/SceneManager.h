@@ -20,6 +20,7 @@ private:
     int curGameIdx = 0;
     BattleScene battleScene{events};
     WinScene winScene{events};
+    DeadScene deadScene{events};
 
     Scene* curScene;
     SceneType pendingScene = SceneType::Menu;
@@ -89,6 +90,9 @@ public:
             break;
         case SceneType::Win:
             curScene = &winScene;
+            break;
+        case SceneType::Dead:
+            curScene = &deadScene;
             break;
         default:
             std::cout<<"SceneMgr:undefined load scene type"<<std::endl;
@@ -184,10 +188,16 @@ public:
         else if(idx == 1){ sc = &gameScene2; }
         else{ sc = &gameScene3; }
 
-        Enemy ghost(EnemyType::TyreMosnter, pos);
+        Enemy ghost(EnemyType::Past_YOU, pos, {0.5f, 0.5f});
         for(int i = 0; i < keyNum; i++){
             ghost.droppedItems.push_back( ItemType::Key );
         }
-        sc->GetEnemyV()->push_back(ghost);
+        ghost.frameCount = 1;
+        sc->AddGhost(ghost);
     }
+
+    void LoadFirstDie(std::function<void()> cb = nullptr){
+        LoadScene(SceneType::Game, 0, cb);
+    }
+
 };
