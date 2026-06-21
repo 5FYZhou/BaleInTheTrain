@@ -392,6 +392,7 @@ void Game::HandleEvents(const GameEvent &event)
         }
     }
     break;
+#pragma region 塔塔开
     // 开始战斗
     case EventType::BeginBattle:
         playerFaceBeforeBattle = player.GetFacing();
@@ -406,10 +407,17 @@ void Game::HandleEvents(const GameEvent &event)
         break;
     // 玩家回合
     case EventType::PlayerTurn:
-        std::cout << "Event: start play" << std::endl;
+        // std::cout << "Event: start play" << std::endl;
+        // std::cout << "抽牌前" << std::endl;
         btLogic.PilePre();                // 抽牌
+        // std::cout << "抽牌后" << std::endl;
+        // std::cout << "结算前" << std::endl;
         btLogic.PlayerStatusSettlement(); // 玩家状态结算
+       // std::cout << "结算后" << std::endl;
+        btLogic.ShowTurnCounts();
+        //std::cout << "uiMgr.Getqian" << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
+        //std::cout << "uiMgr.Gethou" << std::endl;
 
         break;
     // 结束玩家回合，开始敌人回合

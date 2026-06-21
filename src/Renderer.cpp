@@ -321,7 +321,7 @@ void Renderer::DrawText(
 {
     sf::Text sfText(*font);
 
-    sfText.setString(text);
+    sfText.setString(utf8(text));
     sfText.setCharacterSize(size);
 
     auto bounds = sfText.getLocalBounds();

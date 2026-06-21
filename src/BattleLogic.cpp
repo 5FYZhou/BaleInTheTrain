@@ -1,5 +1,4 @@
 #include "BattleLogic.h"
-#include "UI/TextPromptManager.h"
 
 #include <algorithm>
 
@@ -80,6 +79,7 @@ void BattleLogic::DealDirectDamage(int damage)
     const int blocked = std::min(state.defend_num, damage);
     state.defend_num -= blocked;
     damage -= blocked;
+    state.final_damage = damage;
     state.playerHP = std::max(0, state.playerHP - damage);
 }
 
@@ -356,7 +356,6 @@ void BattleLogic::StartBattle(const std::vector<Enemy> &initialEnemies,
                               const std::vector<Card> &cards,
                               Player &player)
 {
-    textPrompt->Show("kkkk", PromptStyle::Center);
     state = BattleState{};
     state.playerHP = player.GetCurrentHP();
     state.maxHP = player.GetMaxHP();
@@ -382,6 +381,8 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
 
     enemy.defend_num = 0;
     const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy.allPlans.size());
+    //std::cout << "planIndex:" << planIndex << std::endl;
+    //std::cout << "diren:" << static_cast<int>(enemy.allPlans[planIndex].plantype) << std::endl;
     const Plan &plan = enemy.allPlans[planIndex];
 
     switch (plan.plantype)
@@ -390,6 +391,7 @@ void BattleLogic::EnemyTurn(Player &player, Enemy &enemy)
     {
         int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
+        ShowEnemyDamage(enemy);
         if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
         player.currentHP = state.playerHP;
         break;
@@ -468,4 +470,14 @@ void BattleLogic::sufferThorns(Enemy &enemy,int damage){
 
 void BattleLogic::sufferThorns(int damage){
     state.playerHP -= damage;
+}
+
+void BattleLogic::ShowTurnCounts(){
+    std::string turnsText = "第" + std::to_string(state.TurnCount) + "回合";
+    textPrompt->Show((turnsText), PromptStyle::Center);
+}
+
+void BattleLogic::ShowEnemyDamage(Enemy &enemy){
+    std::string Enemy_damage = enemy.name + "对玩家造成了" + std::to_string(state.final_damage) +"点伤害!";
+    textPrompt->Show((Enemy_damage), PromptStyle::Center);
 }

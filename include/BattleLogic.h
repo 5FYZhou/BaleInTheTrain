@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "UI/TextPromptManager.h"
 
+
 #include <iostream>
 #include <random>
 #include <vector>
@@ -54,6 +55,9 @@ struct BattleState {
     int hoveredPotionIndex = -1;
     int selectedPotionIndex = -1;
     bool potionIsUsed = false;
+
+    int final_damage = -1; //实际对玩家造成的血量下降
+
 };
 
 class BattleLogic {
@@ -88,6 +92,8 @@ public:
     void waitPlayerInput(int idx, Enemy& enemy);
     void turnsOver(Enemy* enemy = nullptr);
     void EnemyTurn(Player& player, Enemy& enemy);
+    void ShowTurnCounts();
+    void ShowEnemyDamage(Enemy &enemy);
 
     std::vector<PileType> getHandCardsPile();
     std::vector<PileType> getdisCardPile();
