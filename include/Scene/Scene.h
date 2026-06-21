@@ -159,7 +159,7 @@ public:
     }
     
     Enemy* GetClickEnemy() override { return clickEnemy; }
-    std::vector<Enemy>* GetEnemyV() override {return &ev;}
+    std::vector<Enemy>* GetEnemyV() override { return &ev; }
     std::vector<SceneInteractable>* GetInteractables() { return &interactables; }
 
     void EnemyDrop() override {
@@ -234,6 +234,7 @@ public:
                 event.type = EventType::BeginBattle;
                 event.val = static_cast<int>(e.ty);
                 events.push_back(event);
+                clickEnemy = &e;
                 // 因为要进入战斗场景了，不再处理当前场景的点击
                 return;
             }

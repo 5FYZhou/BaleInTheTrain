@@ -167,12 +167,22 @@ public:
             {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}},
 
             //敌人意图
-            {TextureType::PlanAttack, {"/敌方攻击.png"}},
-            {TextureType::PlanDefend, {"/敌方防御.png"}},
+            {TextureType::p_attack, {"/敌方攻击.png"}},
+            {TextureType::p_defend, {"/敌方防御.png"}},
+            {TextureType::p_easy_to_attack, {"/易伤buff.png"}},
+            {TextureType::p_power_up, {"/势不可挡buff.png"}},
+            {TextureType::p_thorns, {"/荆棘buff.png"}},
+            {TextureType::p_vulnerable, {"/虚弱buff.png"}},
+
+            {TextureType::p_rampart, {"/壁垒buff.png"}},
+            {TextureType::p_metallization, {"/金属化buff.png"}},
+
+            {TextureType::p_buff, {"/buff.png"}},
+            {TextureType::p_debuff, {"/debuff.png"}},
             
             //玩家效果
-            {TextureType::PlayerAttack, {"/我方攻击.png"}},
-            {TextureType::PlayerDefend, {"/我方防御.png"}}
+            {TextureType::p_power_up_player, {"/我方攻击.png"}},
+            {TextureType::p_defend_player, {"/我方防御.png"}}
         };
 
         soundEffectPath = {

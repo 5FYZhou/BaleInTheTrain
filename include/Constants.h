@@ -36,11 +36,20 @@ enum class TextureType {
     TicketMonster, //车票怪
     TyreMosnter, //轮胎怪
 
-    PlanAttack, // 敌人攻击意图
-    PlanDefend,
+    p_attack, // 敌人攻击意图
+    p_defend,
+    p_easy_to_attack, //易伤（受到的伤害增加）
+    p_power_up, //力量
+    p_thorns, //反伤（受到攻击时对攻击者造成伤害）
+    p_vulnerable, //虚弱（攻击造成的伤害降低）
+    
+    p_rampart,//壁垒（回合开始时防御点数不消失）
+    p_metallization,//金属化
+    p_buff,
+    p_debuff,
 
-    PlayerAttack,
-    PlayerDefend
+    p_power_up_player,
+    p_defend_player
 };
 
 // Sound/audio types for resource management.
@@ -110,6 +119,7 @@ enum class BuffDebuffType{
     rampart, //壁垒（回合开始时防御点数不消失）
     vulnerable, //虚弱（攻击造成的伤害降低）
     thorns, //反伤（受到攻击时对攻击者造成伤害）
+    metallization, //金属化
 };
 
 enum class EnemyType{
@@ -169,17 +179,29 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
     { EnemyType::Train_attendant, TextureType::Train_attendant },
     { EnemyType::LightMonster, TextureType::LightMonster },
     { EnemyType::TicketMonster, TextureType::TicketMonster },
-    { EnemyType::TyreMosnter, TextureType::TyreMosnter }
+    { EnemyType::TyreMosnter, TextureType::TyreMosnter },
+    { EnemyType::Past_YOU, TextureType::Player }
 };
 
 // 敌人意图映射纹理类型
 inline const std::unordered_map<PlanType, TextureType> planTexMap = {
-    { PlanType::attack, TextureType::PlanAttack },
-    { PlanType::defend, TextureType::PlanDefend },
-    { PlanType::easy_to_attack, TextureType::PlanDefend },
-    { PlanType::power_up, TextureType::PlanDefend },
-    { PlanType::thorns, TextureType::PlanDefend },
-    { PlanType::vulnerable, TextureType::PlanDefend },
+    { PlanType::attack, TextureType::p_attack },
+    { PlanType::defend, TextureType::p_defend },
+    { PlanType::easy_to_attack, TextureType::p_easy_to_attack },
+    { PlanType::power_up, TextureType::p_power_up },
+    { PlanType::thorns, TextureType::p_thorns },
+    { PlanType::vulnerable, TextureType::p_vulnerable },
+};
+
+// Buff&Debuff映射纹理类型
+inline const std::unordered_map<BuffDebuffType, TextureType> buffTexMap = {
+    { BuffDebuffType::None, TextureType::None },
+    { BuffDebuffType::easy_to_attack, TextureType::p_easy_to_attack },
+    { BuffDebuffType::power_up, TextureType::p_power_up_player },
+    { BuffDebuffType::rampart, TextureType::p_rampart },
+    { BuffDebuffType::vulnerable, TextureType::p_vulnerable },
+    { BuffDebuffType::thorns, TextureType::p_thorns },
+    { BuffDebuffType::metallization, TextureType::p_metallization },
 };
 
 // 场景物品类型映射卡牌类型
@@ -298,18 +320,32 @@ inline static void scaleToWindow(sf::Sprite& sprite){
     });
 }
 
-inline static sf::String utf8(const std::string& text)
-{
+inline static sf::String utf8(const std::string& text){
     return sf::String::fromUtf8(text.begin(), text.end());
+}
+
+static void CenterOrigin(sf::Text& text){
+    auto bounds = text.getLocalBounds();
+
+    text.setOrigin({
+        bounds.position.x + bounds.size.x * 0.5f,
+        bounds.position.y + bounds.size.y * 0.5f
+    });
+}
+
+static void CenterOrigin(sf::Sprite& sprite){
+    auto bounds = sprite.getLocalBounds();
+
+    sprite.setOrigin({
+        bounds.position.x + bounds.size.x * 0.5f,
+        bounds.position.y + bounds.size.y * 0.5f
+    });
 }
 
 inline static void centerTextX(sf::Text& text){
     auto bounds = text.getLocalBounds();
 
-    text.setOrigin({
-        bounds.position.x + bounds.size.x / 2.f,
-        bounds.position.y + bounds.size.y / 2.f
-    });
+    CenterOrigin(text);
 
     text.setPosition({960.f, text.getPosition().y});
 }
@@ -317,10 +353,21 @@ inline static void centerTextX(sf::Text& text){
 inline static void centerSpriteX(sf::Sprite& text){
     auto bounds = text.getLocalBounds();
 
-    text.setOrigin({
-        bounds.position.x + bounds.size.x / 2.f,
-        bounds.position.y + bounds.size.y / 2.f
-    });
+    CenterOrigin(text);
 
     text.setPosition({960.f, text.getPosition().y});
+}
+
+inline static void FitSprite(sf::Sprite& sprite, const sf::Vector2f& bound){
+    auto texSize = sprite.getTexture().getSize();
+
+    if (texSize.x == 0 || texSize.y == 0)
+        return;
+
+    float scaleX = bound.x / static_cast<float>(texSize.x);
+    float scaleY = bound.y / static_cast<float>(texSize.y);
+
+    float scale = std::min(scaleX, scaleY);
+
+    sprite.setScale({ scale, scale });
 }

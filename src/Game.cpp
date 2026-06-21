@@ -30,11 +30,11 @@ Game::Game()
     window.display();
     uiMgr.Close(PanelType::Setting);
 
-    //ctx.ui = &uiMgr;
-    //ctx.scene = &sceneMgr;
-    //ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
-    //ctx.rm = &rm;
-    //ctx.audio = &audioMgr;
+    // ctx.ui = &uiMgr;
+    // ctx.scene = &sceneMgr;
+    // ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
+    // ctx.rm = &rm;
+    // ctx.audio = &audioMgr;
 
     btLogic.textPrompt = &uiMgr.textPrompt;
 }
@@ -195,10 +195,12 @@ void Game::Logic(float dt)
     }
 
     // 判断是否显示对话奖励卡牌
-    if(textHintMgr.ShouldShowRewardCards()){
+    if (textHintMgr.ShouldShowRewardCards())
+    {
         uiMgr.rewardAni.Set(player.GetPileCards());
     }
-    if(textHintMgr.ShouldStartRewardAnimation()){
+    if (textHintMgr.ShouldStartRewardAnimation())
+    {
         uiMgr.rewardAni.Start();
     }
     ProcessEvents();
@@ -336,7 +338,7 @@ void Game::HandleEvents(const GameEvent &event)
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
 
-                //检查敌人是否死亡
+                // 检查敌人是否死亡
                 btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
@@ -355,7 +357,7 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
-                //检查敌人是否死亡
+                // 检查敌人是否死亡
                 btLogic.BattleFinished({sceneMgr.GetScene().GetClickEnemy()});
             }
         }
@@ -396,19 +398,16 @@ void Game::HandleEvents(const GameEvent &event)
         playerXBeforeBattle = player.GetPos().x;
         btLogic.StartBattle(*sceneMgr.GetScene().GetEnemyV(), player.cards, player);
         sceneMgr.LoadScene(SceneType::Battle, [this]
-        {
+                           {
             uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
             uiMgr.Open(PanelType::CardsInHand);
-            player.SetFacing(1); 
-        });
+            player.SetFacing(1); });
         std::cout << "Event:beginBattle" << std::endl;
-        std::cout << player.cards.size() << "Blgic" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
-
         break;
     // 玩家回合
     case EventType::PlayerTurn:
         std::cout << "Event: start play" << std::endl;
-        btLogic.PilePre(); // 抽牌
+        btLogic.PilePre();                // 抽牌
         btLogic.PlayerStatusSettlement(); // 玩家状态结算
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
@@ -418,7 +417,7 @@ void Game::HandleEvents(const GameEvent &event)
         std::cout << "Event: end turn" << std::endl;
 
         btLogic.turnsOver(sceneMgr.GetScene().GetClickEnemy());
-        //std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
+        // std::cout << player.cards.size() << "PPBlgic:" << btLogic.state.handCards.size() << " " << btLogic.state.dealPile.size() << " " << btLogic.state.discardPile.size() << " " << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
 
         btLogic.EnemyTurn(player, *sceneMgr.GetScene().GetClickEnemy());
@@ -431,13 +430,12 @@ void Game::HandleEvents(const GameEvent &event)
         if (event.val == 0)
         {
             sceneMgr.LoadGameBeforeBattle([this]
-            {
+                                          {
                 uiMgr.Close(PanelType::CardsInHand);
                 player.SetFacing(playerFaceBeforeBattle);
                 player.SetFeet({playerXBeforeBattle, PlayerGroundY});
                 player.ResetToStand();
-                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP);
-            });
+                player.SetHP(btLogic.state.playerHP, btLogic.state.maxHP); });
         }
         // 失败
         else if (event.val == 1)
@@ -468,53 +466,131 @@ void Game::Draw()
     if (curSceneType == SceneType::Game)
     {
         renderer.DrawDialog(window, textHintMgr);
-        for (auto& a : uiMgr.rewardAni.cards) {
+        for (auto &a : uiMgr.rewardAni.cards)
+        {
             renderer.DrawCard(window, a, a.alpha);
         }
-        if (textHintMgr.IsMovementHintVisible()) {
+        if (textHintMgr.IsMovementHintVisible())
+        {
             renderer.DrawMovementHint(window);
         }
-        if (textHintMgr.IsDoorHintVisible()) {
+        if (textHintMgr.IsDoorHintVisible())
+        {
             renderer.DrawCenteredText(
                 window,
                 textHintMgr.GetDoorHintText(),
                 textHintMgr.GetDoorHintAlpha());
         }
     }
-
     // 敌人意图
-    if (curSceneType == SceneType::Battle){
-        const Enemy* e = sceneMgr.GetScene().GetClickEnemy();
+    if (curSceneType == SceneType::Battle)
+    {
+        const Enemy *e = sceneMgr.GetScene().GetClickEnemy();
         int num = e->allPlans[btLogic.state.TurnCount - 1].data;
         PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;
-        pos.x += 40;
-        pos.y -= 100;
+        pos.x += 70;
+        pos.y -= 70;
         renderer.DrawItemWithNum(window, planTexMap.at(type), num, pos);
 
+        pos = player.feet;
+        pos.x -= 20;
+        pos.y -= 440;
+        int column = 0;
+        float space = 90;
         // 玩家防御
-        if(btLogic.state.defend_num > 0){
+        if (btLogic.state.defend_num > 0)
+        {
             int num = btLogic.state.defend_num;
-            sf::Vector2f pos = player.feet;
-            pos.x -= 30;
-            pos.y -= 450;
-            renderer.DrawItemWithNum(window, TextureType::PlayerDefend, num, pos);
+            renderer.DrawItemWithNum(window, TextureType::p_defend_player, num, pos);
+        }
+        // 格挡
+        if (btLogic.state.defend_num > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_defend_player,
+                btLogic.state.defend_num,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 荆棘
+        if (btLogic.state.thornsdata > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_thorns,
+                btLogic.state.thornsdata,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 力量
+        if (btLogic.state.strength > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_power_up_player,
+                btLogic.state.strength,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 临时力量
+        if (btLogic.state.temporaryStrength > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_defend,
+                btLogic.state.temporaryStrength,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 狂暴加成
+        if (btLogic.state.rampageBonus > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_power_up_player,
+                btLogic.state.rampageBonus,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 金属化
+        if (btLogic.state.metallicize > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_metallization,
+                btLogic.state.metallicize,
+                {pos.x + column * space, pos.y});
+            column++;
+        }
+
+        // 震荡伤害(Juggernaut)
+        if (btLogic.state.juggernautDamage > 0)
+        {
+            renderer.DrawItemWithNum(
+                window,
+                TextureType::p_defend_player,
+                btLogic.state.juggernautDamage,
+                {pos.x + column * space, pos.y});
+            column++;
         }
     }
 
     // UI面板
     uiMgr.DrawPanels(window);
+    // 捡到物品提示
     uiMgr.DrawNotifications(window);
-    for (auto& p : uiMgr.textPrompt.prompts)
-        {
-            renderer.DrawText(
-                window,
-                p->text,
-                p->position,
-                p->size,
-                p->alpha
-            );
-        }
+    // 文字弹幕
+    for (auto &p : uiMgr.textPrompt.prompts)
+    {
+        renderer.DrawText(window, p->text, p->position, p->size, p->alpha);
+    }
 
     // 切场景遮罩
     if (sceneMgr.GetFadeAlpha() > 0.f)

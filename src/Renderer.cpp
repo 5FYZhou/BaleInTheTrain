@@ -4,23 +4,26 @@
 #include <memory>
 #include <algorithm>
 
-Renderer::Renderer(ResourceManager& r, UIManager& ui) 
-    : rm(r), uiManager(ui) {
-        font = &rm.getFont();
+Renderer::Renderer(ResourceManager &r, UIManager &ui)
+    : rm(r), uiManager(ui)
+{
+    font = &rm.getFont();
 }
 
-Renderer::~Renderer() {
+Renderer::~Renderer()
+{
     delete hpText;
     delete font;
     delete statusBox;
-    
+
     delete dialogBox;
     delete dialogText;
     delete dialogHintText;
     delete movementHintText;
 }
 
-sf::Sprite Renderer::makeSprite(const sf::Texture& texture, sf::Vector2f position) {
+sf::Sprite Renderer::makeSprite(const sf::Texture &texture, sf::Vector2f position)
+{
     sf::Sprite sprite(texture);
     sprite.setPosition(position);
     return sprite;
@@ -38,7 +41,8 @@ Button Renderer::makeCenteredButton(const sf::Texture& texture, float centerY) {
     return {sprite, sprite.getGlobalBounds()};
 }*/
 
-void Renderer::Init() {
+void Renderer::Init()
+{
     // Setup fade overlay
     fadeOverlay.setSize(sf::Vector2f(static_cast<float>(WINDOW_WIDTH), static_cast<float>(WINDOW_HEIGHT)));
     fadeOverlay.setFillColor(sf::Color(0, 0, 0, 0));
@@ -53,7 +57,7 @@ void Renderer::Init() {
     hpBar.setSize({205.f, 18.f});
     hpBar.setPosition({83.f, 63.f});
     hpBar.setFillColor(sf::Color(190, 42, 42, 235));
-        
+
     hpText = new sf::Text(*font);
     hpText->setString("HP 100 / 100");
     hpText->setCharacterSize(22);
@@ -84,15 +88,16 @@ void Renderer::Init() {
     movementHintText->setPosition({720.f, 930.f});
 }
 
-void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
+void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player)
+{
     // 获取对应frame编号的纹理
-    const sf::Texture& tex = rm.getTexture(TextureType::Player, player.GetTextureIndex());
+    const sf::Texture &tex = rm.getTexture(TextureType::Player, player.GetTextureIndex());
     sf::Sprite p(tex);
 
     // scale to player height and apply facing
     const auto size = tex.getSize();
     const float scale = player.GetWalkTimer() >= 0.f ? (player.GetIsMoving() ? 1.f : 1.f) : 1.f;
-    const float scaleY = 1.2f;//player.GetHeight() / static_cast<float>(size.y);
+    const float scaleY = 1.2f; // player.GetHeight() / static_cast<float>(size.y);
     p.setOrigin(sf::Vector2f(static_cast<float>(size.x) * 0.5f, static_cast<float>(size.y)));
     p.setScale(sf::Vector2f(scaleY * static_cast<float>(-player.GetFacing()), scaleY));
     p.setPosition(player.GetFeet());
@@ -103,7 +108,8 @@ void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
     int maxHP = player.GetMaxHP();
     const float barWidth = 205.f * (static_cast<float>(currentHP) / static_cast<float>(maxHP));
     hpBar.setSize({barWidth, 18.f});
-    if (/*hasFont &&*/ hpText) {
+    if (/*hasFont &&*/ hpText)
+    {
         hpText->setString("HP " + std::to_string(currentHP) + " / " + std::to_string(maxHP));
     }
     window.draw(*statusBox);
@@ -111,42 +117,54 @@ void Renderer::DrawPlayer(sf::RenderWindow& window, const Player& player) {
     window.draw(*hpText);
 }
 
-void Renderer::DrawScene(sf::RenderWindow& window, Scene& scene){
+void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
+{
     // 背景
     sf::Sprite bg(rm.getTexture(scene.GetBgTextrue()));
     scaleToWindow(bg);
     window.draw(bg);
     // 交互物品
-    for(const auto& item : scene.GetInteractables()) {
-        //DrawItem(window, item.position, item.texture, item.scale);
+    for (const auto &item : scene.GetInteractables())
+    {
+        // DrawItem(window, item.position, item.texture, item.scale);
         sf::Sprite sprite(rm.getTexture(item.texture));
         sprite.setPosition(item.position);
         sprite.setScale(item.scale);
         window.draw(sprite);
     }
     // 敌人
-    auto es = scene.GetEnemyV();
-    for(auto& e : *es){
-    if(!e.dead){
-        sf::Sprite es(rm.getTexture(enemyTexMap.at(e.ty), e.frameIndex));
-        es.setPosition(e.position);
-        window.draw(es);
+    auto ev = scene.GetEnemyV();
+    if (!ev)
+        return;
+    for (auto &e : *ev)
+    {
+        if (!e.dead)
+        {
+            sf::Sprite es(rm.getTexture(enemyTexMap.at(e.ty), e.frameIndex));
+            es.setPosition(e.position);
+            window.draw(es);
+        }
+    }
+    // 血条
+    if (scene.GetType() == SceneType::Battle)
+    {
+        auto e = scene.GetClickEnemy();
+        if (e && !e->dead)
+        {
 
-        if(scene.GetType() == SceneType::Battle){
-            // 血条
-            constexpr float BAR_WIDTH  = 120.f;
+            constexpr float BAR_WIDTH = 120.f;
             constexpr float BAR_HEIGHT = 12.f;
 
             float hpPercent =
-                static_cast<float>(e.cur_health) /
-                static_cast<float>(e.sum_health);
+                static_cast<float>(e->cur_health) /
+                static_cast<float>(e->sum_health);
 
             hpPercent = std::clamp(hpPercent, 0.f, 1.f);
 
-            auto bounds = es.getGlobalBounds();
+            auto bounds = e->bound;
 
             float x = bounds.position.x + (bounds.size.x - BAR_WIDTH) * 0.5f;
-            float y = e.position.y + e.HPDrawOffset;   // SFML 3
+            float y = e->position.y + e->HPDrawOffset; // SFML 3
 
             // 黑色背景
             sf::RectangleShape bgBar({BAR_WIDTH, BAR_HEIGHT});
@@ -162,68 +180,98 @@ void Renderer::DrawScene(sf::RenderWindow& window, Scene& scene){
             sf::RectangleShape border({BAR_WIDTH, BAR_HEIGHT});
             border.setPosition({x, y});
             border.setFillColor(sf::Color::Transparent);
-            border.setOutlineThickness(2.f);
+            border.setOutlineThickness(0.5f);
             border.setOutlineColor(sf::Color::White);
 
             window.draw(bgBar);
             window.draw(hpBar);
             window.draw(border);
+
+            // HP文字
+            sf::Text hpText(*font);
+            hpText.setString(
+                std::to_string(e->cur_health) +
+                "/" +
+                std::to_string(e->sum_health));
+
+            hpText.setCharacterSize(20);
+            hpText.setFillColor(sf::Color::White);
+
+            // 黑色描边提高可读性
+            hpText.setOutlineColor(sf::Color::Black);
+            hpText.setOutlineThickness(1.f);
+
+            CenterOrigin(hpText);
+
+            hpText.setPosition({x + BAR_WIDTH * 0.5f,
+                                y + BAR_HEIGHT * 0.5f});
+
+            window.draw(hpText);
         }
-    }}
+    }
 }
 
-void Renderer::DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha) {
+void Renderer::DrawFadeOverlay(sf::RenderWindow &window, std::uint8_t alpha)
+{
     fadeOverlay.setFillColor(sf::Color(0, 0, 0, alpha));
     window.draw(fadeOverlay);
 }
 
-void Renderer::DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type, sf::Vector2f scale, int index) {
+void Renderer::DrawItem(sf::RenderWindow &window, sf::Vector2f position, const TextureType &type, sf::Vector2f scale, int index)
+{
     sf::Sprite sprite(rm.getTexture(type, index));
     sprite.setPosition(position);
     sprite.setScale(scale);
     window.draw(sprite);
 }
 
-void Renderer::DrawItemWithNum(sf::RenderWindow& window, TextureType type, int num, sf::Vector2f pos){
+void Renderer::DrawItemWithNum(sf::RenderWindow &window, TextureType type, int num, sf::Vector2f pos)
+{
     sf::Sprite sp(rm.getTexture(type));
+    CenterOrigin(sp);
     sp.setPosition(pos);
-    sp.setScale({0.7f, 0.7f});
+    FitSprite(sp, {65, 65});
     window.draw(sp);
 
-    pos.x += 60;
-    pos.y += 10;
+    pos.x += 50;
     sf::Text t(*font);
     t.setString(std::to_string(num));
+    CenterOrigin(t);
     t.setPosition(pos);
     t.setFillColor(sf::Color::White);
     t.setCharacterSize(30);
     window.draw(t);
 }
 
-
-void Renderer::DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr){
-    if (!textHintMgr.IsActive()) {
+void Renderer::DrawDialog(sf::RenderWindow &window, const TextHintManager &textHintMgr)
+{
+    if (!textHintMgr.IsActive())
+    {
         return;
     }
 
-    if (dialogBox) {
+    if (dialogBox)
+    {
         window.draw(*dialogBox);
     }
 
-    if (dialogText && dialogHintText) {
+    if (dialogText && dialogHintText)
+    {
         dialogText->setString(utf8(textHintMgr.GetCurrentText()));
         window.draw(*dialogText);
         window.draw(*dialogHintText);
     }
 }
 
-void Renderer::DrawMovementHint(sf::RenderWindow& window){
-    if (movementHintText) {
+void Renderer::DrawMovementHint(sf::RenderWindow &window)
+{
+    if (movementHintText)
+    {
         window.draw(*movementHintText);
     }
 }
 
-void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float alpha)
+void Renderer::DrawCard(sf::RenderWindow &window, const CardView &card, float alpha)
 {
     sf::Sprite sprite(rm.getTexture(card.texType));
 
@@ -244,33 +292,29 @@ void Renderer::DrawCard(sf::RenderWindow& window, const CardView& card, float al
     window.draw(sprite);
 }
 
-void Renderer::DrawCenteredText(sf::RenderWindow& window, const std::string& text, float alpha)
+void Renderer::DrawCenteredText(sf::RenderWindow &window, const std::string &text, float alpha)
 {
     sf::Text t(*font);
     t.setString(utf8(text));
     t.setCharacterSize(40);
 
     t.setFillColor(sf::Color(255, 255, 255,
-        static_cast<std::uint8_t>(alpha)));
+                             static_cast<std::uint8_t>(alpha)));
 
     sf::FloatRect bounds = t.getLocalBounds();
 
-    t.setOrigin({
-        bounds.position.x + bounds.size.x / 2.f,
-        bounds.position.y + bounds.size.y / 2.f
-    });
+    t.setOrigin({bounds.position.x + bounds.size.x / 2.f,
+                 bounds.position.y + bounds.size.y / 2.f});
 
-    t.setPosition({
-        window.getSize().x / 2.f,
-        window.getSize().y / 2.f
-    });
+    t.setPosition({window.getSize().x / 2.f,
+                   window.getSize().y / 2.f});
 
     window.draw(t);
 }
 
 void Renderer::DrawText(
-    sf::RenderWindow& window,
-    const std::string& text,
+    sf::RenderWindow &window,
+    const std::string &text,
     sf::Vector2f position,
     unsigned size,
     float alpha)
@@ -282,10 +326,8 @@ void Renderer::DrawText(
 
     auto bounds = sfText.getLocalBounds();
 
-    sfText.setOrigin({
-        bounds.position.x + bounds.size.x * 0.5f,
-        bounds.position.y + bounds.size.y * 0.5f
-    });
+    sfText.setOrigin({bounds.position.x + bounds.size.x * 0.5f,
+                      bounds.position.y + bounds.size.y * 0.5f});
 
     sfText.setPosition(position);
 
