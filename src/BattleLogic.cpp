@@ -1,5 +1,4 @@
 #include "BattleLogic.h"
-#include "UI/TextPromptManager.h"
 
 #include <algorithm>
 
@@ -81,6 +80,7 @@ void BattleLogic::DealDirectDamage(int damage)
     const int blocked = std::min(state.defend_num, damage);
     state.defend_num -= blocked;
     damage -= blocked;
+    state.final_damage = damage;
     UpdateHP(player, -damage);
 }
 
@@ -378,6 +378,8 @@ void BattleLogic::EnemyTurn()
 
     enemy->defend_num = 0;
     const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy->allPlans.size());
+    //std::cout << "planIndex:" << planIndex << std::endl;
+    //std::cout << "diren:" << static_cast<int>(enemy.allPlans[planIndex].plantype) << std::endl;
     const Plan &plan = enemy->allPlans[planIndex];
 
     switch (plan.plantype)
@@ -386,6 +388,7 @@ void BattleLogic::EnemyTurn()
     {
         int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
+        ShowEnemyDamage(enemy);
         if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
         break;
     }
@@ -477,4 +480,15 @@ void BattleLogic::UpdateHP(Enemy* p, int add){
     if(add <= 0) p->cur_health = std::max(0, p->cur_health + add);
     else p->cur_health = std::min(p->cur_health + add, p->sum_health);
     BattleFinished();
+}
+
+
+void BattleLogic::ShowTurnCounts(){
+    std::string turnsText = "第" + std::to_string(state.TurnCount) + "回合";
+    textPrompt->Show((turnsText), PromptStyle::Center);
+}
+
+void BattleLogic::ShowEnemyDamage(Enemy &enemy){
+    std::string Enemy_damage = enemy.name + "对玩家造成了" + std::to_string(state.final_damage) +"点伤害!";
+    textPrompt->Show((Enemy_damage), PromptStyle::Center);
 }

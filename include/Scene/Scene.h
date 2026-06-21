@@ -135,6 +135,7 @@ private:
         auto it = g_prefabEnemies.find(e.ty);
         if (it != g_prefabEnemies.end()) {
             const enemy_data& data = it->second;
+            e.name = data.name;
             e.cur_health = data.maxHP;  // 设置当前血量
             e.sum_health = data.maxHP;
             e.allPlans = data.plans;
