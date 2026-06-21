@@ -40,4 +40,11 @@ public:
             }
         }
     }
+    std::vector<BuffDebuffType> getBuffTypes(){
+        std::vector<BuffDebuffType> v;
+        for(auto it:buff_debuffs){
+            v.push_back(it.type);
+        }
+        return v;
+    }
 };
