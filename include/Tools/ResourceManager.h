@@ -166,23 +166,23 @@ public:
             {TextureType::TicketMonster, {"/车票1.png", "/车票2.png"}},
             {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}},
 
-            //敌人意图
-            {TextureType::p_attack, {"/敌方攻击.png"}},
-            {TextureType::p_defend, {"/敌方防御.png"}},
+            //敌人意图（敌人UI上方）
+            {TextureType::p_attack, {"/敌方攻击意图.png"}},
+            {TextureType::p_defend, {"/敌方防御意图.png"}},
+            {TextureType::p_buff, {"/挂buff意图.png"}},
+            {TextureType::p_debuff, {"/挂debuff意图.png"}},
+
+            //实体身上的buff和debuff效果（血条下方）
             {TextureType::p_easy_to_attack, {"/易伤buff.png"}},
             {TextureType::p_power_up, {"/势不可挡buff.png"}},
             {TextureType::p_thorns, {"/荆棘buff.png"}},
             {TextureType::p_vulnerable, {"/虚弱buff.png"}},
-
             {TextureType::p_rampart, {"/壁垒buff.png"}},
             {TextureType::p_metallization, {"/金属化buff.png"}},
+            {TextureType::p_power_up_player, {"/力量buff.png"}},
 
-            {TextureType::p_buff, {"/buff.png"}},
-            {TextureType::p_debuff, {"/debuff.png"}},
-            
-            //玩家效果
-            {TextureType::p_power_up_player, {"/我方攻击.png"}},
-            {TextureType::p_defend_player, {"/我方防御.png"}}
+            //防御值         
+            {TextureType::p_defend_player, {"/防御值.png"}}
         };
 
         soundEffectPath = {

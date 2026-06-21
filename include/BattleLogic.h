@@ -41,7 +41,7 @@ struct BattleState {
     // Persistent and turn-scoped combat effects.
     int strength = 0;
     int temporaryStrength = 0;
-    int rampageBonus = 0;
+    int rampageBonus = 0;  //暴走累计（暴走每被打出一次，本次战斗中伤害增加5）
     int metallicize = 0;
     int juggernautDamage = 0;
     bool barricade = false;

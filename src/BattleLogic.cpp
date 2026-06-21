@@ -220,7 +220,7 @@ void BattleLogic::waitPlayerInput(int idx, Player &player, Enemy *enemy)
                 --idx;
         }
 
-        GainBlock(exhaustedCount * 5, enemy);
+        GainBlock((exhaustedCount+1) * 5, enemy);
         DiscardPlayedCard(idx);
         break;
     }
