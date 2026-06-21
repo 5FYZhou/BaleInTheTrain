@@ -5,24 +5,38 @@
 #include "Constants.h"
 #include "Tools/ResourceManager.h"
 
-enum class PanelType { None = 0, Setting, Backpack, Discard, DealCard, CardsInHand };
-enum class PanelLayer { Bottom = 0, Middle, Top, Count };
+enum class PanelType
+{
+    None = 0,
+    Setting,
+    Backpack,
+    Discard,
+    DealCard,
+    CardsInHand
+};
+enum class PanelLayer
+{
+    Bottom = 0,
+    Middle,
+    Top,
+    Count
+};
 
-
-
-class Panel {
+class Panel
+{
 protected:
     PanelType type;
     PanelLayer layer;
     bool visible = false;
-    std::vector<GameEvent>& events;
-public:
-    Panel(std::vector<GameEvent>& e) : events(e) {}
-    virtual void Update(float dt) {}
-    virtual void Draw(sf::RenderWindow&) = 0;
+    std::vector<GameEvent> &events;
 
-    virtual bool HandleMousePressed(const sf::Vector2f&) { return false; }
-    virtual bool HandleMouseMoved(const sf::Vector2f&) { return false; }
+public:
+    Panel(std::vector<GameEvent> &e) : events(e) {}
+    virtual void Update(float dt) {}
+    virtual void Draw(sf::RenderWindow &) = 0;
+
+    virtual bool HandleMousePressed(const sf::Vector2f &) { return false; }
+    virtual bool HandleMouseMoved(const sf::Vector2f &) { return false; }
     virtual bool HandleMouseReleased() { return false; }
 
     virtual bool BlocksInput() const { return visible; }
@@ -32,13 +46,18 @@ public:
     bool IsVisible() const { return visible; }
     PanelType GetID() { return type; }
     PanelLayer GetLayer() const { return layer; }
-
 };
 
 #pragma region 设置
-enum class SliderTarget{ None, Music, Sfx };
+enum class SliderTarget
+{
+    None,
+    Music,
+    Sfx
+};
 
-class SettingPanel : public Panel{
+class SettingPanel : public Panel
+{
 private:
     float musicVolume = DEFAULT_MUSIC_VOLUME;
     float sfxVolume = DEFAULT_SFX_VOLUME;
@@ -52,34 +71,40 @@ private:
     std::optional<sf::Text> sfxLabel;
     std::optional<sf::Text> sfxValue;
     // slider layout
-    struct Slider {
+    struct Slider
+    {
         sf::Vector2f pos;
         std::string label;
         float value;
-        sf::Text* valueText;
+        sf::Text *valueText;
     };
 
     Slider musicSlider;
     Slider sfxSlider;
 
-    const sf::Font* font = nullptr;
+    const sf::Font *font = nullptr;
 
     float SliderValueFromX(float x, float left, float width) const;
 
-    void DrawSlider(sf::RenderWindow& window, const Slider& slider);
+    void DrawSlider(sf::RenderWindow &window, const Slider &slider);
 
 public:
-    SettingPanel(std::vector<GameEvent>& e) : Panel(e){ type = PanelType::Setting; layer = PanelLayer::Top; }
+    SettingPanel(std::vector<GameEvent> &e) : Panel(e)
+    {
+        type = PanelType::Setting;
+        layer = PanelLayer::Top;
+    }
 
-    void Init(ResourceManager& rm, const sf::Font* uiFont);
+    void Init(ResourceManager &rm, const sf::Font *uiFont);
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos) override;
-    bool HandleMouseMoved(const sf::Vector2f& mousePos) override;
+    bool HandleMousePressed(const sf::Vector2f &mousePos) override;
+    bool HandleMouseMoved(const sf::Vector2f &mousePos) override;
     bool HandleMouseReleased() override;
 
-    void Close() override {
+    void Close() override
+    {
         visible = false;
         draggingSlider = SliderTarget::None;
     }
@@ -89,13 +114,14 @@ public:
 };
 #pragma endregion
 
-
 #pragma region 背包
-class BackpackPanel : public Panel {
+class BackpackPanel : public Panel
+{
 private:
-    ResourceManager* rm = nullptr;
+    ResourceManager *rm = nullptr;
 
-    struct RenderCard {
+    struct RenderCard
+    {
         PileType type;
         TextureType texType;
         std::optional<sf::Sprite> sprite;
@@ -108,24 +134,27 @@ private:
 
     std::optional<sf::Sprite> background, backButton;
     std::optional<sf::Text> titleText;
-    const sf::Font* font = nullptr;
+    const sf::Font *font = nullptr;
     bool hasFont = false;
 
     sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
 
 public:
-    BackpackPanel(std::vector<GameEvent>& e) : Panel(e) { type = PanelType::Backpack; layer = PanelLayer::Middle; }
-    void Init(ResourceManager& resource, const sf::Font* uiFont);
+    BackpackPanel(std::vector<GameEvent> &e) : Panel(e)
+    {
+        type = PanelType::Backpack;
+        layer = PanelLayer::Middle;
+    }
+    void Init(ResourceManager &resource, const sf::Font *uiFont);
 
-    void SetCards(const std::vector<PileType>& c);
+    void SetCards(const std::vector<PileType> &c);
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos) override;
-    bool HandleMouseMoved(const sf::Vector2f&) override;
+    bool HandleMousePressed(const sf::Vector2f &mousePos) override;
+    bool HandleMouseMoved(const sf::Vector2f &) override;
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 };
 #pragma endregion
-
 
 #pragma region 发牌池,弃牌堆
 inline constexpr int cardsPerRow = 8;
@@ -134,64 +163,72 @@ inline constexpr float startY = 350.f;
 inline constexpr float spacingX = 150.f;
 inline constexpr float spacingY = 230.f;
 
-class DiscardPilePanel : public Panel{
+class DiscardPilePanel : public Panel
+{
 private:
-    ResourceManager* rm = nullptr;
+    ResourceManager *rm = nullptr;
 
     std::vector<CardView> cards;
 
     std::optional<sf::Sprite> backButton;
     std::optional<sf::Text> titleText;
-    const sf::Font* font = nullptr;
+    const sf::Font *font = nullptr;
     bool hasFont = false;
 
     sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
 
 public:
-    DiscardPilePanel(std::vector<GameEvent>& e) : Panel(e) { type = PanelType::Discard; layer = PanelLayer::Middle; }
-    void Init(ResourceManager& resource, const sf::Font* uiFont);
+    DiscardPilePanel(std::vector<GameEvent> &e) : Panel(e)
+    {
+        type = PanelType::Discard;
+        layer = PanelLayer::Middle;
+    }
+    void Init(ResourceManager &resource, const sf::Font *uiFont);
 
-    void SetCards(const std::vector<PileType>& c);
+    void SetCards(const std::vector<PileType> &c);
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos) override;
-    bool HandleMouseMoved(const sf::Vector2f& mousePos) override { return visible; }
+    bool HandleMousePressed(const sf::Vector2f &mousePos) override;
+    bool HandleMouseMoved(const sf::Vector2f &mousePos) override { return visible; }
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 };
 
-
-
-class DealCardPanel : public Panel{
+class DealCardPanel : public Panel
+{
 private:
-    ResourceManager* rm = nullptr;
+    ResourceManager *rm = nullptr;
 
     std::vector<CardView> cards;
 
     std::optional<sf::Sprite> backButton;
     std::optional<sf::Text> titleText;
-    const sf::Font* font = nullptr;
+    const sf::Font *font = nullptr;
     bool hasFont = false;
 
     sf::RectangleShape veil; // 遮罩用 RectangleShape 更合理
 
 public:
-    DealCardPanel(std::vector<GameEvent>& e) : Panel(e) { type = PanelType::DealCard; layer = PanelLayer::Middle; }
-    void Init(ResourceManager& resource, const sf::Font* uiFont);
+    DealCardPanel(std::vector<GameEvent> &e) : Panel(e)
+    {
+        type = PanelType::DealCard;
+        layer = PanelLayer::Middle;
+    }
+    void Init(ResourceManager &resource, const sf::Font *uiFont);
 
-    void SetCards(const std::vector<PileType>& c);
+    void SetCards(const std::vector<PileType> &c);
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos) override;
-    bool HandleMouseMoved(const sf::Vector2f& mousePos) override { return visible; }
+    bool HandleMousePressed(const sf::Vector2f &mousePos) override;
+    bool HandleMouseMoved(const sf::Vector2f &mousePos) override { return visible; }
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 };
 #pragma endregion
 
-
 #pragma region 手牌显示
-class CardsInHandPanel : public Panel{
+class CardsInHandPanel : public Panel
+{
 private:
-    ResourceManager* rm = nullptr;
+    ResourceManager *rm = nullptr;
 
     std::vector<CardView> cards;
     bool hasSelectedCard = false;
@@ -201,18 +238,19 @@ private:
 
     int points = 0;
 
-    std::optional<sf::Sprite> actionPoints;
+    std::optional<sf::Sprite> pointsBG;
     std::optional<sf::Text> pointText;
-    const sf::Font* font = nullptr;
+    const sf::Font *font = nullptr;
     bool hasFont = false;
-    
-    float Smooth(float t){ return t * t * (3.f - 2.f * t); }
-    sf::Vector2f Lerp(sf::Vector2f a, sf::Vector2f b, float t){ return a + (b - a) * t; }
-    float Lerp(float a, float b, float t){ return a + (b - a) * t;}
+
+    float Smooth(float t) { return t * t * (3.f - 2.f * t); }
+    sf::Vector2f Lerp(sf::Vector2f a, sf::Vector2f b, float t) { return a + (b - a) * t; }
+    float Lerp(float a, float b, float t) { return a + (b - a) * t; }
 
     void UpdateLayoutArc();
-    bool CanInteract(const CardView& c){ return c.state == CardAnimState::Idle; }
-    void ComputeArcTransform(int index, int n, sf::Vector2f& pos, float& rot){
+    bool CanInteract(const CardView &c) { return c.state == CardAnimState::Idle; }
+    void ComputeArcTransform(int index, int n, sf::Vector2f &pos, float &rot)
+    {
         float centerX = 960.f;
         float baseY = 980.f;
 
@@ -225,67 +263,68 @@ private:
 
         pos = {
             centerX + offset * spacingX,
-            baseY + std::abs(offset) * liftY
-        };
+            baseY + std::abs(offset) * liftY};
 
         rot = offset * (maxAngle / (n > 1 ? (n - 1) / 2.f : 1.f));
     }
 
 public:
-    CardsInHandPanel(std::vector<GameEvent>& e) : Panel(e) { type = PanelType::CardsInHand; layer = PanelLayer::Bottom; }
-    void Init(ResourceManager& resource, const sf::Font* uiFont);
+    CardsInHandPanel(std::vector<GameEvent> &e) : Panel(e)
+    {
+        type = PanelType::CardsInHand;
+        layer = PanelLayer::Bottom;
+    }
+    void Init(ResourceManager &resource, const sf::Font *uiFont);
     void Update(float dt) override;
 
-    void SetCards(const std::vector<PileType>& c, int point, bool first = false);
+    void SetCards(const std::vector<PileType> &c, int point, bool first = false);
     std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
     bool HasSelectedCard() { return visible && hasSelectedCard; }
-    void SetHasSelected(bool f) { 
-        if(!visible){
-            std::cout<<"CardsInHandPanel:unvidible set"<<std::endl;
+    void SetHasSelected(bool f)
+    {
+        if (!visible)
+        {
+            std::cout << "CardsInHandPanel:unvidible set" << std::endl;
             return;
         }
-        hasSelectedCard = f; 
+        hasSelectedCard = f;
         selectedIndex = -1;
-        hoveredIndex = -1; 
+        hoveredIndex = -1;
     }
 
-    bool HandleMousePressed(const sf::Vector2f& mousePos) override;
-    bool HandleMouseMoved(const sf::Vector2f& mousePos) override;
+    bool HandleMousePressed(const sf::Vector2f &mousePos) override;
+    bool HandleMouseMoved(const sf::Vector2f &mousePos) override;
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 
     bool BlocksInput() const override { return false; }
 };
 #pragma endregion
 
-
-
-
-class PanelManager {
+class PanelManager
+{
 private:
-
     // 生命周期管理
     std::vector<std::unique_ptr<Panel>> allPanels;
 
     // 类型查找
-    std::unordered_map<PanelType, Panel*> panelMap;
+    std::unordered_map<PanelType, Panel *> panelMap;
 
     // 每层按打开顺序存储
     std::array<
-        std::vector<Panel*>,
-        static_cast<size_t>(PanelLayer::Count)
-    > layerPanels;
+        std::vector<Panel *>,
+        static_cast<size_t>(PanelLayer::Count)>
+        layerPanels;
 
 public:
-
-    template<typename T, typename... Args>
-    T* AddPanel(Args&&... args)
+    template <typename T, typename... Args>
+    T *AddPanel(Args &&...args)
     {
         auto ptr =
             std::make_unique<T>(
                 std::forward<Args>(args)...);
 
-        T* raw = ptr.get();
+        T *raw = ptr.get();
 
         allPanels.push_back(std::move(ptr));
 
@@ -294,13 +333,13 @@ public:
         return raw;
     }
 
-    template<typename T>
-    T* Get()
+    template <typename T>
+    T *Get()
     {
-        for(auto& p : allPanels)
+        for (auto &p : allPanels)
         {
-            if(auto ptr =
-                dynamic_cast<T*>(p.get()))
+            if (auto ptr =
+                    dynamic_cast<T *>(p.get()))
             {
                 return ptr;
             }
@@ -312,43 +351,42 @@ public:
     void Open(PanelType id)
     {
         auto it = panelMap.find(id);
-
-        if(it == panelMap.end())
+        if (it == panelMap.end())
             return;
 
-        Panel* panel = it->second;
+        Panel *panel = it->second;
 
-        if(panel->IsVisible())
+        if (panel->IsVisible())
             return;
 
         panel->Open();
 
-        auto& layer =
-            layerPanels[
-                static_cast<size_t>(
-                    panel->GetLayer())];
+        auto &layer = layerPanels[(size_t)panel->GetLayer()];
 
-        layer.push_back(panel);
+        // ⭐ 防止重复加入
+        if (std::find(layer.begin(), layer.end(), panel) == layer.end())
+        {
+            layer.push_back(panel);
+        }
     }
 
     void Close(PanelType id)
     {
         auto it = panelMap.find(id);
 
-        if(it == panelMap.end())
+        if (it == panelMap.end())
             return;
 
-        Panel* panel = it->second;
+        Panel *panel = it->second;
 
-        if(!panel->IsVisible())
+        if (!panel->IsVisible())
             return;
 
         panel->Close();
 
-        auto& layer =
-            layerPanels[
-                static_cast<size_t>(
-                    panel->GetLayer())];
+        auto &layer =
+            layerPanels[static_cast<size_t>(
+                panel->GetLayer())];
 
         layer.erase(
             std::remove(
@@ -357,18 +395,18 @@ public:
                 panel),
             layer.end());
     }
-    
+
     void CloseAll()
     {
-        for(auto& panel : allPanels)
+        for (auto &panel : allPanels)
         {
-            if(panel->IsVisible())
+            if (panel->IsVisible())
             {
                 panel->Close();
             }
         }
 
-        for(auto& layer : layerPanels)
+        for (auto &layer : layerPanels)
         {
             layer.clear();
         }
@@ -378,18 +416,20 @@ public:
     {
         auto it = panelMap.find(id);
 
-        return it != panelMap.end()
-            && it->second->IsVisible();
+        return it != panelMap.end() && it->second->IsVisible();
     }
 
-    bool HandleMousePressed(const sf::Vector2f& pos) {
-        for(int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l){
-            auto& layer = layerPanels[l];
+    bool HandleMousePressed(const sf::Vector2f &pos)
+    {
+        for (int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l)
+        {
+            auto &layer = layerPanels[l];
 
-            for(auto it = layer.rbegin(); it != layer.rend(); ++it) {
-                Panel* panel = *it;
+            for (auto it = layer.rbegin(); it != layer.rend(); ++it)
+            {
+                Panel *panel = *it;
 
-                if(panel->HandleMousePressed(pos))
+                if (panel->IsVisible() && panel->HandleMousePressed(pos))
                     return true;
             }
         }
@@ -397,14 +437,17 @@ public:
         return false;
     }
 
-    bool HandleMouseMoved(const sf::Vector2f& pos) {
-        for(int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l){
-            auto& layer = layerPanels[l];
+    bool HandleMouseMoved(const sf::Vector2f &pos)
+    {
+        for (int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l)
+        {
+            auto &layer = layerPanels[l];
 
-            for(auto it = layer.rbegin(); it != layer.rend(); ++it) {
-                Panel* panel = *it;
+            for (auto it = layer.rbegin(); it != layer.rend(); ++it)
+            {
+                Panel *panel = *it;
 
-                if(panel->HandleMouseMoved(pos))
+                if (panel->IsVisible() && panel->HandleMouseMoved(pos))
                     return true;
             }
         }
@@ -412,14 +455,17 @@ public:
         return false;
     }
 
-    bool HandleMouseReleased() {
-        for(int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l){
-            auto& layer = layerPanels[l];
+    bool HandleMouseReleased()
+    {
+        for (int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l)
+        {
+            auto &layer = layerPanels[l];
 
-            for(auto it = layer.rbegin(); it != layer.rend(); ++it) {
-                Panel* panel = *it;
+            for (auto it = layer.rbegin(); it != layer.rend(); ++it)
+            {
+                Panel *panel = *it;
 
-                if(panel->HandleMouseReleased())
+                if (panel->IsVisible() && panel->HandleMouseReleased())
                     return true;
             }
         }
@@ -429,24 +475,24 @@ public:
 
     void Update(float dt)
     {
-        for(auto& layer : layerPanels)
+        for (auto &layer : layerPanels)
         {
-            for(auto* panel : layer)
+            for (auto *panel : layer)
             {
                 panel->Update(dt);
             }
         }
     }
 
-    void Draw(sf::RenderWindow& window)
+    void Draw(sf::RenderWindow &window)
     {
-        for(size_t l = 0;
-            l < static_cast<size_t>(
-                    PanelLayer::Count);
-            ++l)
+        for (size_t l = 0;
+             l < static_cast<size_t>(
+                     PanelLayer::Count);
+             ++l)
         {
-            for(auto* panel :
-                layerPanels[l])
+            for (auto *panel :
+                 layerPanels[l])
             {
                 panel->Draw(window);
             }
@@ -455,20 +501,21 @@ public:
 
     bool BlocksInput() const
     {
-        for(int l =
-                static_cast<int>(
-                    PanelLayer::Count) - 1;
-            l >= 0;
-            --l)
+        for (int l =
+                 static_cast<int>(
+                     PanelLayer::Count) -
+                 1;
+             l >= 0;
+             --l)
         {
-            auto const& layer =
+            auto const &layer =
                 layerPanels[l];
 
-            for(auto it = layer.rbegin();
-                it != layer.rend();
-                ++it)
+            for (auto it = layer.rbegin();
+                 it != layer.rend();
+                 ++it)
             {
-                if((*it)->BlocksInput())
+                if ((*it)->BlocksInput())
                     return true;
             }
         }
@@ -476,4 +523,3 @@ public:
         return false;
     }
 };
-

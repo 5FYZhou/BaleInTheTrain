@@ -21,14 +21,6 @@ Game::Game()
     renderer.Init();
     sceneMgr.SetCurScene(SceneType::Menu);
 
-    sf::Text warm(rm.getFont());
-    warm.setString("Settings Music SFX 0123456789%");
-    window.draw(warm);
-    uiMgr.Open(PanelType::Setting);
-    uiMgr.DrawPanels(window);
-    window.display();
-    uiMgr.Close(PanelType::Setting);
-
     // ctx.ui = &uiMgr;
     // ctx.scene = &sceneMgr;
     // ctx.anim = uiMgr.GetAnimationManager(); // 或 uiMgr.anim
@@ -38,7 +30,6 @@ Game::Game()
     btLogic.textPrompt = &uiMgr.textPrompt;
 
     player.Init(rm.getTextureCount(TextureType::Player));
-    playerDeadCnt = 0;
 }
 
 Game::~Game()
@@ -68,9 +59,12 @@ void Game::Run()
 void Game::Init()
 {
     player.ResetExceptCard();
-    keyCnt = 2;
+    keyCnt = 3;
     player.InitCards();
     playerDeadCnt = 0;
+    sceneMgr.Init();
+    uiMgr.rewardAni.hasInit = false;
+    textHintMgr.ResetState();
 }
 
 void Game::HandleInput(float dt)
@@ -81,6 +75,8 @@ void Game::HandleInput(float dt)
         {
             window.close();
         }
+        // 切场景时禁用输入
+        if(sceneMgr.IsFading()) return;
 
         if (const auto *key = event->getIf<sf::Event::KeyPressed>())
         {
@@ -438,7 +434,7 @@ void Game::HandleEvents(const GameEvent &event)
         else if (event.val == 1)
         {
             ghostInfo.gameSceneID = sceneMgr.GetGameSceneIdx();
-            ghostInfo.posX = player.feet.x;
+            ghostInfo.posX = playerXBeforeBattle;
             ghostInfo.keyNum = keyCnt;
             std::cout<<"deadcnt"<<playerDeadCnt<<std::endl;
             // 彻底死亡
@@ -452,10 +448,9 @@ void Game::HandleEvents(const GameEvent &event)
                 // 添加敌人魂
                 sceneMgr.LoadFirstDie([this]{
                     keyCnt = 0;
-                    sceneMgr.AddGhost(ghostInfo.gameSceneID, {ghostInfo.posX, PlayerGroundY - 400}, ghostInfo.keyNum);
+                    sceneMgr.AddGhost(ghostInfo.gameSceneID, {ghostInfo.posX, PlayerGroundY - 300}, ghostInfo.keyNum);
                     player.ResetExceptCard();
                 });
-    std::cout<<"AAAAAAA"<<std::endl;
             }
         }
         // 打败魂
@@ -488,7 +483,8 @@ void Game::Draw()
 
     if (curSceneType == SceneType::Game || curSceneType == SceneType::Battle)
     {
-        renderer.DrawPlayer(window, player);
+        bool f = curSceneType == SceneType::Battle;
+        renderer.DrawPlayer(window, player, f);
     }
 
     if (curSceneType == SceneType::Game)
@@ -511,102 +507,46 @@ void Game::Draw()
         }
     }
     
-    // 敌人意图
     if (curSceneType == SceneType::Battle)
     {
+        int column = 0;
+        float space = 50;
+        // 敌人意图
         const Enemy *e = sceneMgr.GetScene().GetClickEnemy();
         int num = e->allPlans[btLogic.state.TurnCount - 1].data;
         PlanType type = e->allPlans[btLogic.state.TurnCount - 1].plantype;
         sf::Vector2f pos = e->position;
         pos.x += 70;
-        pos.y -= 70;
-        renderer.DrawItemWithNum(window, planTexMap.at(type), num, pos);
+        pos.y -= 30;
+        renderer.DrawBuffWithNum(window, planTexMap.at(type), num, pos);
+        // 敌人buff
+        auto bounds = e->bound;
+        pos.x = bounds.position.x + 10;
+        pos.y = e->position.y + e->bound.size.y + e->HPDrawOffset + 40; // SFML 3
+        auto buffs = btLogic.enemy->buff_debuff_vec.getBuffTypes();
+        for(auto& buff : buffs){
+            renderer.DrawBuff(window, buffTexMap.at(buff), {pos.x + column * space, pos.y}
+                                , {40, 40});
+            column++;
+        }
 
+        // 玩家Buff
         pos = player.feet;
-        pos.x -= 20;
-        pos.y -= 440;
-        int column = 0;
-        float space = 90;
+        pos.x -= 110;
+        pos.y += 50;
+        column = 0;
         // 玩家防御
         if (btLogic.state.defend_num > 0)
         {
             int num = btLogic.state.defend_num;
-            renderer.DrawItemWithNum(window, TextureType::p_defend_player, num, pos);
-        }
-        // 格挡
-        if (btLogic.state.defend_num > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_defend_player,
-                btLogic.state.defend_num,
-                {pos.x + column * space, pos.y});
-            column++;
+            renderer.DrawBuffWithNum(window, TextureType::p_defend_player, num, 
+                {player.feet.x - 110, player.feet.y - 30}, {50, 50}, 40, 30);
         }
 
-        // 荆棘
-        if (btLogic.state.thornsdata > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_thorns,
-                btLogic.state.thornsdata,
-                {pos.x + column * space, pos.y});
-            column++;
-        }
-
-        // 力量
-        if (btLogic.state.strength > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_power_up_player,
-                btLogic.state.strength,
-                {pos.x + column * space, pos.y});
-            column++;
-        }
-
-        // 临时力量
-        if (btLogic.state.temporaryStrength > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_defend,
-                btLogic.state.temporaryStrength,
-                {pos.x + column * space, pos.y});
-            column++;
-        }
-
-        // 狂暴加成
-        if (btLogic.state.rampageBonus > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_power_up_player,
-                btLogic.state.rampageBonus,
-                {pos.x + column * space, pos.y});
-            column++;
-        }
-
-        // 金属化
-        if (btLogic.state.metallicize > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_metallization,
-                btLogic.state.metallicize,
-                {pos.x + column * space, pos.y});
-            column++;
-        }
-
-        // 震荡伤害(Juggernaut)
-        if (btLogic.state.juggernautDamage > 0)
-        {
-            renderer.DrawItemWithNum(
-                window,
-                TextureType::p_defend_player,
-                btLogic.state.juggernautDamage,
-                {pos.x + column * space, pos.y});
+        buffs = btLogic.state.buff_debuff_vec.getBuffTypes();
+        for(auto& buff : buffs){
+            renderer.DrawBuff(window, buffTexMap.at(buff), {pos.x + column * space, pos.y}, 
+                                {40, 40});
             column++;
         }
     }

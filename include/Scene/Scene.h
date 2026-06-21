@@ -37,9 +37,9 @@ inline const std::vector<std::vector<Item>> itemInScene = {
 };
 
 inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
-    { EnemyType::Train_attendant, { 1500, 490 } },
-    { EnemyType::LightMonster, { 1500, 480 } },
-    { EnemyType::TicketMonster, { 1500, 560 } }
+    { EnemyType::Train_attendant, { 1500, 440 } },
+    { EnemyType::LightMonster, { 1500, 430 } },
+    { EnemyType::TicketMonster, { 1500, 510 } }
 };
 
 struct SceneInteractable {
@@ -145,19 +145,24 @@ private:
     }
 public:
     GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i) { 
-        Enemy enemy(enemyInScene[idx].first, enemyInScene[idx].second);
-        InitEnemy(enemy);
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
+        Init();
+    }
+    
+    void Init(){
+        ev.clear();
+        Enemy enemy(enemyInScene[idx].first, enemyInScene[idx].second);
+        InitEnemy(enemy);
+        ev.push_back(enemy);
         interactables.clear();
         for (const auto& item : itemInScene[idx]) {
             interactables.push_back({ TextureType::Star, item.pos, {90, 109}, EventType::ItemClicked, item.type });
         }
         interactables.push_back({TextureType::BackpackIcon, {1695.f, 25.f}, {179, 190}, {0.45f, 0.45f}, EventType::OpenBackpackIcon});
         interactables.push_back({TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings});
-        ev.push_back(enemy);
     }
-    
+
     Enemy* GetClickEnemy() override { return clickEnemy; }
     std::vector<Enemy>* GetEnemyV() override { return &ev; }
     std::vector<SceneInteractable>* GetInteractables() { return &interactables; }
@@ -283,17 +288,18 @@ public:
         type = SceneType::Battle; 
         bgTex = TextureType::GameBackground;
         interactables = {
+            /*
             { TextureType::Potion1, {365.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion2, {450.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion3, {535.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Cube, {620.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
-            { TextureType::DealCardPileIcon, {100.f, 900.f}, {137.f, 132.f}, {0.5f, 0.5f}, EventType::OpenDealCardPanel },
-            { TextureType::DiscardPileIcon, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile },
+            */
+            { TextureType::DealCardPileIcon, {80.f, 930.f}, {219.f, 166.f}, {0.7f, 0.7f}, EventType::OpenDealCardPanel },
+            { TextureType::DiscardPileIcon, {1720.f, 930.f}, {193.f, 203.f}, {0.65f, 0.65f}, EventType::OpenDiscardPile },
             { TextureType::EndTurn, {1250, 750}, {157, 69}, EventType::EndTurn},
             { TextureType::None, {357, 508}, {195, 352}, {-1.f, 1.f}, EventType::ItemClicked, ItemType::Player},
             { TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings}
         };
-
     }
     ~BattleScene(){ delete enemy; }
 
@@ -308,7 +314,7 @@ public:
         ev.push_back(*e);
     }
     Enemy* GetClickEnemy() override { return enemy; }
-    std::vector<Enemy>* GetEnemyV() override {return &ev;}
+    std::vector<Enemy>* GetEnemyV() override { return &ev; }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
         if(enemy->bound.contains(mousePos)){
@@ -333,7 +339,8 @@ public:
         }
     }
     void Update(float dt) override{
-        enemy->Update(dt);
+        for(auto& enemy : ev)
+            enemy.Update(dt);
     }
 };
 
