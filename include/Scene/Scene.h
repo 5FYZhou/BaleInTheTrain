@@ -163,8 +163,13 @@ public:
     std::vector<Enemy>* GetEnemyV() override { return &ev; }
     std::vector<SceneInteractable>* GetInteractables() { return &interactables; }
 
+    void AddGhost(Enemy& e){ 
+        InitEnemy(e);
+        ev.push_back(e);
+    }
+
     void EnemyDrop() override {
-        for(auto& enemy : ev){
+        Enemy& enemy = *clickEnemy;
         if(!enemy.dead) return;
 
         std::cout << "EnemyDrop " << enemy.droppedItems.size() << std::endl;
@@ -193,7 +198,7 @@ public:
                 float angle = angleDist(gen);
                 float radius = radiusDist(gen);
 
-                dropPos = enemy.position;
+                dropPos = enemy.initPos;
                 dropPos.x += std::cos(angle) * radius;
                 dropPos.y += std::sin(angle) * radius;
 
@@ -225,7 +230,6 @@ public:
                 item
             });
         }
-    }
     }
 
     void ProcessInput(const sf::Vector2f& mousePos) override {
@@ -283,11 +287,14 @@ public:
             { TextureType::Potion1, {365.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion2, {450.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
             { TextureType::Potion3, {535.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
-            { TextureType::Cube, {100.f, 900.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::OpenDealCardPanel },
-            { TextureType::DiscardPile, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile },
+            { TextureType::Cube, {620.f, 30.f}, {137.f, 132.f}, {0.72f, 0.72f}, EventType::None },
+            { TextureType::DealCardPileIcon, {100.f, 900.f}, {137.f, 132.f}, {0.5f, 0.5f}, EventType::OpenDealCardPanel },
+            { TextureType::DiscardPileIcon, {1700.f, 900.f}, {193.f, 203.f}, {0.45f, 0.45f}, EventType::OpenDiscardPile },
             { TextureType::EndTurn, {1250, 750}, {157, 69}, EventType::EndTurn},
-            { TextureType::None, {357, 508}, {195, 352}, {-1.f, 1.f}, EventType::ItemClicked, ItemType::Player}
+            { TextureType::None, {357, 508}, {195, 352}, {-1.f, 1.f}, EventType::ItemClicked, ItemType::Player},
+            { TextureType::SettingsIcon, {1800.f, 30.f}, {100, 107}, {0.68f, 0.68f}, EventType::OpenSettings}
         };
+
     }
     ~BattleScene(){ delete enemy; }
 
@@ -297,6 +304,7 @@ public:
             return;
         }
         enemy = e; 
+        enemy->SetPosX(1500.f);
         ev.clear();
         ev.push_back(*e);
     }
@@ -348,7 +356,7 @@ public:
 class DeadScene : public Scene {
 public:
     DeadScene(std::vector<GameEvent>& e) : Scene(e) { 
-        type = SceneType::Win; 
+        type = SceneType::Dead; 
         interactables = {
             { false, TextureType::Defeat, {715.f, 349.f}}
         };

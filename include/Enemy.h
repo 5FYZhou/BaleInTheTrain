@@ -3,11 +3,14 @@
 #include "BuffAndDebuff.h"
 #include <string>
 
-// 敌人类型对应{敌人位置，掉落物，绘制血量偏移}
+// 敌人类型对应{敌人贴图大小，掉落物，绘制血量偏移}
 inline const std::unordered_map<EnemyType, std::tuple<sf::Vector2f, std::vector<ItemType>, int>> enemyBound = {
     {EnemyType::Train_attendant, {{213, 377}, {ItemType::Defend, ItemType::Key}, -30}},
     {EnemyType::LightMonster, {{184, 376}, {}, -30}},
-    {EnemyType::TicketMonster, {{176, 294}, {}, -30}}};
+    {EnemyType::TicketMonster, {{176, 294}, {}, -30}},
+    {EnemyType::TyreMosnter, {{223, 200}, {}, -30}},
+    {EnemyType::Past_YOU, {{648, 648}, {}, -10}},
+};
 
 struct Plan
 {
@@ -27,33 +30,46 @@ public:
     EnemyType ty;          // 敌人ID
     std::string name;      // 敌人名称
     sf::Vector2f position; // 敌人位置（用于渲染）
+    sf::Vector2f initPos; // 敌人原来位置（魂用）
     int frameIndex = 0;    // 当前动画帧索引
     int frameCount = 2;
     float frameTimer = 0.f;
-    float frameSpeed = 0.5; // Frames per second for animation
-    sf::FloatRect bound;    // 碰撞体
-    float HPDrawOffset;     // 绘制血量时相对敌人位置的y轴偏移
+    float frameSpeed = 0.5;          // Frames per second for animation
+    sf::Vector2f scale = {1.0, 1.0}; // 绘制和碰撞体缩放
+    sf::FloatRect bound;             // 碰撞体
+    float HPDrawOffset;              // 绘制血量时相对敌人位置的y轴偏移
 
     int sum_health; // 总生命值
     int cur_health; // 当前生命值
-    bool dead;                          // 是否死亡
+    bool dead;      // 是否死亡
 
+    std::vector<Plan> allPlans; // 回合计划（0-攻击，1-防御，2-增益，3-减益）
+
+    int strength = 0;   // 攻击时增加对应的力量值
+    int thornsdata = 0; // 被攻击时造成的反伤
     std::vector<Plan> allPlans;         // 回合计划（0-攻击，1-防御，2-增益，3-减益）
 
     
     int strength = 0;   //攻击时增加对应的力量值
     int thornsdata = 0;  //被攻击时造成的反伤
     int defend_num = 0;
-    Buff_Debuff_Vec buff_debuff_vec;       // 状态效果（如中毒、虚弱等）
+    Buff_Debuff_Vec buff_debuff_vec;    // 状态效果（如中毒、虚弱等）
     std::vector<ItemType> droppedItems; // 被击败后掉落的物品
 
 public:
-    Enemy(EnemyType id, sf::Vector2f p) : ty(id), position(p),
-                                          bound({p, std::get<0>(enemyBound.at(id))}),
-                                          droppedItems(std::get<1>(enemyBound.at(id))),
-                                          HPDrawOffset(std::get<2>(enemyBound.at(id))) {}
-    Enemy(enemy_data ed)
-        : ty(ed.ty), name(ed.name), sum_health(ed.maxHP), cur_health(ed.maxHP), allPlans(ed.plans) {}
+    Enemy(EnemyType id, sf::Vector2f p, sf::Vector2f s = {1.0f, 1.0f})
+        : ty(id), position(p), scale(s),
+          droppedItems(std::get<1>(enemyBound.at(id))),
+          HPDrawOffset(std::get<2>(enemyBound.at(id)))
+    {
+        initPos = position;
+        auto size = std::get<0>(enemyBound.at(id));
+
+        bound = sf::FloatRect(
+            p,
+            {scale.x * size.x,
+             scale.y * size.y});
+    }
 
     void Update(float dt)
     {
@@ -63,6 +79,11 @@ public:
             frameIndex = (frameIndex + 1) % frameCount;
             frameTimer = 0.f;
         }
+    }
+    void SetPosX(float x)
+    {
+        position.x = x;
+        bound.position.x = x;
     }
 };
 
@@ -223,6 +244,52 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
              {2, PlanType::vulnerable},
              {12, PlanType::attack},
              {15, PlanType::defend},
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7,PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7,PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7,PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7,PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
+
+             {2, PlanType::easy_to_attack},
+             {8, PlanType::attack},
+             {6, PlanType::attack},
+             {2, PlanType::easy_to_attack},
+             {10, PlanType::attack},
+             {7, PlanType::attack},
+             {2, PlanType::vulnerable},
+             {12, PlanType::attack},
+             {15, PlanType::defend},
          })}},
 
     // 示例3：车票怪
@@ -288,7 +355,7 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
              {10, PlanType::attack},
              {8,PlanType::defend},
          })}},
-    //车轮怪
+    // 车轮怪
     {EnemyType::TicketMonster,
      enemy_data{
          EnemyType::TicketMonster,
@@ -357,7 +424,7 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
              {7, PlanType::attack},
              {10,PlanType::defend},
          })}},
-    //过去死亡的你
+    // 过去死亡的你
     {EnemyType::Past_YOU,
      enemy_data{
          EnemyType::Past_YOU,

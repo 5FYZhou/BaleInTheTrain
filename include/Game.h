@@ -19,7 +19,7 @@
 
 using namespace sf;
 
-struct deadPlayer{
+struct GhostInfo{
     int gameSceneID;
     float posX;
     int keyNum;
@@ -52,7 +52,7 @@ private:
     int keyCnt;
     float playerXBeforeBattle;
     int playerFaceBeforeBattle;
-    deadPlayer ghost;
+    GhostInfo ghostInfo;
     int playerDeadCnt = 0;
 
     void Init();
