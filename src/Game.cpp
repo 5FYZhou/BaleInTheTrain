@@ -475,7 +475,7 @@ void Game::HandleEvents(const GameEvent &event)
         // 失败
         else if (event.val == 1)
         {
-            ghostInfo.gameSceneID = sceneMgr.GetGameSceneIdx();
+            ghostInfo.gameSceneID = sceneMgr.GetGameSceneIdxBeforeBattle();
             ghostInfo.posX = playerXBeforeBattle;
             ghostInfo.keyNum = keyCnt;
             std::cout<<"deadcnt"<<playerDeadCnt<<std::endl;

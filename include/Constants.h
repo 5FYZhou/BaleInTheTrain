@@ -124,7 +124,7 @@ struct GameEvent {
 };
 
 enum class BuffDebuffType{
-    None,
+    None = 0,
     easy_to_attack, //易伤（受到的伤害增加）
     power_up, //力量
     rampart, //壁垒（回合开始时防御点数不消失）
@@ -216,17 +216,19 @@ inline const std::unordered_map<BuffDebuffType, TextureType> buffTexMap = {
     { BuffDebuffType::vulnerable, TextureType::p_vulnerable },
     { BuffDebuffType::thorns, TextureType::p_thorns },
     { BuffDebuffType::metallization, TextureType::p_metallization },
+    { BuffDebuffType::unstoppable, TextureType::p_power_up }
 };
 
 // Buff&Debuff映射悬浮显示信息
 inline const std::unordered_map<BuffDebuffType, std::string> buffInfoMap = {
     { BuffDebuffType::None, "TextureType::None" },
-    { BuffDebuffType::easy_to_attack, "TextureType::p_easy_to_attack" },
+    { BuffDebuffType::easy_to_attack, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" },
     { BuffDebuffType::power_up, "TextureType::p_power_up_player" },
     { BuffDebuffType::rampart, "TextureType::p_rampart" },
     { BuffDebuffType::vulnerable, "TextureType::p_vulnerable" },
     { BuffDebuffType::thorns, "TextureType::p_thorns" },
     { BuffDebuffType::metallization, "TextureType::p_metallization" },
+    { BuffDebuffType::unstoppable, "TextureType::unnnnnn" },
 };
 
 // 场景物品类型映射卡牌类型

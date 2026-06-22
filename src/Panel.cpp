@@ -888,6 +888,7 @@ void BuffPanel::SetBuff(
             icon.value = b.second;
 
             icon.tex = buffTexMap.at(b.first); // 你原来的映射
+            icon.type = b.first;
             dst.push_back(icon);
         }
     };
@@ -896,22 +897,22 @@ void BuffPanel::SetBuff(
     convert(playerBuff, playerBuffs);
 }
 
-bool BuffPanel::HandleMouseMoved(const sf::Vector2f& pos)
+bool BuffPanel::HandleMouseMoved(const sf::Vector2f &pos)
 {
     hoveredBuff = nullptr;
 
-    for(auto& buff : enemyBuffs)
+    for (auto &buff : enemyBuffs)
     {
-        if(buff.bounds.contains(pos))
+        if (buff.bounds.contains(pos))
         {
             hoveredBuff = &buff;
             return false;
         }
     }
 
-    for(auto& buff : playerBuffs)
+    for (auto &buff : playerBuffs)
     {
-        if(buff.bounds.contains(pos))
+        if (buff.bounds.contains(pos))
         {
             hoveredBuff = &buff;
             return false;
@@ -927,7 +928,8 @@ void BuffPanel::DrawIcon(sf::RenderWindow &window, TextureType tex, sf::Vector2f
     CenterOrigin(sp);
     sp.setPosition(pos);
     FitSprite(sp, scope);
-    if(tex == TextureType::p_power_up_player) sp.setRotation(sf::radians(45));
+    if (tex == TextureType::p_power_up_player)
+        sp.setRotation(sf::radians(45));
 
     window.draw(sp);
 }
@@ -949,6 +951,62 @@ void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int n
 
     text.setPosition({pos.x + offset, pos.y});
 
+    window.draw(text);
+}
+
+void BuffPanel::DrawTooltip(sf::RenderWindow& window)
+{
+    if(!hoveredBuff)
+        return;
+
+    auto it = buffInfoMap.find(hoveredBuff->type);
+
+    if(it == buffInfoMap.end())
+        return;
+
+    sf::Text text(*font);
+
+    text.setString(it->second);
+
+    text.setCharacterSize(22);
+    text.setFillColor(sf::Color::Black);
+
+    auto tb = text.getLocalBounds();
+
+    constexpr float padding = 10.f;
+
+    sf::RectangleShape bg;
+
+    bg.setSize({
+        tb.size.x + padding * 2.f,
+        tb.size.y + padding * 2.f
+    });
+
+    bg.setFillColor(
+        sf::Color(255,255,255,180)
+    );
+
+    bg.setOrigin({
+        bg.getSize().x / 2.f,
+        bg.getSize().y
+    });
+
+    bg.setPosition({
+        hoveredBuff->pos.x,
+        hoveredBuff->pos.y - 30.f
+    });
+
+    text.setOrigin({
+        tb.position.x + tb.size.x / 2.f,
+        tb.position.y + tb.size.y
+    });
+
+    text.setPosition({
+        hoveredBuff->pos.x,
+        hoveredBuff->pos.y - 40.f
+    });
+
+    window.draw(bg);
     window.draw(text);
 }
 
@@ -979,11 +1037,17 @@ void BuffPanel::Draw(sf::RenderWindow &window)
 
     for (auto &b : enemyBuffs)
     {
-        DrawIcon(
-            window,
-            b.tex,
-            {enemyBuffPos.x + col * space, enemyBuffPos.y},
-            {40, 40});
+        sf::Vector2f drawPos{
+            enemyBuffPos.x + col * space,
+            enemyBuffPos.y};
+
+        b.pos = drawPos;
+
+        b.bounds = {
+            {drawPos.x - 20, drawPos.y - 20},
+            {40, 40}};
+
+        DrawIcon(window, b.tex, drawPos, {40, 40});
         col++;
     }
 
@@ -1007,12 +1071,20 @@ void BuffPanel::Draw(sf::RenderWindow &window)
 
     for (auto &b : playerBuffs)
     {
-        DrawIcon(
-            window,
-            b.tex,
-            {playerBuffPos.x + col * space, playerBuffPos.y},
-            {40, 40});
+        sf::Vector2f drawPos{
+            playerBuffPos.x + col * space,
+            playerBuffPos.y};
+
+        b.pos = drawPos;
+
+        b.bounds = {
+            {drawPos.x - 20, drawPos.y - 20},
+            {40, 40}};
+
+        DrawIcon(window, b.tex, drawPos, {40, 40});
+
         col++;
     }
+    DrawTooltip(window);
 }
 #pragma endregion

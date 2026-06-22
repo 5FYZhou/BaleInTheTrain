@@ -6,17 +6,24 @@
 #include <algorithm>
 #include <deque>
 #include <unordered_map>
+#include <iostream>
 
 class ResourceManager;
 
 class AudioManager
 {
 private:
+    struct ActiveSound
+    {
+        sf::Sound sound;
+        SoundEffect effect;
+        ActiveSound(const sf::Sound &s, SoundEffect e)
+            : sound(s), effect(e) {}
+    };
 
+    std::deque<ActiveSound> activeSounds;
 
-    std::deque<sf::Sound> activeSounds;
-
-    //背景音乐
+    // 背景音乐
     sf::Music backgroundMusic;
     bool isMusicPlaying = false;
     SoundEffect currentMusicEffect = SoundEffect::None;
@@ -25,95 +32,23 @@ private:
     float sfxVolume = DEFAULT_SFX_VOLUME;
     float musicVolume = DEFAULT_MUSIC_VOLUME;
 
-    // 每种音效类型当前正在播放的数量
+    // 每种音效当前数量
     std::unordered_map<SoundEffect, int> soundCount;
 
-    // 每种音效的最大同时播放数量
+    // 最大并发
     std::unordered_map<SoundEffect, int> maxConcurrentSounds = {
         {SoundEffect::Back, 2},
         {SoundEffect::CardFlip, 2},
-        // { SoundEffect::Defeat, 2 },
         {SoundEffect::Dialog, 2},
         {SoundEffect::Footstep, 2},
         {SoundEffect::MenuButton, 2},
         {SoundEffect::Tutorial, 2},
-        //{ SoundEffect::Victory, 2 },
         {SoundEffect::ObjectError, 2},
         {SoundEffect::Pickup, 2},
         {SoundEffect::PlayerAttack, 1}};
 
 public:
     ResourceManager *rm = nullptr;
-    
-    // 播放背景音乐（使用 SoundEffect 枚举）
-    inline bool PlayMusic(SoundEffect effect, float volumeScale = 1.0f){
-        if(effect == SoundEffect::None || !rm)
-            return false;
-
-        // 如果已经播放同一首歌，不重复加载
-        if(currentMusicEffect == effect && isMusicPlaying){
-            return true;
-        }
-
-        // 通过 ResourceManager 获取音乐文件路径
-        std::string musicPath = rm->GetSoundPath(effect);
-        if(musicPath.empty()){
-            std::cerr << "AudioManager: No path found for music effect " << static_cast<int>(effect) << std::endl;
-            return false;
-        }
-
-        // 停止当前音乐
-        StopMusic();
-
-        // 加载并播放新音乐
-        if(!backgroundMusic.openFromFile(musicPath)){
-            std::cerr << "AudioManager: Failed to load music from " << musicPath << std::endl;
-            return false;
-        }
-
-        backgroundMusic.setLooping(true);
-        float finalVolume = 100.f * masterVolume * musicVolume * volumeScale;
-        finalVolume = std::clamp(finalVolume, 0.0f, 100.0f);
-        backgroundMusic.setVolume(finalVolume);
-        backgroundMusic.play();
-        
-        isMusicPlaying = true;
-        currentMusicEffect = effect;
-        return true;
-    }
-
-    inline void StopMusic(){
-        if(backgroundMusic.getStatus() != sf::SoundSource::Status::Stopped){
-            backgroundMusic.stop();
-        }
-        isMusicPlaying = false;
-        currentMusicEffect = SoundEffect::None;
-    }
-
-    inline void PauseMusic(){
-        if(isMusicPlaying){
-            backgroundMusic.pause();
-        }
-    }
-
-    inline void ResumeMusic(){
-        if(!isMusicPlaying && backgroundMusic.getStatus() == sf::SoundSource::Status::Paused){
-            backgroundMusic.play();
-            isMusicPlaying = true;
-        }
-    }
-
-    inline bool IsMusicPlaying() const { 
-        return isMusicPlaying || backgroundMusic.getStatus() == sf::SoundSource::Status::Playing;
-    }
-
-    inline void UpdateMusicVolume(){
-        if(isMusicPlaying || backgroundMusic.getStatus() != sf::SoundSource::Status::Stopped){
-            float finalVolume = 100.f * masterVolume * musicVolume;
-            finalVolume = std::clamp(finalVolume, 0.0f, 100.0f);
-            backgroundMusic.setVolume(finalVolume);
-        }
-    }
 
     AudioManager() = default;
 
@@ -122,6 +57,9 @@ public:
         StopAllSounds();
     }
 
+    // =========================
+    // 初始化
+    // =========================
     inline bool Initialize(ResourceManager &resourceMgr)
     {
         rm = &resourceMgr;
@@ -130,30 +68,23 @@ public:
         return true;
     }
 
+    // =========================
+    // 更新（清理结束音效）
+    // =========================
     inline void Update()
     {
-        static int frameCounter = 0;
-        frameCounter++;
-
-        if (frameCounter % 10 != 0)
-            return;
-        // 清理已停止的声音
         activeSounds.erase(
             std::remove_if(
-                activeSounds.begin(), activeSounds.end(),
-                [this](const sf::Sound &sound)
+                activeSounds.begin(),
+                activeSounds.end(),
+                [this](ActiveSound &s)
                 {
-                    if (sound.getStatus() == sf::SoundSource::Status::Stopped)
+                    if (s.sound.getStatus() == sf::SoundSource::Status::Stopped)
                     {
-                        // 找到对应音效类型并减少计数
-                        for (auto &[effect, count] : soundCount)
-                        {
-                            if (count > 0)
-                            {
-                                --count;
-                                break; // 假设每个声音只对应一个类型
-                            }
-                        }
+                        auto it = soundCount.find(s.effect);
+                        if (it != soundCount.end() && it->second > 0)
+                            it->second--;
+
                         return true;
                     }
                     return false;
@@ -161,66 +92,118 @@ public:
             activeSounds.end());
     }
 
+    // =========================
+    // 播放音效
+    // =========================
     inline void PlaySound(SoundEffect effect, float volumeScale = 1.0f)
     {
-        //std::cout << "this = " << this << std::endl;
-        //std::cout << "rm   = " << rm << std::endl;
-        if(rm == nullptr)  std::cout <<"!rm" << std::endl;
-        //std::cout << "HasSound: " << rm->HasSound(effect) << std::endl;
-        std::cout << "1PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
-        if (effect == SoundEffect::None || !rm || !rm->HasSound(effect))
+        if (!rm || effect == SoundEffect::None || !rm->HasSound(effect))
             return;
 
-        std::cout << "2PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
-
-        // 检查是否达到上限
         int currentCount = soundCount[effect];
-        int maxCount = maxConcurrentSounds.count(effect) ? maxConcurrentSounds[effect] : 3; // 默认上限3
+        int maxCount = maxConcurrentSounds.count(effect) ? maxConcurrentSounds[effect] : 3;
+
         if (currentCount >= maxCount)
             return;
 
-        std::cout << "3PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
-
-        // 顺便清理已停止音效
         Update();
 
-        // 播放音效
-        activeSounds.emplace_back(rm->getSound(effect));
-        sf::Sound &sound = activeSounds.back();
+        activeSounds.emplace_back(
+            ActiveSound{
+                sf::Sound(rm->getSound(effect)),
+                effect});
+
+        auto &sound = activeSounds.back().sound;
 
         ApplyVolumeToSound(sound, sfxVolume, volumeScale);
-
         sound.play();
 
-        // 增加计数
         soundCount[effect]++;
-
-        std::cout << "4PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
     }
 
+    // =========================
+    // 停止所有音效
+    // =========================
     inline void StopAllSounds()
     {
-        for (auto &sound : activeSounds)
-        {
-            sound.stop();
-        }
+        for (auto &s : activeSounds)
+            s.sound.stop();
+
         activeSounds.clear();
         soundCount.clear();
     }
 
-    inline void SetMasterVolume(float volume)
+    // =========================
+    // 音乐控制
+    // =========================
+    inline bool PlayMusic(SoundEffect effect, float volumeScale = 1.0f)
     {
-        masterVolume = std::clamp(volume, 0.0f, 1.0f);
+        if (!rm || effect == SoundEffect::None)
+            return false;
+
+        if (currentMusicEffect == effect && isMusicPlaying)
+            return true;
+
+        std::string path = rm->GetSoundPath(effect);
+        if (path.empty())
+            return false;
+
+        StopMusic();
+
+        if (!backgroundMusic.openFromFile(path))
+            return false;
+
+        backgroundMusic.setLooping(true);
+
+        float vol = 100.f * masterVolume * musicVolume * volumeScale;
+        backgroundMusic.setVolume(std::clamp(vol, 0.f, 100.f));
+
+        backgroundMusic.play();
+
+        isMusicPlaying = true;
+        currentMusicEffect = effect;
+
+        return true;
     }
 
-    inline void SetSfxVolume(float volume)
+    inline void StopMusic()
     {
-        sfxVolume = std::clamp(volume, 0.0f, 1.0f);
+        backgroundMusic.stop();
+        isMusicPlaying = false;
+        currentMusicEffect = SoundEffect::None;
     }
 
-    inline void SetMusicVolume(float volume)
+    inline void PauseMusic()
     {
-        musicVolume = std::clamp(volume, 0.0f, 1.0f);
+        if (isMusicPlaying)
+            backgroundMusic.pause();
+    }
+
+    inline void ResumeMusic()
+    {
+        if (backgroundMusic.getStatus() == sf::SoundSource::Status::Paused)
+        {
+            backgroundMusic.play();
+            isMusicPlaying = true;
+        }
+    }
+
+    // =========================
+    // 音量
+    // =========================
+    inline void SetMasterVolume(float v)
+    {
+        masterVolume = std::clamp(v, 0.f, 1.f);
+    }
+
+    inline void SetSfxVolume(float v)
+    {
+        sfxVolume = std::clamp(v, 0.f, 1.f);
+    }
+
+    inline void SetMusicVolume(float v)
+    {
+        musicVolume = std::clamp(v, 0.f, 1.f);
     }
 
     inline float GetMasterVolume() const { return masterVolume; }
@@ -228,12 +211,14 @@ public:
     inline float GetMusicVolume() const { return musicVolume; }
 
 private:
-    inline void ApplyVolumeToSound(sf::Sound &sound, float baseVolume, float volumeScale)
+    inline void ApplyVolumeToSound(sf::Sound &sound, float base, float scale)
     {
-        float finalVolume = 100.f * masterVolume * baseVolume * volumeScale;
-        finalVolume = std::clamp(finalVolume, 0.0f, 100.0f);
-        sound.setVolume(finalVolume);
+        float v = 100.f * masterVolume * base * scale;
+        sound.setVolume(std::clamp(v, 0.f, 100.f));
     }
 };
 
+// =========================
+// 全局声明（用 extern）
+// =========================
 extern AudioManager GlobalaudioMgr;

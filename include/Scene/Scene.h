@@ -192,10 +192,9 @@ public:
     }
 
     void EnemyDrop() override {
-        Enemy& enemy = *clickEnemy;
-        if(!enemy.dead) return;
+        if(!clickEnemy || !clickEnemy->dead) return;
 
-        std::cout << "EnemyDrop " << enemy.droppedItems.size() << std::endl;
+        std::cout << "EnemyDrop " << clickEnemy->droppedItems.size() << std::endl;
 
         static std::random_device rd;
         static std::mt19937 gen(rd());
@@ -212,7 +211,7 @@ public:
 
         std::vector<sf::Vector2f> usedPositions;
 
-        for(auto& item : enemy.droppedItems){
+        for(auto& item : clickEnemy->droppedItems){
             sf::Vector2f dropPos;
 
             bool found = false;
@@ -221,7 +220,7 @@ public:
                 float angle = angleDist(gen);
                 float radius = radiusDist(gen);
 
-                dropPos = enemy.initPos;
+                dropPos = clickEnemy->initPos;
                 dropPos.x += std::cos(angle) * radius;
                 dropPos.y += std::sin(angle) * radius;
 
