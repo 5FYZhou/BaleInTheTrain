@@ -220,6 +220,7 @@ void BattleLogic::ClickPlayer(int idx)
 
     case PileType::Activate_muscles:
         state.temporaryStrength += 2;
+        GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         state.buff_debuff_vec.Add({2, BuffDebuffType::power_up});
         DiscardPlayedCard(idx);
         break;
@@ -342,6 +343,7 @@ void BattleLogic::ClickEnemy(int idx)
             return;
         if (EnemyIntendsAttack()){
             state.strength += 3;
+            GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
             state.buff_debuff_vec.Add({3, BuffDebuffType::power_up});
         }        
         DiscardPlayedCard(idx);

@@ -262,6 +262,7 @@ void Game::HandleEvents(const GameEvent &event)
     // 钥匙足够打开门
     case EventType::Win:
         std::cout << "Event::Win" << std::endl;
+        GlobalaudioMgr.PauseMusic();
         GlobalaudioMgr.PlaySound(SoundEffect::GameVictory);
         sceneMgr.LoadScene(SceneType::Win);
         break;
