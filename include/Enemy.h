@@ -357,7 +357,7 @@ const std::unordered_map<EnemyType, enemy_data> g_prefabEnemies = {
              {8,PlanType::defend},
          })}},
     // 车轮怪
-    {EnemyType::TicketMonster,
+    {EnemyType::TyreMosnter,
      enemy_data{
          EnemyType::TicketMonster,
          "车轮怪",

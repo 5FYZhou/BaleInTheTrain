@@ -40,10 +40,10 @@ public:
             }
         }
     }
-    std::vector<BuffDebuffType> getBuffTypes(){
-        std::vector<BuffDebuffType> v;
+    std::vector<std::pair<BuffDebuffType,int>> getBuffs(){
+        std::vector<std::pair<BuffDebuffType,int>> v;
         for(auto it:buff_debuffs){
-            v.push_back(it.type);
+            v.push_back({it.type, it.rest_turncounts});
         }
         return v;
     }

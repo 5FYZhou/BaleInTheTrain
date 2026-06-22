@@ -95,6 +95,7 @@ public:
         panels.AddPanel<DiscardPilePanel>(events)->Init(rm, font);
         panels.AddPanel<DealCardPanel>(events)->Init(rm, font);
         panels.AddPanel<CardsInHandPanel>(events)->Init(rm, font);
+        panels.AddPanel<BuffPanel>(events)->Init(rm, font);
     }
 
     void Update(float dt){

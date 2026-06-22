@@ -14,9 +14,11 @@ private:
     std::function<void()> callback;
 
     MenuScene menuScene{events};
-    GameScene gameScene1{events, 0};
-    GameScene gameScene2{events, 1};
-    GameScene gameScene3{events, 2};
+    GameScene gameScene0{events, 0, false};
+    GameScene gameScene1{events, 1, true};
+    GameScene gameScene2{events, 2, true};
+    GameScene gameScene3{events, 3, true};
+    GameScene gameScene4{events, 4, true};
     int curGameIdx = 0;
     BattleScene battleScene{events};
     WinScene winScene{events};
@@ -48,9 +50,11 @@ public:
     };
     ~SceneManager() = default;
     void Init(){
+        gameScene0.Init();
         gameScene1.Init();
         gameScene2.Init();
         gameScene3.Init();
+        gameScene4.Init();
     }
     
     Scene& GetScene() { return *curScene; }
@@ -71,15 +75,11 @@ public:
         case SceneType::Game:
         {
             Scene* lastScene = curScene;
-            if(idx == 0){
-                curScene = &gameScene1;
-            } 
-            else if(idx == 1){
-                curScene = &gameScene2;
-            } 
-            else if(idx == 2){
-                curScene = &gameScene3;
-            }
+            if(idx == 0){ curScene = &gameScene0; } 
+            else if(idx == 1){ curScene = &gameScene1; } 
+            else if(idx == 2){ curScene = &gameScene2; }
+            else if(idx == 3){ curScene = &gameScene3; }
+            else if(idx == 4){ curScene = &gameScene4; }
             if(lastScene->GetType() == SceneType::Battle){
                 curScene->EnemyDrop();
             }
@@ -163,7 +163,7 @@ public:
 
     bool changeToNextGameScene(int offset, int keyCnt){
         int next = curGameIdx + offset;
-        if(next < 0 || next > 2) {
+        if(next < 0 || next > 4) {
             GameEvent event;
             if(keyCnt >= KeyCntToOpenDoor)
                 event.type = EventType::Win;
@@ -189,9 +189,9 @@ public:
 
     void AddGhost(int idx, sf::Vector2f pos, int keyNum){
         GameScene* sc = nullptr;
-        if(idx == 0){ sc = &gameScene1; }
-        else if(idx == 1){ sc = &gameScene2; }
-        else{ sc = &gameScene3; }
+        if(idx == 0){ sc = &gameScene0; }
+        else if(idx == 1){ sc = &gameScene1; }
+        else{ sc = &gameScene2; }
 
         Enemy ghost(EnemyType::Past_YOU, pos, {0.5f, 0.5f});
         for(int i = 0; i < keyNum; i++){

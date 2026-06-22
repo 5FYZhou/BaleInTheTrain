@@ -12,7 +12,8 @@ enum class PanelType
     Backpack,
     Discard,
     DealCard,
-    CardsInHand
+    CardsInHand,
+    Buff
 };
 enum class PanelLayer
 {
@@ -301,6 +302,91 @@ public:
 };
 #pragma endregion
 
+#pragma region buff显示
+class BuffPanel : public Panel
+{
+public:
+    struct BuffIcon
+    {
+        TextureType tex;
+        int value = 0;
+        bool hasValue = false;
+    };
+
+private:
+    // ===== 数据 =====
+    PlanType enemyIntent = PlanType::None;
+    int enemyIntentNum = 0;
+
+    std::vector<BuffIcon> enemyBuffs;
+    std::vector<BuffIcon> playerBuffs;
+
+    int playerDefend = 0;
+
+    // ===== 外部上下文 =====
+    sf::Vector2f playerPos;
+    sf::Vector2f enemyPos;
+    sf::FloatRect enemyBound;
+    float enemyHPDrawOffset = 0.f;
+
+    // ===== 资源 =====
+    ResourceManager* rm = nullptr;
+    const sf::Font* font = nullptr;
+
+    // ===== layout =====
+    float space = 50.f;
+
+private:
+    void DrawIcon(sf::RenderWindow& window,
+                  TextureType tex,
+                  sf::Vector2f pos,
+                  sf::Vector2f size);
+
+    void DrawIconWithNum(sf::RenderWindow& window,
+                         TextureType tex,
+                         int num,
+                         sf::Vector2f pos,
+                         sf::Vector2f size,
+                         int offset);
+
+public:
+    BuffPanel(std::vector<GameEvent>& e)
+        : Panel(e)
+    {
+        type = PanelType::Buff;
+        layer = PanelLayer::Bottom;
+    }
+
+    void Init(ResourceManager& res, const sf::Font* f)
+    {
+        rm = &res;
+        font = f;
+    }
+
+    void SetContext(
+        const sf::Vector2f& playerPos,
+        const sf::Vector2f& enemyPos,
+        const sf::FloatRect& enemyBound,
+        float enemyHPOffset)
+    {
+        this->playerPos = playerPos;
+        this->enemyPos = enemyPos;
+        this->enemyBound = enemyBound;
+        this->enemyHPDrawOffset = enemyHPOffset;
+    }
+
+    void SetBuff(
+        PlanType enemyIntent,
+        int enemyIntentNum,
+        const std::vector<std::pair<BuffDebuffType,int>>& enemyBuff,
+        const std::vector<std::pair<BuffDebuffType,int>>& playerBuff,
+        int playerDefendNum = 0);
+
+    void Draw(sf::RenderWindow& window) override;
+};
+#pragma endregion
+
+
 class PanelManager
 {
 private:
@@ -311,18 +397,14 @@ private:
     std::unordered_map<PanelType, Panel *> panelMap;
 
     // 每层按打开顺序存储
-    std::array<
-        std::vector<Panel *>,
-        static_cast<size_t>(PanelLayer::Count)>
-        layerPanels;
+    std::array<std::vector<Panel *>, static_cast<size_t>(PanelLayer::Count)> layerPanels;
 
 public:
     template <typename T, typename... Args>
     T *AddPanel(Args &&...args)
     {
         auto ptr =
-            std::make_unique<T>(
-                std::forward<Args>(args)...);
+            std::make_unique<T>(std::forward<Args>(args)...);
 
         T *raw = ptr.get();
 
@@ -338,8 +420,7 @@ public:
     {
         for (auto &p : allPanels)
         {
-            if (auto ptr =
-                    dynamic_cast<T *>(p.get()))
+            if (auto ptr = dynamic_cast<T *>(p.get()))
             {
                 return ptr;
             }
@@ -379,14 +460,11 @@ public:
 
         Panel *panel = it->second;
 
-        if (!panel->IsVisible())
-            return;
+        if (!panel->IsVisible()) return;
 
         panel->Close();
 
-        auto &layer =
-            layerPanels[static_cast<size_t>(
-                panel->GetLayer())];
+        auto &layer = layerPanels[static_cast<size_t>(panel->GetLayer())];
 
         layer.erase(
             std::remove(
@@ -486,13 +564,9 @@ public:
 
     void Draw(sf::RenderWindow &window)
     {
-        for (size_t l = 0;
-             l < static_cast<size_t>(
-                     PanelLayer::Count);
-             ++l)
+        for (size_t l = 0; l < static_cast<size_t>(PanelLayer::Count); ++l)
         {
-            for (auto *panel :
-                 layerPanels[l])
+            for (auto *panel : layerPanels[l])
             {
                 panel->Draw(window);
             }
@@ -501,19 +575,11 @@ public:
 
     bool BlocksInput() const
     {
-        for (int l =
-                 static_cast<int>(
-                     PanelLayer::Count) -
-                 1;
-             l >= 0;
-             --l)
+        for (int l = static_cast<int>(PanelLayer::Count) - 1; l >= 0; --l)
         {
-            auto const &layer =
-                layerPanels[l];
+            auto const &layer = layerPanels[l];
 
-            for (auto it = layer.rbegin();
-                 it != layer.rend();
-                 ++it)
+            for (auto it = layer.rbegin(); it != layer.rend(); ++it)
             {
                 if ((*it)->BlocksInput())
                     return true;

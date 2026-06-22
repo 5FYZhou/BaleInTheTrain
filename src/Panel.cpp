@@ -6,13 +6,14 @@
 #include <cmath>
 
 #pragma region 设置
-void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
+void SettingPanel::Init(ResourceManager &rm, const sf::Font *uiFont)
+{
     font = uiFont;
-    
+
     panel.emplace(rm.getTexture(TextureType::SettingsPanel));
     panel->setPosition({560.f, 235.f});
-    //panel->setPosition({628.5f, 321.f});
-    
+    // panel->setPosition({628.5f, 321.f});
+
     closeButton.emplace(rm.getTexture(TextureType::CloseButton));
     closeButton->setPosition({1280.f, 280.f});
     closeButton->setScale({0.65f, 0.65f});
@@ -53,11 +54,13 @@ void SettingPanel::Init(ResourceManager& rm, const sf::Font* uiFont){
     sfxSlider.valueText = &*sfxValue;
 }
 
-float SettingPanel::SliderValueFromX(float x, float left, float width) const{
+float SettingPanel::SliderValueFromX(float x, float left, float width) const
+{
     return std::clamp((x - left) / width, 0.f, 1.f);
 }
 
-void SettingPanel::SetMusicVolume(float v){
+void SettingPanel::SetMusicVolume(float v)
+{
     musicVolume = std::clamp(v, 0.f, 1.f);
 
     musicSlider.value = musicVolume;
@@ -69,7 +72,8 @@ void SettingPanel::SetMusicVolume(float v){
     events.push_back(e);
 }
 
-void SettingPanel::SetSfxVolume(float v){
+void SettingPanel::SetSfxVolume(float v)
+{
     sfxVolume = std::clamp(v, 0.f, 1.f);
 
     sfxSlider.value = sfxVolume;
@@ -81,11 +85,13 @@ void SettingPanel::SetSfxVolume(float v){
     events.push_back(e);
 }
 
-bool SettingPanel::HandleMousePressed(const sf::Vector2f& mousePos){
+bool SettingPanel::HandleMousePressed(const sf::Vector2f &mousePos)
+{
     if (!visible)
         return false;
 
-    if (closeButton->getGlobalBounds().contains(mousePos)){
+    if (closeButton->getGlobalBounds().contains(mousePos))
+    {
         Close();
         return true;
     }
@@ -102,7 +108,8 @@ bool SettingPanel::HandleMousePressed(const sf::Vector2f& mousePos){
 
     sf::FloatRect sfxBounds({left, top}, {width, height});
 
-    if (musicBounds.contains(mousePos)){
+    if (musicBounds.contains(mousePos))
+    {
         draggingSlider = SliderTarget::Music;
 
         SetMusicVolume(SliderValueFromX(mousePos.x, musicSlider.pos.x, 360.f));
@@ -120,30 +127,36 @@ bool SettingPanel::HandleMousePressed(const sf::Vector2f& mousePos){
     return true;
 }
 
-bool SettingPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
+bool SettingPanel::HandleMouseMoved(const sf::Vector2f &mousePos)
+{
     if (!visible)
         return false;
 
-    if (draggingSlider == SliderTarget::Music){
+    if (draggingSlider == SliderTarget::Music)
+    {
         SetMusicVolume(SliderValueFromX(mousePos.x, 720.f, 360.f));
     }
 
-    if (draggingSlider == SliderTarget::Sfx){
+    if (draggingSlider == SliderTarget::Sfx)
+    {
         SetSfxVolume(SliderValueFromX(mousePos.x, 720.f, 360.f));
     }
 
     return true;
 }
 
-bool SettingPanel::HandleMouseReleased(){
-    if(draggingSlider != SliderTarget::None){
+bool SettingPanel::HandleMouseReleased()
+{
+    if (draggingSlider != SliderTarget::None)
+    {
         draggingSlider = SliderTarget::None;
         return true;
     }
     return false;
 }
 
-void SettingPanel::DrawSlider(sf::RenderWindow& window, const Slider& slider){
+void SettingPanel::DrawSlider(sf::RenderWindow &window, const Slider &slider)
+{
     sf::RectangleShape track({360.f, 8.f});
     track.setPosition({slider.pos.x, slider.pos.y + 34.f});
     track.setFillColor(sf::Color(54, 57, 64, 235));
@@ -173,8 +186,10 @@ void SettingPanel::DrawSlider(sf::RenderWindow& window, const Slider& slider){
     window.draw(*slider.valueText);
 }
 
-void SettingPanel::Draw(sf::RenderWindow& window){
-    if (!visible) return;
+void SettingPanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
 
     sf::RectangleShape veil({WINDOW_WIDTH, WINDOW_HEIGHT});
     veil.setFillColor(sf::Color(0, 0, 0, 115));
@@ -190,14 +205,14 @@ void SettingPanel::Draw(sf::RenderWindow& window){
 }
 #pragma endregion
 
-
-
 #pragma region 背包
-static bool PointInRect(const sf::Vector2f& p, const sf::FloatRect& r){
+static bool PointInRect(const sf::Vector2f &p, const sf::FloatRect &r)
+{
     return r.contains(p);
 }
 
-void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
+void BackpackPanel::Init(ResourceManager &rmm, const sf::Font *uiFont)
+{
     rm = &rmm;
     font = uiFont;
     hasFont = (font != nullptr);
@@ -210,23 +225,25 @@ void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
     backButton->setPosition({1695.f, 25.f});
     backButton->setScale({0.7f, 0.7f});
 
-    //veil = sf::Sprite();    // 遮罩初始化
+    // veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 
-    titleText.emplace(*font); 
-    titleText->setString(utf8("背包")); 
-    titleText->setCharacterSize(60); 
-    titleText->setFillColor(sf::Color::Black); 
-    titleText->setPosition({780.f, 150.f}); 
+    titleText.emplace(*font);
+    titleText->setString(utf8("背包"));
+    titleText->setCharacterSize(60);
+    titleText->setFillColor(sf::Color::Black);
+    titleText->setPosition({780.f, 150.f});
     centerTextX(*titleText);
 }
 
-void BackpackPanel::SetCards(const std::vector<PileType>& c){
+void BackpackPanel::SetCards(const std::vector<PileType> &c)
+{
     cards.clear();
 
     int n = (int)c.size();
-    if (n == 0) return;
+    if (n == 0)
+        return;
 
     constexpr int MAX_PER_ROW = 10;
 
@@ -253,8 +270,8 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
         float offset = col - center;
 
         float t = (rowCount <= 1)
-            ? 0.f
-            : offset / center;
+                      ? 0.f
+                      : offset / center;
 
         RenderCard cv;
         cv.texType = cardTexMap.at(c[i]);
@@ -262,20 +279,15 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
 
         const auto size = cv.sprite->getTexture().getSize();
 
-        cv.sprite->setOrigin({
-            size.x * 0.5f,
-            size.y * 0.5f
-        });
+        cv.sprite->setOrigin({size.x * 0.5f,
+                              size.y * 0.5f});
 
-        cv.sprite->setScale({
-            0.58f,
-            0.58f
-        });
+        cv.sprite->setScale({0.58f,
+                             0.58f});
 
         cv.pos = {
             baseX + offset * spacingX,
-            startY + row * spacingY + (t * t) * 40.f
-        };
+            startY + row * spacingY + (t * t) * 40.f};
 
         cv.rotation = t * 12.f;
 
@@ -283,25 +295,32 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
     }
 }
 
-bool BackpackPanel::HandleMousePressed(const sf::Vector2f& mousePos){
-    if(!visible) return false;
-    if (backButton->getGlobalBounds().contains(mousePos)) {
-        //std::cout<<"close backpackpanel"<<std::endl;
+bool BackpackPanel::HandleMousePressed(const sf::Vector2f &mousePos)
+{
+    if (!visible)
+        return false;
+    if (backButton->getGlobalBounds().contains(mousePos))
+    {
+        // std::cout<<"close backpackpanel"<<std::endl;
         Close();
         return true;
     }
     return true;
 }
 
-bool BackpackPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
-    for (int i = cards.size() - 1; i >= 0; --i){
-        auto& card = cards[i];
+bool BackpackPanel::HandleMouseMoved(const sf::Vector2f &mousePos)
+{
+    for (int i = cards.size() - 1; i >= 0; --i)
+    {
+        auto &card = cards[i];
         card.hovering = false;
     }
-    for (int i = cards.size() - 1; i >= 0; --i){
-        auto& card = cards[i];
+    for (int i = cards.size() - 1; i >= 0; --i)
+    {
+        auto &card = cards[i];
         // hover
-        if (card.sprite->getGlobalBounds().contains(mousePos)){
+        if (card.sprite->getGlobalBounds().contains(mousePos))
+        {
             card.hovering = true;
             return true;
         }
@@ -309,14 +328,16 @@ bool BackpackPanel::HandleMouseMoved(const sf::Vector2f& mousePos){
     return true;
 }
 
-void BackpackPanel::Draw(sf::RenderWindow& window){
-    if(!visible) return;
+void BackpackPanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
 
     window.draw(veil);
     window.draw(*background);
     window.draw(*backButton);
 
-    for (auto& card : cards)
+    for (auto &card : cards)
     {
         card.sprite->setPosition(card.pos);
         card.sprite->setRotation(sf::degrees(card.rotation));
@@ -331,16 +352,16 @@ void BackpackPanel::Draw(sf::RenderWindow& window){
         window.draw(*card.sprite);
     }
 
-    if (hasFont) {
+    if (hasFont)
+    {
         window.draw(*titleText);
     }
 }
 #pragma endregion
 
-
-
 #pragma region 发牌池,弃牌堆
-void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
+void DiscardPilePanel::Init(ResourceManager &resource, const sf::Font *uiFont)
+{
     rm = &resource;
     font = uiFont;
     hasFont = (font != nullptr);
@@ -349,21 +370,23 @@ void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     backButton->setPosition({1730.f, 930.f});
     backButton->setScale({0.7f, 0.7f});
 
-    //veil = sf::Sprite();    // 遮罩初始化
+    // veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 
-    titleText.emplace(*font); 
-    titleText->setString(utf8("弃牌池")); 
-    titleText->setCharacterSize(60); 
-    titleText->setFillColor(sf::Color::White); 
-    titleText->setPosition({780.f, 120.f}); 
+    titleText.emplace(*font);
+    titleText->setString(utf8("弃牌池"));
+    titleText->setCharacterSize(60);
+    titleText->setFillColor(sf::Color::White);
+    titleText->setPosition({780.f, 120.f});
     centerTextX(*titleText);
 }
 
-void DiscardPilePanel::SetCards(const std::vector<PileType>& c){
+void DiscardPilePanel::SetCards(const std::vector<PileType> &c)
+{
     cards.clear();
-    for(size_t i = 0; i < c.size(); ++i){
+    for (size_t i = 0; i < c.size(); ++i)
+    {
         int row = static_cast<int>(i) / cardsPerRow;
         int col = static_cast<int>(i) % cardsPerRow;
 
@@ -372,30 +395,34 @@ void DiscardPilePanel::SetCards(const std::vector<PileType>& c){
 
         cv.basePosition = {
             startX + col * spacingX,
-            startY + row * spacingY
-        };
+            startY + row * spacingY};
 
         cards.push_back(cv);
     }
 }
 
-bool DiscardPilePanel::HandleMousePressed(const sf::Vector2f& mousePos){
-    if(!visible) return false;
-    if (backButton->getGlobalBounds().contains(mousePos)) {
-        //std::cout<<"close backpackpanel"<<std::endl;
+bool DiscardPilePanel::HandleMousePressed(const sf::Vector2f &mousePos)
+{
+    if (!visible)
+        return false;
+    if (backButton->getGlobalBounds().contains(mousePos))
+    {
+        // std::cout<<"close backpackpanel"<<std::endl;
         Close();
         return true;
     }
     return true;
 }
 
-void DiscardPilePanel::Draw(sf::RenderWindow& window){
-    if(!visible) return;
+void DiscardPilePanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
 
     window.draw(veil);
     window.draw(*backButton);
 
-    for (const auto& card : cards)
+    for (const auto &card : cards)
     {
         sf::Sprite sprite(rm->getTexture(card.texType));
         const auto size = sprite.getTexture().getSize();
@@ -407,17 +434,14 @@ void DiscardPilePanel::Draw(sf::RenderWindow& window){
         window.draw(sprite);
     }
 
-    if (hasFont) {
+    if (hasFont)
+    {
         window.draw(*titleText);
     }
 }
 
-
-
-
-
-
-void DealCardPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
+void DealCardPanel::Init(ResourceManager &resource, const sf::Font *uiFont)
+{
     rm = &resource;
     font = uiFont;
     hasFont = (font != nullptr);
@@ -426,21 +450,23 @@ void DealCardPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     backButton->setPosition({100.f, 930.f});
     backButton->setScale({0.7f, 0.7f});
 
-    //veil = sf::Sprite();    // 遮罩初始化
+    // veil = sf::Sprite();    // 遮罩初始化
     veil.setSize({1920.f, 1080.f});
     veil.setFillColor(sf::Color(0, 0, 0, 100));
 
-    titleText.emplace(*font); 
-    titleText->setString(utf8("发牌池")); 
-    titleText->setCharacterSize(60); 
-    titleText->setFillColor(sf::Color::White); 
-    titleText->setPosition({750.f, 120.f}); 
+    titleText.emplace(*font);
+    titleText->setString(utf8("发牌池"));
+    titleText->setCharacterSize(60);
+    titleText->setFillColor(sf::Color::White);
+    titleText->setPosition({750.f, 120.f});
     centerTextX(*titleText);
 }
 
-void DealCardPanel::SetCards(const std::vector<PileType>& c){
+void DealCardPanel::SetCards(const std::vector<PileType> &c)
+{
     cards.clear();
-    for(size_t i = 0; i < c.size(); ++i){
+    for (size_t i = 0; i < c.size(); ++i)
+    {
         int row = static_cast<int>(i) / cardsPerRow;
         int col = static_cast<int>(i) % cardsPerRow;
 
@@ -449,30 +475,34 @@ void DealCardPanel::SetCards(const std::vector<PileType>& c){
 
         cv.basePosition = {
             startX + col * spacingX,
-            startY + row * spacingY
-        };
+            startY + row * spacingY};
 
         cards.push_back(cv);
     }
 }
 
-bool DealCardPanel::HandleMousePressed(const sf::Vector2f& mousePos){
-    if(!visible) return false;
-    if (backButton->getGlobalBounds().contains(mousePos)) {
-        //std::cout<<"close backpackpanel"<<std::endl;
+bool DealCardPanel::HandleMousePressed(const sf::Vector2f &mousePos)
+{
+    if (!visible)
+        return false;
+    if (backButton->getGlobalBounds().contains(mousePos))
+    {
+        // std::cout<<"close backpackpanel"<<std::endl;
         Close();
         return true;
     }
     return true;
 }
 
-void DealCardPanel::Draw(sf::RenderWindow& window){
-    if(!visible) return;
+void DealCardPanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
 
     window.draw(veil);
     window.draw(*backButton);
 
-    for (const auto& card : cards)
+    for (const auto &card : cards)
     {
         sf::Sprite sprite(rm->getTexture(card.texType));
         const auto size = sprite.getTexture().getSize();
@@ -484,16 +514,16 @@ void DealCardPanel::Draw(sf::RenderWindow& window){
         window.draw(sprite);
     }
 
-    if (hasFont) {
+    if (hasFont)
+    {
         window.draw(*titleText);
     }
 }
 #pragma endregion
 
-
-
 #pragma region 手牌显示
-void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
+void CardsInHandPanel::Init(ResourceManager &resource, const sf::Font *uiFont)
+{
     rm = &resource;
     font = uiFont;
     float pointX = 500.f;
@@ -503,15 +533,15 @@ void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     pointsBG->setScale({0.5f, 0.8f});
     pointsBG->setPosition({pointX, pointY});
 
-    
     pointText.emplace(*font);
     pointText->setFillColor(sf::Color::Black);
-    //pointText->setStyle(sf::Text::Bold);
+    // pointText->setStyle(sf::Text::Bold);
     pointText->setCharacterSize(29);
     pointText->setPosition({pointX + 10, pointY + 15});
 }
 
-void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
+void CardsInHandPanel::SetCards(const std::vector<PileType> &c, int point, bool first)
+{
     points = point;
     hasSelectedCard = false;
     hoveredIndex = -1;
@@ -527,10 +557,12 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
     std::vector<bool> usedOld(cards.size(), false);
 
     // ⭐ 第一次直接弧形排列
-    if (first){
+    if (first)
+    {
         cards.clear();
 
-        for (int i = 0; i < c.size(); i++){
+        for (int i = 0; i < c.size(); i++)
+        {
             CardView cv;
             cv.cardType = c[i];
             cv.texType = cardTexMap.at(c[i]);
@@ -541,7 +573,7 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
             ComputeArcTransform(i, c.size(), pos, rot);
 
             cv.basePosition = pos;
-            cv.rotation = rot;          // ⭐关键修复
+            cv.rotation = rot; // ⭐关键修复
             cv.state = CardAnimState::Idle;
 
             cards.push_back(cv);
@@ -556,7 +588,8 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
 
         for (int i = 0; i < cards.size(); i++)
         {
-            if (usedOld[i]) continue;
+            if (usedOld[i])
+                continue;
 
             if (cards[i].cardType == type &&
                 cards[i].state != CardAnimState::Exiting)
@@ -573,25 +606,25 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
 
         // ⭐ 新牌：飞入弧形目标
         if (!found)
-{
-    CardView cv;
-    cv.cardType = type;
-    cv.texType = cardTexMap.at(type);
+        {
+            CardView cv;
+            cv.cardType = type;
+            cv.texType = cardTexMap.at(type);
 
-    cv.state = CardAnimState::Entering;
+            cv.state = CardAnimState::Entering;
 
-    cv.animStart = {enterStartX, enterStartY};
-    cv.animTime = 0.f;
+            cv.animStart = {enterStartX, enterStartY};
+            cv.animTime = 0.f;
 
-    // ⭐⭐⭐关键补充（必须）
-    cv.startRotation = 0.f;
-    cv.rotation = 0.f;
+            // ⭐⭐⭐关键补充（必须）
+            cv.startRotation = 0.f;
+            cv.rotation = 0.f;
 
-    cv.startScale = 0.2f;   // ⭐从小飞入（效果才明显）
-    cv.scale = 0.2f;
+            cv.startScale = 0.2f; // ⭐从小飞入（效果才明显）
+            cv.scale = 0.2f;
 
-    newCards.push_back(cv);
-}
+            newCards.push_back(cv);
+        }
     }
 
     // ⭐ 多余牌：飞出
@@ -616,15 +649,16 @@ void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool 
     UpdateLayoutArc(); // ⭐关键
 }
 
-void CardsInHandPanel::UpdateLayoutArc(){
+void CardsInHandPanel::UpdateLayoutArc()
+{
     int n = 0;
     int total = 0;
 
-    for (auto& c : cards)
+    for (auto &c : cards)
         if (c.state == CardAnimState::Idle)
             total++;
 
-    for (auto& c : cards)
+    for (auto &c : cards)
     {
         if (c.state != CardAnimState::Idle)
             continue;
@@ -639,13 +673,13 @@ void CardsInHandPanel::Update(float dt)
     const float speed = 6.f;
 
     int totalIdle = 0;
-    for (auto& c : cards)
+    for (auto &c : cards)
         if (c.state == CardAnimState::Idle)
             totalIdle++;
 
     int enteringIndex = 0;
 
-    for (auto& c : cards)
+    for (auto &c : cards)
     {
         if (c.state == CardAnimState::Idle)
             continue;
@@ -656,62 +690,62 @@ void CardsInHandPanel::Update(float dt)
 
         // ⭐进入动画
         if (c.state == CardAnimState::Entering)
-{
-    sf::Vector2f targetPos;
-    float targetRot;
+        {
+            sf::Vector2f targetPos;
+            float targetRot;
 
-    ComputeArcTransform(enteringIndex, totalIdle, targetPos, targetRot);
-    enteringIndex++;
+            ComputeArcTransform(enteringIndex, totalIdle, targetPos, targetRot);
+            enteringIndex++;
 
-    c.basePosition = Lerp(c.animStart, targetPos, s);
+            c.basePosition = Lerp(c.animStart, targetPos, s);
 
-    // ⭐ rotation 修复（关键）
-    c.rotation = Lerp(0.f, targetRot, s);
+            // ⭐ rotation 修复（关键）
+            c.rotation = Lerp(0.f, targetRot, s);
 
-    // ⭐ scale（解决问题2核心）
-    c.scale = Lerp(0.2f, 0.7f, s);
+            // ⭐ scale（解决问题2核心）
+            c.scale = Lerp(0.2f, 0.7f, s);
 
-    if (t >= 1.f)
-    {
-        c.state = CardAnimState::Idle;
-        c.basePosition = targetPos;
-        c.rotation = targetRot;
-        c.scale = 0.7f;
-        UpdateLayoutArc();
-    }
-}
+            if (t >= 1.f)
+            {
+                c.state = CardAnimState::Idle;
+                c.basePosition = targetPos;
+                c.rotation = targetRot;
+                c.scale = 0.7f;
+                UpdateLayoutArc();
+            }
+        }
 
         // ⭐出牌动画
         else if (c.state == CardAnimState::Exiting)
-{
-    c.basePosition = Lerp(c.animStart, c.animEnd, s);
+        {
+            c.basePosition = Lerp(c.animStart, c.animEnd, s);
 
-    // ⭐关键：明显缩小（杀戮尖塔风格）
-    c.scale = Lerp(0.7f, 0.1f, s);
+            // ⭐关键：明显缩小（杀戮尖塔风格）
+            c.scale = Lerp(0.7f, 0.1f, s);
 
-    c.rotation = Lerp(c.rotation, c.rotation + 30.f, s);
-}
+            c.rotation = Lerp(c.rotation, c.rotation + 30.f, s);
+        }
     }
 
     // 删除完成出牌
     cards.erase(
         std::remove_if(cards.begin(), cards.end(),
-            [](const CardView& c){
-                return c.state == CardAnimState::Exiting &&
-                       c.animTime >= 1.f;
-            }),
-        cards.end()
-    );
+                       [](const CardView &c)
+                       {
+                           return c.state == CardAnimState::Exiting &&
+                                  c.animTime >= 1.f;
+                       }),
+        cards.end());
 }
 
-bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
+bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f &mousePos)
 {
     if (!visible)
         return false;
 
     // Do not depend on a prior MouseMoved event. This also makes a direct
     // click reliable when the battle scene has just finished fading in.
-    //HandleMouseMoved(mousePos);
+    // HandleMouseMoved(mousePos);
 
     if (hoveredIndex != -1)
     {
@@ -726,9 +760,10 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f& mousePos)
     return false;
 }
 
-bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
+bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f &mousePos)
 {
-    if (!visible) return false;
+    if (!visible)
+        return false;
 
     hoveredIndex = -1;
 
@@ -737,7 +772,7 @@ bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
         if (!CanInteract(cards[i]))
             continue;
 
-        const auto& c = cards[i];
+        const auto &c = cards[i];
 
         sf::Sprite sprite(rm->getTexture(c.texType));
         const auto texSize = sprite.getTexture().getSize();
@@ -773,30 +808,36 @@ bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
     return false;
 }
 
-void CardsInHandPanel::Draw(sf::RenderWindow& window){
-    if(!visible) return;
+void CardsInHandPanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
 
     window.draw(*pointsBG);
 
-    if (font){
+    if (font)
+    {
         pointText->setString(utf8("行动点：") + std::to_string(points));
         window.draw(*pointText);
     }
 
-    for(int i = 0; i < cards.size(); i++) {
+    for (int i = 0; i < cards.size(); i++)
+    {
         sf::Sprite sprite(rm->getTexture(cards[i].texType));
         const auto size = sprite.getTexture().getSize();
-        sprite.setOrigin({size.x*0.5f, size.y*0.5f});
+        sprite.setOrigin({size.x * 0.5f, size.y * 0.5f});
 
         sf::Vector2f pos = cards[i].basePosition;
         float rot = cards[i].rotation;
         float scale = cards[i].scale;
 
         // hover & shift other cards
-        if(hoveredIndex != -1) {
+        if (hoveredIndex != -1)
+        {
             int offset = i - hoveredIndex;
-            if(offset != 0) {
-                pos.x += offset * 40.f;  // 左右偏移
+            if (offset != 0)
+            {
+                pos.x += offset * 40.f;          // 左右偏移
                 pos.y += std::abs(offset) * 4.f; // Y 微调
             }
         }
@@ -804,12 +845,14 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window){
         // hover 浮起
         bool interactable = CanInteract(cards[i]);
 
-        if (interactable && i == hoveredIndex) {
+        if (interactable && i == hoveredIndex)
+        {
             pos.y -= 44.f;
-            scale = 0.74f;   // 更自然（不要覆盖动画 scale）
+            scale = 0.74f; // 更自然（不要覆盖动画 scale）
         }
 
-        if (interactable && i == selectedIndex) {
+        if (interactable && i == selectedIndex)
+        {
             pos.y -= 40.f;
         }
 
@@ -821,3 +864,135 @@ void CardsInHandPanel::Draw(sf::RenderWindow& window){
 }
 #pragma endregion
 
+#pragma region buff显示
+void BuffPanel::SetBuff(
+    PlanType intent,
+    int intentNum,
+    const std::vector<std::pair<BuffDebuffType, int>> &enemyBuff,
+    const std::vector<std::pair<BuffDebuffType, int>> &playerBuff,
+    int playerDefendNum)
+{
+    enemyIntent = intent;
+    enemyIntentNum = intentNum;
+
+    playerDefend = playerDefendNum;
+
+    enemyBuffs.clear();
+    playerBuffs.clear();
+
+    auto convert = [&](const std::vector<std::pair<BuffDebuffType, int>> &src,
+                       std::vector<BuffIcon> &dst)
+    {
+        for (auto &b : src)
+        {
+            BuffIcon icon;
+            icon.value = b.second;
+
+            icon.tex = buffTexMap.at(b.first); // 你原来的映射
+            dst.push_back(icon);
+        }
+    };
+
+    convert(enemyBuff, enemyBuffs);
+    convert(playerBuff, playerBuffs);
+}
+void BuffPanel::DrawIcon(sf::RenderWindow &window,
+                         TextureType tex,
+                         sf::Vector2f pos,
+                         sf::Vector2f scope)
+{
+    sf::Sprite sp(rm->getTexture(tex));
+    CenterOrigin(sp);
+    sp.setPosition(pos);
+    FitSprite(sp, scope);
+    if(tex == TextureType::p_power_up_player) sp.setRotation(sf::radians(45));
+
+    window.draw(sp);
+}
+void BuffPanel::DrawIconWithNum(sf::RenderWindow &window,
+                                TextureType tex,
+                                int num,
+                                sf::Vector2f pos,
+                                sf::Vector2f size,
+                                int offset)
+{
+    DrawIcon(window, tex, pos, size);
+
+    sf::Text text(*font);
+    text.setString(std::to_string(num));
+
+    text.setCharacterSize(30);
+    text.setFillColor(sf::Color::White);
+
+    auto b = text.getLocalBounds();
+    text.setOrigin({b.position.x + b.size.x / 2.f,
+                    b.position.y + b.size.y / 2.f});
+
+    text.setPosition({pos.x + offset, pos.y});
+
+    window.draw(text);
+}
+void BuffPanel::Draw(sf::RenderWindow &window)
+{
+    if (!visible)
+        return;
+
+    // 1. 敌人意图
+    sf::Vector2f intentPos = enemyPos;
+    intentPos.x += 70;
+    intentPos.y -= 30;
+
+    DrawIconWithNum(
+        window,
+        planTexMap.at(enemyIntent),
+        enemyIntentNum,
+        intentPos,
+        {50, 50},
+        40);
+
+    // 2. 敌人 buff
+    int col = 0;
+
+    sf::Vector2f enemyBuffPos = enemyBound.position;
+    enemyBuffPos.x += 10;
+    enemyBuffPos.y = enemyPos.y + enemyBound.size.y + enemyHPDrawOffset + 40;
+
+    for (auto &b : enemyBuffs)
+    {
+        DrawIcon(
+            window,
+            b.tex,
+            {enemyBuffPos.x + col * space, enemyBuffPos.y},
+            {40, 40});
+        col++;
+    }
+
+    // 3. 玩家 buff
+    sf::Vector2f playerBuffPos = playerPos;
+    playerBuffPos.x -= 110;
+    playerBuffPos.y += 50;
+
+    col = 0;
+
+    if (playerDefend > 0)
+    {
+        DrawIconWithNum(
+            window,
+            TextureType::p_defend_player,
+            playerDefend,
+            {playerPos.x - 110, playerPos.y - 30},
+            {50, 50},
+            40);
+    }
+
+    for (auto &b : playerBuffs)
+    {
+        DrawIcon(
+            window,
+            b.tex,
+            {playerBuffPos.x + col * space, playerBuffPos.y},
+            {40, 40});
+        col++;
+    }
+}
+#pragma endregion
