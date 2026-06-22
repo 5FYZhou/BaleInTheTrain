@@ -37,7 +37,6 @@ Game::Game()
 
     player.Init(rm.getTextureCount(TextureType::Player));
 
-    std::cout << "Game: GlobalaudioMgr address = " << &GlobalaudioMgr << std::endl;
 }
 
 Game::~Game()
@@ -263,6 +262,8 @@ void Game::HandleEvents(const GameEvent &event)
     // 钥匙足够打开门
     case EventType::Win:
         std::cout << "Event::Win" << std::endl;
+        GlobalaudioMgr.PauseMusic();
+        GlobalaudioMgr.PlaySound(SoundEffect::GameVictory);
         sceneMgr.LoadScene(SceneType::Win);
         break;
     // 胜利/死亡场景返回菜单
@@ -376,6 +377,7 @@ void Game::HandleEvents(const GameEvent &event)
             std::cout << "Event: get one key" << std::endl;
             keyCnt++;
             uiMgr.PushNotification("Obtain a key", itemTexMap.at(itemtype));
+            GlobalaudioMgr.PlaySound(SoundEffect::Pickup);
             break;
 
         case ItemType::Strike:             // 打击0
@@ -396,6 +398,7 @@ void Game::HandleEvents(const GameEvent &event)
             // 给玩家加卡牌
             player.AddCards(itemPileMap.at(itemtype));
             uiMgr.PushNotification("Obtain a card", itemTexMap.at(itemtype));
+            GlobalaudioMgr.PlaySound(SoundEffect::Pickup);
             break;
         default:
             break;
@@ -465,6 +468,7 @@ void Game::HandleEvents(const GameEvent &event)
         // 胜利
         if (event.val == 0)
         {
+            GlobalaudioMgr.PlaySound(SoundEffect::BattleVictory);
             player.currentHP = std::min(player.currentHP, player.currentHP + player.relic_data);
             sceneMgr.LoadGameBeforeBattle([this]{
                 player.SetFacing(playerFaceBeforeBattle);
@@ -482,11 +486,13 @@ void Game::HandleEvents(const GameEvent &event)
             // 彻底死亡
             if(++playerDeadCnt > 1){
                 uiMgr.CloseAll();
+                GlobalaudioMgr.PlaySound(SoundEffect::GameFailed);
                 sceneMgr.LoadScene(SceneType::Dead);
             }
             // 第一次死亡
             else{
                 uiMgr.CloseAll();
+                //GlobalaudioMgr.PlaySound(SoundEffect::BattleFailed);
                 // 添加敌人魂
                 sceneMgr.LoadFirstDie([this]{
                     keyCnt = 0;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Constants.h"
+#include "Tools/AudioManager.h"
 struct BDinfo
 {
     int rest_turncounts = -1; // 等于-1代表整场有效
@@ -23,6 +24,7 @@ public:
             }
         }
         buff_debuffs.push_back(bd);
+        GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
     }
     void update() // 更新回合,删除失效buff
     {

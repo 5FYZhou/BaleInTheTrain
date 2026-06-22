@@ -43,9 +43,12 @@ private:
         {SoundEffect::Footstep, 2},
         {SoundEffect::MenuButton, 2},
         {SoundEffect::Tutorial, 2},
-        {SoundEffect::ObjectError, 2},
-        {SoundEffect::Pickup, 2},
-        {SoundEffect::PlayerAttack, 1}};
+        //{ SoundEffect::Victory, 2 },
+        {SoundEffect::ObjectError, 10},
+        {SoundEffect::Pickup, 30},
+        {SoundEffect::PlayerAttack, 100},
+        {SoundEffect::BUFFandDEBUFF, 50},
+    };
 
 public:
     ResourceManager *rm = nullptr;

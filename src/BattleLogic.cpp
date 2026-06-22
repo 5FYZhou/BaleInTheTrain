@@ -68,6 +68,20 @@ void BattleLogic::DealDirectDamage(Enemy* enemy, int damage)
 {
     damage = std::max(0, damage);
     const int blocked = std::min(enemy->defend_num, damage);
+    if(enemy->defend_num == 0) {
+        std::cout << "PlayerAttack" << std::endl;
+        GlobalaudioMgr.PlaySound(SoundEffect::PlayerAttack);
+    }
+    else{
+        if(damage < enemy->defend_num){
+            std::cout << "UnbreakDefend" << std::endl;
+             GlobalaudioMgr.PlaySound(SoundEffect::UnbreakDefend);
+        }
+        else  {
+            std::cout << "BreakDefend" << std::endl;
+            GlobalaudioMgr.PlaySound(SoundEffect::BreakDefend);
+        }
+    }
     enemy->defend_num -= blocked;
     damage -= blocked;
     //enemy->cur_health = std::max(0, enemy->cur_health - damage);
@@ -78,6 +92,11 @@ void BattleLogic::DealDirectDamage(int damage)
 {
     damage = std::max(0, damage);
     const int blocked = std::min(state.defend_num, damage);
+    if(state.defend_num == 0){GlobalaudioMgr.PlaySound(SoundEffect::EnemyAttack);}
+    else{
+        if(damage < state.defend_num) GlobalaudioMgr.PlaySound(SoundEffect::UnbreakDefend);
+        else  GlobalaudioMgr.PlaySound(SoundEffect::BreakDefend);
+    }
     state.defend_num -= blocked;
     damage -= blocked;
     state.final_damage = damage;
@@ -123,6 +142,7 @@ void BattleLogic::GainBlock(int amount, Enemy *enemy)
         return;
 
     state.defend_num += amount;
+    GlobalaudioMgr.PlaySound(SoundEffect::Defend);
 
     if (enemy && enemy->cur_health > 0 && state.juggernautDamage > 0)
         DealDirectDamage(enemy, state.juggernautDamage);
@@ -166,8 +186,8 @@ void BattleLogic::turnsOver()
 
 void BattleLogic::PlayerStatusSettlement()
 {
+    if(state.temporaryStrength > 0)      state.buff_debuff_vec.Add({-2, BuffDebuffType::power_up});
     state.temporaryStrength = 0;
-    state.buff_debuff_vec.Add({-2, BuffDebuffType::power_up});
     if (!state.barricade)
         state.defend_num = 0;
 
@@ -176,7 +196,6 @@ void BattleLogic::PlayerStatusSettlement()
 
 void BattleLogic::ClickPlayer(int idx)
 {
-    std::cout << "BattleLogic: GlobalaudioMgr address = " << &GlobalaudioMgr << std::endl;
     if (idx < 0 || idx >= static_cast<int>(state.handCards.size()))
         return;
 
@@ -201,6 +220,7 @@ void BattleLogic::ClickPlayer(int idx)
 
     case PileType::Activate_muscles:
         state.temporaryStrength += 2;
+        GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         state.buff_debuff_vec.Add({2, BuffDebuffType::power_up});
         DiscardPlayedCard(idx);
         break;
@@ -323,6 +343,7 @@ void BattleLogic::ClickEnemy(int idx)
             return;
         if (EnemyIntendsAttack()){
             state.strength += 3;
+            GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
             state.buff_debuff_vec.Add({3, BuffDebuffType::power_up});
         }        
         DiscardPlayedCard(idx);
@@ -402,20 +423,25 @@ void BattleLogic::EnemyTurn()
     }
     case PlanType::defend:
         enemy->defend_num += plan.data;
+        GlobalaudioMgr.PlaySound(SoundEffect::Defend);
         break;
     case PlanType::easy_to_attack:
         state.buff_debuff_vec.Add({plan.data,BuffDebuffType::easy_to_attack});
+        //GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         break;
     case PlanType::power_up:
         enemy->strength += plan.data;
+        //GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         enemy->buff_debuff_vec.Add({plan.data,BuffDebuffType::power_up});
         break;
     case PlanType::thorns:
         enemy->thornsdata += plan.data;
         enemy->buff_debuff_vec.Add({plan.data,BuffDebuffType::thorns});
+        //GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         break;
     case PlanType::vulnerable:
         state.buff_debuff_vec.Add({plan.data,BuffDebuffType::vulnerable});
+        //GlobalaudioMgr.PlaySound(SoundEffect::BUFFandDEBUFF);
         break;
     default:
         break;
