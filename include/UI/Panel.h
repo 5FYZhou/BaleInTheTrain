@@ -356,6 +356,7 @@ private:
                          sf::Vector2f pos,
                          sf::Vector2f size,
                          int offset);
+    void DrawTooltip(sf::RenderWindow& window);
 
 public:
     BuffPanel(std::vector<GameEvent>& e)

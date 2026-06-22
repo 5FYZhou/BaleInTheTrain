@@ -65,6 +65,7 @@ public:
     FadeState GetFadeState() const { return fadeState; }
     std::vector<GameEvent>& GetEvents() { return events; }
     int GetGameSceneIdx() { return curGameIdx; }
+    int GetGameSceneIdxBeforeBattle() { return gameIdxBeforeBattle; }
 
     void SetCurScene(SceneType type, int idx = 0, float playerX = PlayerStartX) {
         switch (type)
@@ -191,7 +192,10 @@ public:
         GameScene* sc = nullptr;
         if(idx == 0){ sc = &gameScene0; }
         else if(idx == 1){ sc = &gameScene1; }
-        else{ sc = &gameScene2; }
+        else if(idx == 2){ sc = &gameScene2; }
+        else if(idx == 3){ sc = &gameScene3; }
+        else if(idx == 4){ sc = &gameScene4; }
+        else{ sc = &gameScene0; std::cout<<"SceneManager:undefind game idx"<<std::endl; }
 
         Enemy ghost(EnemyType::Past_YOU, pos, {0.5f, 0.5f});
         for(int i = 0; i < keyNum; i++){
