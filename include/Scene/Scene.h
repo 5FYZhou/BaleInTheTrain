@@ -17,35 +17,21 @@ struct Item{
 // 第i个场景的交互物品
 inline const std::vector<std::vector<Item>> itemInScene = {
     {
-        {{550.f, 420.f}, ItemType::Rage},
-        {{780.f, 520.f}, ItemType::Shrug_off},
         {{1010.f, 420.f}, ItemType::Heavy_strike},
         {{1240.f, 520.f}, ItemType::Anger}
     },
     {
-        {{550.f, 420.f}, ItemType::Rage},
-        {{780.f, 520.f}, ItemType::Shrug_off},
-        {{1010.f, 420.f}, ItemType::Heavy_strike},
-        {{1240.f, 520.f}, ItemType::Anger}
+        {{550.f, 420.f}, ItemType::Continuous_punches},
     },
     {
-        {{550.f, 520.f}, ItemType::Continuous_punches},
-        {{780.f, 420.f}, ItemType::Observe_weaknesses},
-        {{1010.f, 520.f}, ItemType::Activate_muscles},
         {{1240.f, 420.f}, ItemType::Revitalize_spirit}
     },
     {
-        {{550.f, 520.f}, ItemType::Continuous_punches},
-        {{780.f, 420.f}, ItemType::Observe_weaknesses},
-        {{1010.f, 520.f}, ItemType::Activate_muscles},
-        {{1240.f, 420.f}, ItemType::Revitalize_spirit}
-    },
-    {
-        {{500.f, 420.f}, ItemType::Metallization},
-        {{720.f, 520.f}, ItemType::Unstoppable},
         {{940.f, 420.f}, ItemType::Rampart},
-        {{1160.f, 520.f}, ItemType::Sacrifice},
-        {{1380.f, 420.f}, ItemType::Key}
+        {{1240.f, 420.f}, ItemType::Unstoppable}
+    },
+    {
+        
     }
 };
 
