@@ -966,7 +966,7 @@ void BuffPanel::DrawTooltip(sf::RenderWindow& window)
 
     sf::Text text(*font);
 
-    text.setString(it->second);
+    text.setString(utf8(it->second));
 
     text.setCharacterSize(22);
     text.setFillColor(sf::Color::Black);
