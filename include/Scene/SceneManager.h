@@ -198,6 +198,7 @@ public:
             ghost.droppedItems.push_back( ItemType::Key );
         }
         ghost.frameCount = 1;
+        ghost.dropKeyNum = keyNum;
         sc->AddGhost(ghost);
     }
 

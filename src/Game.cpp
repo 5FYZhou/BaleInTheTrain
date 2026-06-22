@@ -392,9 +392,8 @@ void Game::HandleEvents(const GameEvent &event)
     case EventType::BeginBattle:
         playerFaceBeforeBattle = player.GetFacing();
         playerXBeforeBattle = player.GetPos().x;
-        btLogic.StartBattle(sceneMgr.GetScene().GetClickEnemy(), &player);
-        sceneMgr.LoadScene(SceneType::Battle, [this]
-                           {
+        sceneMgr.LoadScene(SceneType::Battle, [this]{        
+            btLogic.StartBattle(sceneMgr.GetScene().GetClickEnemy(), &player);
             uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
             uiMgr.Open(PanelType::CardsInHand);
             player.SetFacing(1); });
@@ -429,13 +428,20 @@ void Game::HandleEvents(const GameEvent &event)
         if(btLogic.state.battleEnded) break;
         std::cout << "Event: EndBattle" << std::endl;
         btLogic.state.battleEnded = true;
+        uiMgr.CloseAll();
+        uiMgr.textPrompt.ClearAll();
+        std::cout
+    << &uiMgr.textPrompt
+    << std::endl;
+    std::cout
+    << btLogic.textPrompt
+    << std::endl;
         // 胜利
         if (event.val == 0)
         {
             player.currentHP += player.relic_data;
             sceneMgr.LoadGameBeforeBattle([this]
                                           {
-                uiMgr.CloseAll();
                 player.SetFacing(playerFaceBeforeBattle);
                 player.SetFeet({playerXBeforeBattle, PlayerGroundY});
                 player.ResetToStand();
@@ -496,7 +502,7 @@ void Game::Draw()
     if (curSceneType == SceneType::Game || curSceneType == SceneType::Battle)
     {
         bool f = curSceneType == SceneType::Battle;
-        renderer.DrawPlayer(window, player, f);
+        renderer.DrawPlayer(window, player, f, keyCnt);
     }
 
     if (curSceneType == SceneType::Game)
@@ -568,9 +574,9 @@ void Game::Draw()
     // 捡到物品提示
     uiMgr.DrawNotifications(window);
     // 文字弹幕
-    for (auto &p : uiMgr.textPrompt.prompts)
+    for (auto& p : uiMgr.textPrompt.prompts)
     {
-        renderer.DrawText(window, p->text, p->position, p->size, p->alpha);
+        renderer.DrawText(window, p->text, p->GetPosition(), p->size, p->alpha);
     }
 
     // 切场景遮罩

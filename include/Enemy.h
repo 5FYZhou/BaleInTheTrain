@@ -6,8 +6,8 @@
 // 敌人类型对应{敌人贴图大小，掉落物，绘制血量偏移}
 inline const std::unordered_map<EnemyType, std::tuple<sf::Vector2f, std::vector<ItemType>, int>> enemyBound = {
     {EnemyType::Train_attendant, {{213, 377}, {ItemType::Defend, ItemType::Key}, 10}},
-    {EnemyType::LightMonster, {{184, 376}, {}, 0}},
-    {EnemyType::TicketMonster, {{176, 294}, {}, 0}},
+    {EnemyType::LightMonster, {{184, 376}, {ItemType::Key}, 0}},
+    {EnemyType::TicketMonster, {{176, 294}, {ItemType::Key}, 0}},
     {EnemyType::TyreMosnter, {{223, 200}, {}, 0}},
     {EnemyType::Past_YOU, {{360, 367}, {}, 10}},
 };
@@ -45,12 +45,12 @@ public:
 
     std::vector<Plan> allPlans;         // 回合计划（0-攻击，1-防御，2-增益，3-减益）
 
-    
     int strength = 0;   //攻击时增加对应的力量值
     int thornsdata = 0;  //被攻击时造成的反伤
     int defend_num = 0;
     Buff_Debuff_Vec buff_debuff_vec;    // 状态效果（如中毒、虚弱等）
     std::vector<ItemType> droppedItems; // 被击败后掉落的物品
+    int dropKeyNum;
 
 public:
     Enemy(EnemyType id, sf::Vector2f p, sf::Vector2f s = {1.0f, 1.0f})
@@ -65,6 +65,11 @@ public:
             p,
             {scale.x * size.x,
              scale.y * size.y});
+        dropKeyNum = 0;
+        for(auto& i : droppedItems){
+            if(i == ItemType::Key)
+                dropKeyNum++;
+        }
     }
 
     void Update(float dt)

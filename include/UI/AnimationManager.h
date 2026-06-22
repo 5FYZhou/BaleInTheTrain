@@ -32,6 +32,7 @@ private:
         virtual void Start() = 0;
         virtual void Update(float dt) = 0;
         virtual bool Finished() const = 0;
+        virtual void Offset(float delta) {}
         virtual ~ITrack() = default;
     };
 
@@ -102,6 +103,11 @@ private:
         {
             return finished;
         }
+
+        void Offset(float delta) override
+{
+    to += delta;
+}
     };
 #pragma endregion
 
@@ -279,7 +285,32 @@ public:
             playing = false;
         }
     }
-    
+
+    void OffsetVec2Target(
+        int id,
+        sf::Vector2f delta)
+    {
+        auto it = vec2Presets.find(id);
+
+        if (it == vec2Presets.end())
+            return;
+
+        it->second.target += delta;
+    }
+
+void OffsetTrackTarget(
+    int id,
+    float delta)
+{
+    auto it = floatPresets.find(id);
+
+    if (it != floatPresets.end())
+        it->second.target += delta;
+
+    for (auto& track : tracks)
+        track->Offset(delta);
+}
+
     bool HasRegisteredPreset() const
     {
         return !floatPresets.empty() || !vec2Presets.empty();
@@ -335,7 +366,7 @@ public:
 
         if (it->second->playing)
         {
-            //std::cout << "[Warning] Animation '" << name << "' is currently playing.\n";
+            // std::cout << "[Warning] Animation '" << name << "' is currently playing.\n";
         }
 
         return it->second;

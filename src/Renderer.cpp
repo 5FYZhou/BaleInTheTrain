@@ -76,7 +76,7 @@ void Renderer::Init()
     movementHintText->setPosition({720.f, 930.f});
 }
 
-void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player, bool inBattle)
+void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player, bool inBattle, int key)
 {
     // 获取对应frame编号的纹理
     const sf::Texture &tex = rm.getTexture(TextureType::Player, player.GetTextureIndex());
@@ -160,6 +160,19 @@ void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player, bool i
     window.draw(*statusBox);
     window.draw(hpBar);
     window.draw(*hpText);
+
+    // 钥匙数量
+    sf::Sprite ks(rm.getTexture(TextureType::Key));
+    CenterOrigin(ks);
+    ks.setPosition({380, 70});
+    ks.setScale({0.6f, 0.6f});
+    window.draw(ks);
+    sf::Text kt(*font);
+    kt.setString(std::to_string(key));
+    kt.setCharacterSize(40);
+    CenterOrigin(kt);
+    kt.setPosition({430, 70});
+    window.draw(kt);
 }
 
 void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
@@ -189,6 +202,23 @@ void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
             es.setPosition(e.position);
             es.setScale(e.scale);
             window.draw(es);
+            // 会掉落的钥匙数量
+            if (scene.GetType() == SceneType::Game && e.dropKeyNum > 0)
+            {
+                float x = e.bound.position.x + e.bound.size.x * 0.5f;
+                float y = e.bound.position.y - 20;
+                sf::Sprite ek(rm.getTexture(TextureType::Key));
+                CenterOrigin(ek);
+                ek.setPosition({x, y});
+                ek.setScale({0.4f, 0.4f});
+                window.draw(ek);
+                sf::Text kt(*font);
+                kt.setString(std::to_string(e.dropKeyNum));
+                kt.setCharacterSize(30);
+                CenterOrigin(kt);
+                kt.setPosition({x + 40, y});
+                window.draw(kt);
+            }
         }
     }
     // 血条
@@ -263,18 +293,19 @@ void Renderer::DrawFadeOverlay(sf::RenderWindow &window, std::uint8_t alpha)
 }
 
 void Renderer::DrawBuff(sf::RenderWindow &window, const TextureType &type, sf::Vector2f pos,
-                            sf::Vector2f scope)
+                        sf::Vector2f scope)
 {
     sf::Sprite sp(rm.getTexture(type));
     CenterOrigin(sp);
     sp.setPosition(pos);
     FitSprite(sp, scope);
-    if(type == TextureType::p_power_up_player) sp.setRotation(sf::degrees(45));
+    if (type == TextureType::p_power_up_player)
+        sp.setRotation(sf::degrees(45));
     window.draw(sp);
 }
 
 void Renderer::DrawBuffWithNum(sf::RenderWindow &window, TextureType type, int num, sf::Vector2f pos,
-                                    sf::Vector2f scope, int space, int fontsize)
+                               sf::Vector2f scope, int space, int fontsize)
 {
     sf::Sprite sp(rm.getTexture(type));
     CenterOrigin(sp);

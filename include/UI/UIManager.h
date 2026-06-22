@@ -115,7 +115,7 @@ public:
 
     void Open(PanelType type){ panels.Open(type); }
     void Close(PanelType type){ panels.Close(type); }
-    void CloseAll(){ panels.CloseAll(); }
+    void CloseAll(){ panels.CloseAll(); textPrompt.ClearAll(); }
     bool IsOpen(PanelType type){ return panels.IsOpen(type); }
     template<typename T>
     T* Get() { return panels.Get<T>(); }
