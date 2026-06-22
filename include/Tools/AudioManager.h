@@ -38,9 +38,11 @@ private:
         {SoundEffect::MenuButton, 2},
         {SoundEffect::Tutorial, 2},
         //{ SoundEffect::Victory, 2 },
-        {SoundEffect::ObjectError, 2},
-        {SoundEffect::Pickup, 2},
-        {SoundEffect::PlayerAttack, 1}};
+        {SoundEffect::ObjectError, 10},
+        {SoundEffect::Pickup, 30},
+        {SoundEffect::PlayerAttack, 100},
+        {SoundEffect::BUFFandDEBUFF, 50},
+    };
 
 public:
     ResourceManager *rm = nullptr;
@@ -165,13 +167,13 @@ public:
     {
         //std::cout << "this = " << this << std::endl;
         //std::cout << "rm   = " << rm << std::endl;
-        if(rm == nullptr)  std::cout <<"!rm" << std::endl;
+       // if(rm == nullptr)  std::cout <<"!rm" << std::endl;
         //std::cout << "HasSound: " << rm->HasSound(effect) << std::endl;
-        std::cout << "1PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
+       // std::cout << "1PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
         if (effect == SoundEffect::None || !rm || !rm->HasSound(effect))
             return;
 
-        std::cout << "2PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
+       // std::cout << "2PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
 
         // 检查是否达到上限
         int currentCount = soundCount[effect];
@@ -179,7 +181,7 @@ public:
         if (currentCount >= maxCount)
             return;
 
-        std::cout << "3PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
+       // std::cout << "3PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
 
         // 顺便清理已停止音效
         Update();
@@ -195,7 +197,7 @@ public:
         // 增加计数
         soundCount[effect]++;
 
-        std::cout << "4PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
+        //std::cout << "4PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
     }
 
     inline void StopAllSounds()

@@ -208,7 +208,7 @@ public:
             {SoundEffect::ObjectError, "/出牌对象错误.wav"},//6
             {SoundEffect::EnemyAttack, "/敌人攻击.wav"},//7
             {SoundEffect::BUFFandDEBUFF, "/挂buffdebuff.wav"},//8
-            {SoundEffect::BreakDefend, "/击破盾牌.wav"},//9
+            {SoundEffect::BreakDefend, "/击破盾牌_[cut_0sec].mp3"},//9
             {SoundEffect::Pickup, "/拾取.wav"},//10
             {SoundEffect::PlayerAttack, "/玩家攻击.mp3"},//11
             {SoundEffect::UnbreakDefend, "/未击破盾牌.wav"},//12
@@ -216,6 +216,7 @@ public:
             {SoundEffect::GameFailed, "/游戏失败.wav"},//14
             {SoundEffect::BattleVictory, "/战斗胜利.wav"},//15
             {SoundEffect::BattleFailed, "/战斗失败.mp3"},//16
+            {SoundEffect::Defend, "/上护盾.wav"},//17
         };
 
         loadAllTex();

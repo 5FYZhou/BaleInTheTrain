@@ -73,7 +73,8 @@ enum class SoundEffect {
     BreakDefend,//15
     UnbreakDefend,//16
     Pickup,//17
-    None//18
+    Defend,//18
+    None//19
 };
 
 // Game states.
