@@ -402,7 +402,7 @@ void Game::HandleEvents(const GameEvent &event)
         break;
     // 玩家回合
     case EventType::PlayerTurn:
-        // std::cout << "Event: start play" << std::endl;
+        std::cout << "Event: start play" << std::endl;
         // std::cout << "抽牌前" << std::endl;
         btLogic.PilePre();                // 抽牌
         // std::cout << "抽牌后" << std::endl;
