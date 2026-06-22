@@ -398,6 +398,12 @@ void Game::HandleEvents(const GameEvent &event)
             uiMgr.Open(PanelType::CardsInHand);
             player.SetFacing(1); });
         std::cout << "Event:beginBattle" << std::endl;
+        std::cout
+    << &uiMgr.textPrompt
+    << std::endl;
+    std::cout
+    << btLogic.textPrompt
+    << std::endl;
         break;
     // 玩家回合
     case EventType::PlayerTurn:
@@ -416,6 +422,7 @@ void Game::HandleEvents(const GameEvent &event)
         break;
     // 结束玩家回合，开始敌人回合
     case EventType::EndTurn:
+        if(btLogic.isWaitingForPlayerTurn) break;
         std::cout << "Event: end turn" << std::endl;
 
         btLogic.turnsOver();
@@ -429,13 +436,7 @@ void Game::HandleEvents(const GameEvent &event)
         std::cout << "Event: EndBattle" << std::endl;
         btLogic.state.battleEnded = true;
         uiMgr.CloseAll();
-        uiMgr.textPrompt.ClearAll();
-        std::cout
-    << &uiMgr.textPrompt
-    << std::endl;
-    std::cout
-    << btLogic.textPrompt
-    << std::endl;
+        //uiMgr.textPrompt.ClearAll();
         // 胜利
         if (event.val == 0)
         {

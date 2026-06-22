@@ -33,15 +33,15 @@ inline const std::unordered_map<PromptStyle, StyleConfig> styleMap = {
     {PromptStyle::Center,
      {sf::Vector2f(0.f, 540.f),
       40,
-      1.f,
+      0.2f,
       80.f,
-      0.8f,
+      0.5f,
       sf::Color::White}},
 
     {PromptStyle::Top,
      {sf::Vector2f(0.f, 100.f),
       80,
-      2.f,
+      1.f,
       20.f,
       1.f,
       sf::Color(255, 220, 120)}},
@@ -176,10 +176,6 @@ public:
         const std::string &text,
         PromptStyle style)
     {
-        std::cout
-            << "Create Prompt "
-            << text
-            << std::endl;
         const auto &cfg = styleMap.at(style);
 
         //----------------------------------
@@ -234,7 +230,7 @@ public:
              -cfg.moveDistance},
             static_cast<int>(
                 cfg.fadeDuration * 1000.f),
-            EaseType::QuadraticInOut);
+            EaseType::Linear);
         //----------------------------------
         // 淡出
         //----------------------------------
@@ -314,7 +310,6 @@ public:
     {
         for (auto &p : prompts)
         {
-            std::cout << p->text << std::endl;
             if (auto anim =
                     animationManager->Get(
                         p->animName))

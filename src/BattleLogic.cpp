@@ -489,11 +489,13 @@ void BattleLogic::UpdateHP(Enemy* p, int add){
 
 
 void BattleLogic::ShowTurnCounts(){
+    if(state.battleEnded) return;
     std::string turnsText = "第" + std::to_string(state.TurnCount) + "回合";
     textPrompt->Show((turnsText), PromptStyle::Top);
 }
 
 void BattleLogic::ShowEnemyDamage(Enemy &enemy){
+    if(state.battleEnded) return;
     std::string Enemy_damage = enemy.name + "对玩家造成了" + std::to_string(state.final_damage) +"点伤害!";
     textPrompt->Show((Enemy_damage), PromptStyle::Center);
 }
