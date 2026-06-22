@@ -338,6 +338,8 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
+                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
             }
         }
         break;
@@ -355,6 +357,8 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
+                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
             }
         }
         break;
@@ -391,23 +395,28 @@ void Game::HandleEvents(const GameEvent &event)
 #pragma region 塔塔开
     // 开始战斗
     case EventType::BeginBattle:
+    {
         playerFaceBeforeBattle = player.GetFacing();
         playerXBeforeBattle = player.GetPos().x;
-        sceneMgr.LoadScene(SceneType::Battle, [this]{        
-            btLogic.StartBattle(sceneMgr.GetScene().GetClickEnemy(), &player);
-            uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
+        sceneMgr.LoadScene(SceneType::Battle, [this]{
+            Enemy* enemy = sceneMgr.GetScene().GetClickEnemy();
+            btLogic.StartBattle(enemy, &player);
+            player.SetFacing(1); 
+            // 打开 初始化手牌
             uiMgr.Open(PanelType::CardsInHand);
-            player.SetFacing(1); });
+            uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
+            // 打开 初始化buff
+            uiMgr.Open(PanelType::Buff);
+            uiMgr.Get<BuffPanel>()->SetContext(player.feet, enemy->position, enemy->bound, enemy->HPDrawOffset);
+            auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+            uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+        });
         std::cout << "Event:beginBattle" << std::endl;
-        std::cout
-    << &uiMgr.textPrompt
-    << std::endl;
-    std::cout
-    << btLogic.textPrompt
-    << std::endl;
+    }
         break;
     // 玩家回合
     case EventType::PlayerTurn:
+    {
         std::cout << "Event: start play" << std::endl;
         // std::cout << "抽牌前" << std::endl;
         btLogic.PilePre();                // 抽牌
@@ -418,11 +427,14 @@ void Game::HandleEvents(const GameEvent &event)
         btLogic.ShowTurnCounts();
         //std::cout << "uiMgr.Getqian" << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
+                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
         //std::cout << "uiMgr.Gethou" << std::endl;
-
+    }
         break;
     // 结束玩家回合，开始敌人回合
     case EventType::EndTurn:
+    {
         if(btLogic.isWaitingForPlayerTurn) break;
         std::cout << "Event: end turn" << std::endl;
 
@@ -430,6 +442,9 @@ void Game::HandleEvents(const GameEvent &event)
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
         btLogic.EnemyTurn();
         
+        auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+        uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+    }
         break;
     // 结束对局
     case EventType::EndBattle:
@@ -437,13 +452,11 @@ void Game::HandleEvents(const GameEvent &event)
         std::cout << "Event: EndBattle" << std::endl;
         btLogic.state.battleEnded = true;
         uiMgr.CloseAll();
-        //uiMgr.textPrompt.ClearAll();
         // 胜利
         if (event.val == 0)
         {
-            player.currentHP += player.relic_data;
-            sceneMgr.LoadGameBeforeBattle([this]
-                                          {
+            player.currentHP = std::min(player.currentHP, player.currentHP + player.relic_data);
+            sceneMgr.LoadGameBeforeBattle([this]{
                 player.SetFacing(playerFaceBeforeBattle);
                 player.SetFeet({playerXBeforeBattle, PlayerGroundY});
                 player.ResetToStand();
@@ -526,7 +539,7 @@ void Game::Draw()
                 textHintMgr.GetDoorHintAlpha());
         }
     }
-    
+    /*
     if (curSceneType == SceneType::Battle)
     {
         int column = 0;
@@ -569,7 +582,7 @@ void Game::Draw()
                                 {40, 40});
             column++;
         }
-    }
+    }*/
 
     // UI面板
     uiMgr.DrawPanels(window);

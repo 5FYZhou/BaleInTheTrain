@@ -14,6 +14,7 @@ struct Item{
     ItemType type;
 };
 
+// 第i个场景的交互物品
 inline const std::vector<std::vector<Item>> itemInScene = {
     {
         {{550.f, 420.f}, ItemType::Rage},

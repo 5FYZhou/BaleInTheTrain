@@ -133,6 +133,7 @@ enum class EnemyType{
 };
 
 enum class PlanType{
+    None,
     attack,
     defend,
     easy_to_attack, //易伤（受到的伤害增加）
@@ -187,6 +188,7 @@ inline const std::unordered_map<EnemyType, TextureType> enemyTexMap = {
 
 // 敌人意图映射纹理类型
 inline const std::unordered_map<PlanType, TextureType> planTexMap = {
+    { PlanType::None, TextureType::None },
     { PlanType::attack, TextureType::p_attack },
     { PlanType::defend, TextureType::p_defend },
     { PlanType::easy_to_attack, TextureType::p_easy_to_attack },
@@ -204,6 +206,17 @@ inline const std::unordered_map<BuffDebuffType, TextureType> buffTexMap = {
     { BuffDebuffType::vulnerable, TextureType::p_vulnerable },
     { BuffDebuffType::thorns, TextureType::p_thorns },
     { BuffDebuffType::metallization, TextureType::p_metallization },
+};
+
+// Buff&Debuff映射悬浮显示信息
+inline const std::unordered_map<BuffDebuffType, std::string> buffInfoMap = {
+    { BuffDebuffType::None, "TextureType::None" },
+    { BuffDebuffType::easy_to_attack, "TextureType::p_easy_to_attack" },
+    { BuffDebuffType::power_up, "TextureType::p_power_up_player" },
+    { BuffDebuffType::rampart, "TextureType::p_rampart" },
+    { BuffDebuffType::vulnerable, "TextureType::p_vulnerable" },
+    { BuffDebuffType::thorns, "TextureType::p_thorns" },
+    { BuffDebuffType::metallization, "TextureType::p_metallization" },
 };
 
 // 场景物品类型映射卡牌类型
