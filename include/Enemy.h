@@ -43,8 +43,8 @@ public:
     int cur_health; // 当前生命值
     bool dead;      // 是否死亡
 
-    std::vector<Plan> allPlans; // 回合计划（0-攻击，1-防御，2-增益，3-减益）
-    
+    std::vector<Plan> allPlans;         // 回合计划（0-攻击，1-防御，2-增益，3-减益）
+
     int strength = 0;   //攻击时增加对应的力量值
     int thornsdata = 0;  //被攻击时造成的反伤
     int defend_num = 0;

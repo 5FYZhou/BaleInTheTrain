@@ -176,6 +176,8 @@ void Game::Logic(float dt)
     textHintMgr.Update(dt);
     audioMgr.Update();
     uiMgr.Update(dt);
+     // 延迟检查
+    btLogic.Update(); 
     if (!sceneMgr.IsFading() && !textHintMgr.IsActive() && !uiMgr.BlockInput())
     {
         if (sceneMgr.GetCurSceneType() == SceneType::Game)
@@ -437,6 +439,7 @@ void Game::HandleEvents(const GameEvent &event)
         // 胜利
         if (event.val == 0)
         {
+            player.currentHP += player.relic_data;
             sceneMgr.LoadGameBeforeBattle([this]
                                           {
                 player.SetFacing(playerFaceBeforeBattle);
@@ -483,6 +486,7 @@ void Game::HandleEvents(const GameEvent &event)
     default:
         break;
     }
+    
 }
 
 void Game::Draw()
