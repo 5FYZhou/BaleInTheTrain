@@ -19,6 +19,7 @@ Game::Game()
     audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
     textHintMgr.Initialize(&audioMgr);
     renderer.Init();
+    sceneMgr.Init();
     sceneMgr.SetCurScene(SceneType::Menu);
 
     // ctx.ui = &uiMgr;

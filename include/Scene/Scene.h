@@ -22,6 +22,18 @@ inline const std::vector<std::vector<Item>> itemInScene = {
         {{1240.f, 520.f}, ItemType::Anger}
     },
     {
+        {{550.f, 420.f}, ItemType::Rage},
+        {{780.f, 520.f}, ItemType::Shrug_off},
+        {{1010.f, 420.f}, ItemType::Heavy_strike},
+        {{1240.f, 520.f}, ItemType::Anger}
+    },
+    {
+        {{550.f, 520.f}, ItemType::Continuous_punches},
+        {{780.f, 420.f}, ItemType::Observe_weaknesses},
+        {{1010.f, 520.f}, ItemType::Activate_muscles},
+        {{1240.f, 420.f}, ItemType::Revitalize_spirit}
+    },
+    {
         {{550.f, 520.f}, ItemType::Continuous_punches},
         {{780.f, 420.f}, ItemType::Observe_weaknesses},
         {{1010.f, 520.f}, ItemType::Activate_muscles},
@@ -37,9 +49,11 @@ inline const std::vector<std::vector<Item>> itemInScene = {
 };
 
 inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
+    { EnemyType::Train_attendant, { 1500, 440 } }, // 占位用
     { EnemyType::Train_attendant, { 1500, 440 } },
     { EnemyType::LightMonster, { 1500, 430 } },
-    { EnemyType::TicketMonster, { 1500, 510 } }
+    { EnemyType::TicketMonster, { 1500, 510 } },
+    { EnemyType::TyreMosnter, { 1500, 640 } }
 };
 
 struct SceneInteractable {
@@ -130,6 +144,7 @@ private:
     int idx;
     std::vector<Enemy> ev;
     Enemy* clickEnemy = nullptr;
+    bool hasEnemy;
     // 辅助函数：根据 EnemyType 从预制表中创建 Enemy
     void InitEnemy(Enemy& e) {
         auto it = g_prefabEnemies.find(e.ty);
@@ -145,17 +160,19 @@ private:
         throw std::runtime_error("Enemy type not found in prefab!");
     }
 public:
-    GameScene(std::vector<GameEvent>& e, int i) : Scene(e), idx(i) { 
+    GameScene(std::vector<GameEvent>& e, int i, bool hase) : Scene(e), idx(i), hasEnemy(hase){ 
         type = SceneType::Game; 
         bgTex = TextureType::GameBackground;
         Init();
     }
     
     void Init(){
-        ev.clear();
-        Enemy enemy(enemyInScene[idx].first, enemyInScene[idx].second);
-        InitEnemy(enemy);
-        ev.push_back(enemy);
+        if(hasEnemy){
+            ev.clear();
+            Enemy enemy(enemyInScene[idx].first, enemyInScene[idx].second);
+            InitEnemy(enemy);
+            ev.push_back(enemy);
+        }
         interactables.clear();
         for (const auto& item : itemInScene[idx]) {
             interactables.push_back({ TextureType::Star, item.pos, {90, 109}, EventType::ItemClicked, item.type });
