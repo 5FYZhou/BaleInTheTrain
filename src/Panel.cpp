@@ -217,7 +217,7 @@ void BackpackPanel::Init(ResourceManager& rmm, const sf::Font* uiFont){
     titleText.emplace(*font); 
     titleText->setString(utf8("背包")); 
     titleText->setCharacterSize(60); 
-    titleText->setFillColor(sf::Color::White); 
+    titleText->setFillColor(sf::Color::Black); 
     titleText->setPosition({780.f, 150.f}); 
     centerTextX(*titleText);
 }
@@ -231,10 +231,16 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
     constexpr int MAX_PER_ROW = 10;
 
     float baseX = 960.f;
-    float baseY = 300.f;
+    float baseY = 525.f;
 
     float spacingX = 128.f;
     float spacingY = 200.f;
+
+    int rowCountTotal = (n + MAX_PER_ROW - 1) / MAX_PER_ROW;
+
+    // ✔ 多行整体居中偏移（关键）
+    float totalHeight = (rowCountTotal - 1) * spacingY;
+    float startY = baseY - totalHeight * 0.5f;
 
     for (int i = 0; i < n; i++)
     {
@@ -268,7 +274,7 @@ void BackpackPanel::SetCards(const std::vector<PileType>& c){
 
         cv.pos = {
             baseX + offset * spacingX,
-            baseY + row * spacingY + (t * t) * 40.f
+            startY + row * spacingY + (t * t) * 40.f
         };
 
         cv.rotation = t * 12.f;
@@ -340,7 +346,7 @@ void DiscardPilePanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     hasFont = (font != nullptr);
 
     backButton.emplace(rm->getTexture(TextureType::BackButton));
-    backButton->setPosition({1700.f, 900.f});
+    backButton->setPosition({1730.f, 930.f});
     backButton->setScale({0.7f, 0.7f});
 
     //veil = sf::Sprite();    // 遮罩初始化
@@ -417,7 +423,7 @@ void DealCardPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     hasFont = (font != nullptr);
 
     backButton.emplace(rm->getTexture(TextureType::BackButton));
-    backButton->setPosition({100.f, 900.f});
+    backButton->setPosition({100.f, 930.f});
     backButton->setScale({0.7f, 0.7f});
 
     //veil = sf::Sprite();    // 遮罩初始化
@@ -490,17 +496,19 @@ void DealCardPanel::Draw(sf::RenderWindow& window){
 void CardsInHandPanel::Init(ResourceManager& resource, const sf::Font* uiFont){
     rm = &resource;
     font = uiFont;
+    float pointX = 500.f;
+    float pointY = 750.f;
     hasFont = (font != nullptr);
-    actionPoints.emplace(rm->getTexture(TextureType::StatusBox));
-    actionPoints->setScale({0.5f, 0.8f});
-    actionPoints->setPosition({350.f, 750.f});
+    pointsBG.emplace(rm->getTexture(TextureType::StatusBox));
+    pointsBG->setScale({0.5f, 0.8f});
+    pointsBG->setPosition({pointX, pointY});
 
     
     pointText.emplace(*font);
     pointText->setFillColor(sf::Color::Black);
     //pointText->setStyle(sf::Text::Bold);
     pointText->setCharacterSize(29);
-    pointText->setPosition({360.f, 765.f});
+    pointText->setPosition({pointX + 10, pointY + 15});
 }
 
 void CardsInHandPanel::SetCards(const std::vector<PileType>& c, int point, bool first){
@@ -768,7 +776,7 @@ bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f& mousePos)
 void CardsInHandPanel::Draw(sf::RenderWindow& window){
     if(!visible) return;
 
-    window.draw(*actionPoints);
+    window.draw(*pointsBG);
 
     if (font){
         pointText->setString(utf8("行动点：") + std::to_string(points));

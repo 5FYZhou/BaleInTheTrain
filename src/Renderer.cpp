@@ -29,18 +29,6 @@ sf::Sprite Renderer::makeSprite(const sf::Texture &texture, sf::Vector2f positio
     return sprite;
 }
 
-/*
-Button Renderer::makeCenteredButton(const sf::Texture& texture, float centerY) {
-    sf::Sprite sprite(texture);
-    const auto size = texture.getSize();
-    sprite.setPosition({
-        (static_cast<float>(windowWidth) - static_cast<float>(size.x)) * 0.5f,
-        centerY - static_cast<float>(size.y) * 0.5f
-    });
-
-    return {sprite, sprite.getGlobalBounds()};
-}*/
-
 void Renderer::Init()
 {
     // Setup fade overlay
@@ -51,18 +39,18 @@ void Renderer::Init()
     statusBox = new sf::Sprite(rm.getTexture(TextureType::StatusBox));
     statusBox->setPosition({24.f, 24.f});
     hpBack.setSize({205.f, 18.f});
-    hpBack.setPosition({83.f, 63.f});
+    hpBack.setPosition({83.f, 68.f});
     hpBack.setFillColor(sf::Color(55, 24, 24, 210));
 
     hpBar.setSize({205.f, 18.f});
-    hpBar.setPosition({83.f, 63.f});
+    hpBar.setPosition({83.f, 68.f});
     hpBar.setFillColor(sf::Color(190, 42, 42, 235));
 
     hpText = new sf::Text(*font);
     hpText->setString("HP 100 / 100");
     hpText->setCharacterSize(22);
-    hpText->setFillColor(sf::Color::White);
-    hpText->setPosition({92.f, 35.f});
+    hpText->setFillColor(sf::Color::Black);
+    hpText->setPosition({88.f, 38.f});
 
     dialogBox = new sf::Sprite(rm.getTexture(TextureType::DialogBox));
     dialogBox->setPosition({260.f, 870.f});
@@ -88,7 +76,7 @@ void Renderer::Init()
     movementHintText->setPosition({720.f, 930.f});
 }
 
-void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player)
+void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player, bool inBattle)
 {
     // 获取对应frame编号的纹理
     const sf::Texture &tex = rm.getTexture(TextureType::Player, player.GetTextureIndex());
@@ -104,6 +92,63 @@ void Renderer::DrawPlayer(sf::RenderWindow &window, const Player &player)
     window.draw(p);
 
     // player HP
+    if (inBattle)
+    {
+        constexpr float BAR_WIDTH = 200.f;
+        constexpr float BAR_HEIGHT = 12.f;
+
+        float hpPercent =
+            static_cast<float>(player.currentHP) /
+            static_cast<float>(player.maxHP);
+
+        hpPercent = std::clamp(hpPercent, 0.f, 1.f);
+
+        float x = player.feet.x - 110;
+        float y = player.feet.y + 10;
+
+        // 黑色背景
+        sf::RectangleShape bgBar({BAR_WIDTH, BAR_HEIGHT});
+        bgBar.setPosition({x, y});
+        bgBar.setFillColor(sf::Color::Black);
+
+        // 红色血量
+        sf::RectangleShape hpBar({BAR_WIDTH * hpPercent, BAR_HEIGHT});
+        hpBar.setPosition({x, y});
+        hpBar.setFillColor(sf::Color::Red);
+
+        // 可选：白色边框
+        sf::RectangleShape border({BAR_WIDTH, BAR_HEIGHT});
+        border.setPosition({x, y});
+        border.setFillColor(sf::Color::Transparent);
+        border.setOutlineThickness(0.5f);
+        border.setOutlineColor(sf::Color::White);
+
+        window.draw(bgBar);
+        window.draw(hpBar);
+        window.draw(border);
+
+        // HP文字
+        sf::Text hpText(*font);
+        hpText.setString(
+            std::to_string(player.currentHP) +
+            "/" +
+            std::to_string(player.maxHP));
+
+        hpText.setCharacterSize(20);
+        hpText.setFillColor(sf::Color::White);
+
+        // 黑色描边提高可读性
+        hpText.setOutlineColor(sf::Color::Black);
+        hpText.setOutlineThickness(1.f);
+
+        CenterOrigin(hpText);
+
+        hpText.setPosition({x + BAR_WIDTH * 0.5f,
+                            y + BAR_HEIGHT * 0.5f});
+
+        window.draw(hpText);
+        return;
+    }
     int currentHP = player.GetCurrentHP();
     int maxHP = player.GetMaxHP();
     const float barWidth = 205.f * (static_cast<float>(currentHP) / static_cast<float>(maxHP));
@@ -152,8 +197,7 @@ void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
         auto e = scene.GetClickEnemy();
         if (e && !e->dead)
         {
-
-            constexpr float BAR_WIDTH = 120.f;
+            constexpr float BAR_WIDTH = 200.f;
             constexpr float BAR_HEIGHT = 12.f;
 
             float hpPercent =
@@ -165,7 +209,7 @@ void Renderer::DrawScene(sf::RenderWindow &window, Scene &scene)
             auto bounds = e->bound;
 
             float x = bounds.position.x + (bounds.size.x - BAR_WIDTH) * 0.5f;
-            float y = e->position.y + e->HPDrawOffset; // SFML 3
+            float y = e->position.y + e->bound.size.y + e->HPDrawOffset; // SFML 3
 
             // 黑色背景
             sf::RectangleShape bgBar({BAR_WIDTH, BAR_HEIGHT});
@@ -218,29 +262,33 @@ void Renderer::DrawFadeOverlay(sf::RenderWindow &window, std::uint8_t alpha)
     window.draw(fadeOverlay);
 }
 
-void Renderer::DrawItem(sf::RenderWindow &window, sf::Vector2f position, const TextureType &type, sf::Vector2f scale, int index)
-{
-    sf::Sprite sprite(rm.getTexture(type, index));
-    sprite.setPosition(position);
-    sprite.setScale(scale);
-    window.draw(sprite);
-}
-
-void Renderer::DrawItemWithNum(sf::RenderWindow &window, TextureType type, int num, sf::Vector2f pos)
+void Renderer::DrawBuff(sf::RenderWindow &window, const TextureType &type, sf::Vector2f pos,
+                            sf::Vector2f scope)
 {
     sf::Sprite sp(rm.getTexture(type));
     CenterOrigin(sp);
     sp.setPosition(pos);
-    FitSprite(sp, {65, 65});
+    FitSprite(sp, scope);
+    if(type == TextureType::p_power_up_player) sp.setRotation(sf::degrees(45));
+    window.draw(sp);
+}
+
+void Renderer::DrawBuffWithNum(sf::RenderWindow &window, TextureType type, int num, sf::Vector2f pos,
+                                    sf::Vector2f scope, int space, int fontsize)
+{
+    sf::Sprite sp(rm.getTexture(type));
+    CenterOrigin(sp);
+    sp.setPosition(pos);
+    FitSprite(sp, scope);
     window.draw(sp);
 
-    pos.x += 50;
+    pos.x += space;
     sf::Text t(*font);
     t.setString(std::to_string(num));
     CenterOrigin(t);
     t.setPosition(pos);
     t.setFillColor(sf::Color::White);
-    t.setCharacterSize(30);
+    t.setCharacterSize(fontsize);
     window.draw(t);
 }
 

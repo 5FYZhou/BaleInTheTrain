@@ -5,11 +5,11 @@
 
 // 敌人类型对应{敌人贴图大小，掉落物，绘制血量偏移}
 inline const std::unordered_map<EnemyType, std::tuple<sf::Vector2f, std::vector<ItemType>, int>> enemyBound = {
-    {EnemyType::Train_attendant, {{213, 377}, {ItemType::Defend, ItemType::Key}, -30}},
-    {EnemyType::LightMonster, {{184, 376}, {}, -30}},
-    {EnemyType::TicketMonster, {{176, 294}, {}, -30}},
-    {EnemyType::TyreMosnter, {{223, 200}, {}, -30}},
-    {EnemyType::Past_YOU, {{648, 648}, {}, -10}},
+    {EnemyType::Train_attendant, {{213, 377}, {ItemType::Defend, ItemType::Key}, 10}},
+    {EnemyType::LightMonster, {{184, 376}, {}, 0}},
+    {EnemyType::TicketMonster, {{176, 294}, {}, 0}},
+    {EnemyType::TyreMosnter, {{223, 200}, {}, 0}},
+    {EnemyType::Past_YOU, {{360, 367}, {}, 10}},
 };
 
 struct Plan

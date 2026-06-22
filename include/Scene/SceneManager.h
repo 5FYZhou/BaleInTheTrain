@@ -47,6 +47,11 @@ public:
         curScene = &menuScene;
     };
     ~SceneManager() = default;
+    void Init(){
+        gameScene1.Init();
+        gameScene2.Init();
+        gameScene3.Init();
+    }
     
     Scene& GetScene() { return *curScene; }
     const Scene& GetScene() const { return *curScene; }

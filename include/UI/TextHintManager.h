@@ -16,6 +16,7 @@ public:
     ~TextHintManager() = default;
 
     void Initialize(AudioManager *audioMgr);
+    void ResetState();
 
     void StartDialog();
     void StartDialog(const std::vector<std::string> &dialogs);
@@ -82,7 +83,6 @@ private:
 
     AudioManager *audioManager = nullptr;
 
-    void ResetState();
     void PlayDialogSound();
     void PlayCompletionSound();
 };

@@ -45,6 +45,7 @@ public:
 
     void Set(const std::vector<PileType> &input)
     {
+        std::cout<<"set"<<std::endl;
         if (hasInit)
             return;
         hasInit = true;

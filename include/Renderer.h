@@ -64,13 +64,14 @@ private:
     
     // Main drawing methods
     void DrawCard(sf::RenderWindow& window, const CardView& card, float alpha);
-    void DrawPlayer(sf::RenderWindow& window, const Player& player);
+    void DrawPlayer(sf::RenderWindow& window, const Player& player, bool inBattle);
     void DrawScene(sf::RenderWindow& window, Scene& scene);
     void DrawFadeOverlay(sf::RenderWindow& window, std::uint8_t alpha);
-    void DrawItem(sf::RenderWindow& window, sf::Vector2f position, const TextureType& type
-        , sf::Vector2f scale = {1.f, 1.f}, int index = 0);
+    void DrawBuff(sf::RenderWindow& window, const TextureType& type, sf::Vector2f position, 
+                    sf::Vector2f scope = {65, 65});
 
-    void DrawItemWithNum(sf::RenderWindow& window, TextureType type, int num, sf::Vector2f pos);
+    void DrawBuffWithNum(sf::RenderWindow& window, TextureType type, int num, sf::Vector2f pos,
+                    sf::Vector2f scope = {65, 65}, int space = 50, int fontsize = 30);
     
     void DrawDialog(sf::RenderWindow& window, const TextHintManager& textHintMgr);
     void DrawMovementHint(sf::RenderWindow& window);

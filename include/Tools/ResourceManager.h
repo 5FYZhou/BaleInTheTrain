@@ -126,7 +126,7 @@ public:
             {TextureType::Player, {"/balestand1.png", "/bale1.png", "/bale2.png", "/bale3.png", "/bale4.png"}},
             {TextureType::Star, {"/星星.png"}},
             {TextureType::Key, {"/钥匙.png"}},
-            {TextureType::Ghost, {"/白魂.png"}},
+            {TextureType::Ghost, {"/白魂1.png"}},
             // 游戏UI
             {TextureType::StatusBox, {"/状态框.png"}},
             {TextureType::Potion1, {"/药剂1.png"}},

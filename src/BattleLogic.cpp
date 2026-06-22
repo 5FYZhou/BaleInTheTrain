@@ -344,7 +344,8 @@ bool BattleLogic::BattleFinished()
         if(state.battleEnded) return true;
         enemy->dead = true;
         std::cout<<"enemyDead"<<std::endl;
-        events.push_back({EventType::EndBattle, 0});
+        float endi = enemy->ty == EnemyType::Past_YOU ? 2 : 0;
+        events.push_back({EventType::EndBattle, endi});
         return true;
     }
 
