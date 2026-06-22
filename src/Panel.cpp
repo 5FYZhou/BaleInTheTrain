@@ -956,18 +956,15 @@ void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int n
 
 void BuffPanel::DrawTooltip(sf::RenderWindow& window)
 {
-    if(!hoveredBuff)
+    if (!hoveredBuff)
         return;
 
     auto it = buffInfoMap.find(hoveredBuff->type);
-
-    if(it == buffInfoMap.end())
+    if (it == buffInfoMap.end())
         return;
 
     sf::Text text(*font);
-
     text.setString(utf8(it->second));
-
     text.setCharacterSize(22);
     text.setFillColor(sf::Color::Black);
 
@@ -975,36 +972,47 @@ void BuffPanel::DrawTooltip(sf::RenderWindow& window)
 
     constexpr float padding = 10.f;
 
+    float width  = tb.size.x + padding * 2.f;
+    float height = tb.size.y + padding * 2.f;
+
+    sf::Vector2f pos = {
+        hoveredBuff->pos.x,
+        hoveredBuff->pos.y - 50.f
+    };
+
+    const float screenW = 1920.f;
+    const float screenH = 1080.f;
+
+    // ===== 屏幕限制 =====
+    if (pos.x - width * 0.5f < 0.f)
+        pos.x = width * 0.5f;
+    if (pos.x + width * 0.5f > screenW)
+        pos.x = screenW - width * 0.5f;
+
+    if (pos.y - height < 0.f)
+        pos.y = height;
+
+    if (pos.y > screenH)
+        pos.y = screenH;
+
+    // ======================
+    // 背景（中心对齐）
+    // ======================
     sf::RectangleShape bg;
+    bg.setSize({width, height});
+    bg.setFillColor(sf::Color(255,255,255,255));
+    bg.setOrigin({width * 0.5f, height * 0.5f});
+    bg.setPosition(pos);
 
-    bg.setSize({
-        tb.size.x + padding * 2.f,
-        tb.size.y + padding * 2.f
-    });
-
-    bg.setFillColor(
-        sf::Color(255,255,255,180)
-    );
-
-    bg.setOrigin({
-        bg.getSize().x / 2.f,
-        bg.getSize().y
-    });
-
-    bg.setPosition({
-        hoveredBuff->pos.x,
-        hoveredBuff->pos.y - 30.f
-    });
-
+    // ======================
+    // 文字（关键修复）
+    // ======================
     text.setOrigin({
-        tb.position.x + tb.size.x / 2.f,
-        tb.position.y + tb.size.y
+        tb.size.x * 0.5f,
+        tb.size.y * 0.5f
     });
 
-    text.setPosition({
-        hoveredBuff->pos.x,
-        hoveredBuff->pos.y - 40.f
-    });
+    text.setPosition(pos);
 
     window.draw(bg);
     window.draw(text);

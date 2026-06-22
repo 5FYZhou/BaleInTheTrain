@@ -66,7 +66,7 @@ void Game::Run()
 void Game::Init()
 {
     player.ResetExceptCard();
-    keyCnt = 3;
+    keyCnt = 0;
     player.InitCards();
     playerDeadCnt = 0;
     sceneMgr.Init();

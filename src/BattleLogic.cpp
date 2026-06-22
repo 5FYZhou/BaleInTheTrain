@@ -24,6 +24,7 @@ bool BattleLogic::SpendActionPoints(int cost)
     if (state.actionPoints < cost)
     {
         std::cout << "行动点不足" << std::endl;
+        textPrompt->Show("行动点不足", PromptStyle::Center);
         return false;
     }
 
