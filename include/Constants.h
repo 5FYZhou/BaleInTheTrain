@@ -55,15 +55,25 @@ enum class TextureType {
 
 // Sound/audio types for resource management.
 enum class SoundEffect {
-    Dialog,
-    Tutorial,
-    Footstep,
-    Back,
-    MenuButton,
-    CardFlip,
-    Victory,
-    Defeat,
-    None
+    Dialog,//0
+    Tutorial,//1
+    Footstep,//2
+    Back,//3
+    MenuButton,//4
+    CardFlip,//5
+    BattleVictory,//6
+    BattleFailed,//7
+    GameVictory,//8
+    GameFailed,//9
+    Background,//10
+    ObjectError,//11
+    EnemyAttack,//12
+    PlayerAttack,//13
+    BUFFandDEBUFF,//14
+    BreakDefend,//15
+    UnbreakDefend,//16
+    Pickup,//17
+    None//18
 };
 
 // Game states.

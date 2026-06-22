@@ -9,7 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-class ResourceManager {
+class ResourceManager
+{
 private:
     std::unordered_map<TextureType, std::vector<sf::Texture>> textures;
     std::unordered_map<SoundEffect, sf::SoundBuffer> soundEffectBuffers;
@@ -21,17 +22,19 @@ private:
 
     sf::Font font;
 
-    std::filesystem::path FindAssetRoot() const {
+    std::filesystem::path FindAssetRoot() const
+    {
         const std::vector<std::filesystem::path> candidates = {
             std::filesystem::current_path(),
             std::filesystem::current_path() / "..",
             std::filesystem::current_path() / ".." / "..",
-            std::filesystem::current_path() / ".." / ".." / ".."
-        };
+            std::filesystem::current_path() / ".." / ".." / ".."};
 
-        for (const auto& candidate : candidates) {
+        for (const auto &candidate : candidates)
+        {
             const auto path = std::filesystem::weakly_canonical(candidate / "assets");
-            if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+            if (std::filesystem::exists(path) && std::filesystem::is_directory(path))
+            {
                 return path;
             }
         }
@@ -39,17 +42,19 @@ private:
         return std::filesystem::path(DATA_TEXTURE_FILE_PATH);
     }
 
-    std::filesystem::path FindAudioRoot() const {
+    std::filesystem::path FindAudioRoot() const
+    {
         const std::vector<std::filesystem::path> candidates = {
             std::filesystem::current_path() / "audio",
             std::filesystem::current_path() / ".." / "audio",
             std::filesystem::current_path() / ".." / ".." / "audio",
-            std::filesystem::current_path() / ".." / ".." / ".." / "audio"
-        };
+            std::filesystem::current_path() / ".." / ".." / ".." / "audio"};
 
-        for (const auto& candidate : candidates) {
+        for (const auto &candidate : candidates)
+        {
             const auto path = std::filesystem::weakly_canonical(candidate);
-            if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+            if (std::filesystem::exists(path) && std::filesystem::is_directory(path))
+            {
                 return path;
             }
         }
@@ -57,55 +62,62 @@ private:
         return std::filesystem::path(DATA_AUDIO_FILE_PATH);
     }
 
-    std::string ResolveTexturePath(const std::string& path) const {
+    std::string ResolveTexturePath(const std::string &path) const
+    {
         std::filesystem::path relative = path;
         const std::string raw = relative.string();
-        if (!raw.empty() && (raw[0] == '/' || raw[0] == '\\')) {
+        if (!raw.empty() && (raw[0] == '/' || raw[0] == '\\'))
+        {
             relative = raw.substr(1);
         }
         return (assetRoot / relative).string();
     }
 
-    std::string ResolveAudioPath(const std::string& path) const {
+    std::string ResolveAudioPath(const std::string &path) const
+    {
         std::filesystem::path relative = path;
         const std::string raw = relative.string();
-        if (!raw.empty() && (raw[0] == '/' || raw[0] == '\\')) {
+        if (!raw.empty() && (raw[0] == '/' || raw[0] == '\\'))
+        {
             relative = raw.substr(1);
         }
         return (audioRoot / relative).string();
     }
 
-
-    bool loadTextureFromUnicodePath(sf::Texture& texture, const std::string& utf8Path) {
+    bool loadTextureFromUnicodePath(sf::Texture &texture, const std::string &utf8Path)
+    {
 #ifdef _WIN32
-            std::filesystem::path fsPath(utf8Path);
-            std::wstring widePath = fsPath.wstring();
-            
-            FILE* file = _wfopen(widePath.c_str(), L"rb");
-            if (!file) {
-                return false;
-            }
-            
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-            
-            std::vector<unsigned char> buffer(fileSize);
-            size_t bytesRead = fread(buffer.data(), 1, fileSize, file);
-            fclose(file);
-            
-            if (bytesRead != fileSize) {
-                return false;
-            }
-            
-            return texture.loadFromMemory(buffer.data(), buffer.size());
-#else
-            return texture.loadFromFile(utf8Path);
-#endif
+        std::filesystem::path fsPath(utf8Path);
+        std::wstring widePath = fsPath.wstring();
+
+        FILE *file = _wfopen(widePath.c_str(), L"rb");
+        if (!file)
+        {
+            return false;
         }
 
+        fseek(file, 0, SEEK_END);
+        long fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        std::vector<unsigned char> buffer(fileSize);
+        size_t bytesRead = fread(buffer.data(), 1, fileSize, file);
+        fclose(file);
+
+        if (bytesRead != fileSize)
+        {
+            return false;
+        }
+
+        return texture.loadFromMemory(buffer.data(), buffer.size());
+#else
+        return texture.loadFromFile(utf8Path);
+#endif
+    }
+
 public:
-    ResourceManager() {
+    ResourceManager()
+    {
         assetRoot = FindAssetRoot();
         audioRoot = FindAudioRoot();
         std::cout << "ResourceManager asset root: " << assetRoot.string() << std::endl;
@@ -168,13 +180,13 @@ public:
             {TextureType::TicketMonster, {"/车票1.png", "/车票2.png"}},
             {TextureType::TyreMosnter, {"/车轮1.png", "/车轮2.png"}},
 
-            //敌人意图（敌人UI上方）
+            // 敌人意图（敌人UI上方）
             {TextureType::p_attack, {"/敌方攻击意图.png"}},
             {TextureType::p_defend, {"/敌方防御意图.png"}},
             {TextureType::p_buff, {"/挂buff意图.png"}},
             {TextureType::p_debuff, {"/挂debuff意图.png"}},
 
-            //实体身上的buff和debuff效果（血条下方）
+            // 实体身上的buff和debuff效果（血条下方）
             {TextureType::p_easy_to_attack, {"/易伤buff.png"}},
             {TextureType::p_power_up, {"/势不可挡buff.png"}},
             {TextureType::p_thorns, {"/荆棘buff.png"}},
@@ -183,16 +195,27 @@ public:
             {TextureType::p_metallization, {"/金属化buff.png"}},
             {TextureType::p_power_up_player, {"/力量buff.png"}},
 
-            //防御值         
-            {TextureType::p_defend_player, {"/防御值.png"}}
-        };
+            // 防御值
+            {TextureType::p_defend_player, {"/防御值.png"}}};
 
         soundEffectPath = {
-            {SoundEffect::Dialog, "/对话音效.mp3"},
-            {SoundEffect::Tutorial, "/教学音效.mp3"},
-            {SoundEffect::Footstep, "/走路音效.mp3"},
-            {SoundEffect::Back, "/返回键音效.mp3"},
-            {SoundEffect::MenuButton, "/开始界面按钮音效.wav"}
+            {SoundEffect::Dialog, "/对话音效.mp3"},//0
+            {SoundEffect::Tutorial, "/教学音效.mp3"},//1
+            {SoundEffect::Footstep, "/走路音效.mp3"},//2
+            {SoundEffect::Back, "/返回键音效.mp3"},//3
+            {SoundEffect::MenuButton, "/开始界面按钮音效.wav"},//4
+            {SoundEffect::Background, "/背景音乐.wav"},//5
+            {SoundEffect::ObjectError, "/出牌对象错误.wav"},//6
+            {SoundEffect::EnemyAttack, "/敌人攻击.wav"},//7
+            {SoundEffect::BUFFandDEBUFF, "/挂buffdebuff.wav"},//8
+            {SoundEffect::BreakDefend, "/击破盾牌.wav"},//9
+            {SoundEffect::Pickup, "/拾取.wav"},//10
+            {SoundEffect::PlayerAttack, "/玩家攻击.mp3"},//11
+            {SoundEffect::UnbreakDefend, "/未击破盾牌.wav"},//12
+            {SoundEffect::GameVictory, "/游戏胜利.wav"},//13
+            {SoundEffect::GameFailed, "/游戏失败.wav"},//14
+            {SoundEffect::BattleVictory, "/战斗胜利.wav"},//15
+            {SoundEffect::BattleFailed, "/战斗失败.mp3"},//16
         };
 
         loadAllTex();
@@ -200,33 +223,37 @@ public:
         LoadFont();
     }
 
-     bool loadTexture(TextureType type, const std::string& path){
-            sf::Texture texture;
-            bool success = false;
-            
+    bool loadTexture(TextureType type, const std::string &path)
+    {
+        sf::Texture texture;
+        bool success = false;
+
 #ifdef _WIN32
-            success = loadTextureFromUnicodePath(texture, path);
+        success = loadTextureFromUnicodePath(texture, path);
 #else
-            success = texture.loadFromFile(path);
+        success = texture.loadFromFile(path);
 #endif
-            
-            if (!success) {
-                std::cout << "Failed to load texture: " << path << std::endl;
-                return false;
-            }
-            textures[type].push_back(texture);
-            return true;
+
+        if (!success)
+        {
+            std::cout << "Failed to load texture: " << path << std::endl;
+            return false;
         }
+        textures[type].push_back(texture);
+        return true;
+    }
 
-
-    bool loadSound(SoundEffect effect, const std::string& path) {
-        if (effect == SoundEffect::None) {
+    bool loadSound(SoundEffect effect, const std::string &path)
+    {
+        if (effect == SoundEffect::None)
+        {
             return false;
         }
 
         sf::SoundBuffer soundBuffer;
         const std::string resolved = ResolveAudioPath(path);
-        if (!soundBuffer.loadFromFile(resolved)) {
+        if (!soundBuffer.loadFromFile(resolved))
+        {
             std::cout << "Failed to load sound effect: " << resolved << std::endl;
             return false;
         }
@@ -235,12 +262,16 @@ public:
         return true;
     }
 
-    bool loadAllTex() {
+    bool loadAllTex()
+    {
         bool success = true;
-        for (const auto& [type, paths] : texturePath) {
-            for (const auto& path : paths) {
+        for (const auto &[type, paths] : texturePath)
+        {
+            for (const auto &path : paths)
+            {
                 const std::string resolved = ResolveTexturePath(path);
-                if (!loadTexture(type, resolved)) {
+                if (!loadTexture(type, resolved))
+                {
                     success = false;
                 }
             }
@@ -248,51 +279,62 @@ public:
         return success;
     }
 
-    bool LoadDialogAssets() {
+    bool LoadDialogAssets()
+    {
         return getTextureCount(TextureType::DialogBox) > 0;
     }
 
-    bool LoadSettingsAssets() {
+    bool LoadSettingsAssets()
+    {
         return getTextureCount(TextureType::SettingsPanel) > 0 &&
                getTextureCount(TextureType::CloseButton) > 0;
     }
 
-    bool LoadAllAudio() {
+    bool LoadAllAudio()
+    {
         bool success = true;
-        for (const auto& [effect, path] : soundEffectPath) {
-            if (soundEffectBuffers.find(effect) == soundEffectBuffers.end()) {
+        for (const auto &[effect, path] : soundEffectPath)
+        {
+            if (soundEffectBuffers.find(effect) == soundEffectBuffers.end())
+            {
                 success &= loadSound(effect, path);
+               // if(effect == SoundEffect::ObjectError) std::cout << "dsad:" << success<< std::endl;
             }
         }
         return success;
     }
 
-    bool LoadFont(){
+    bool LoadFont()
+    {
         const std::array<std::string, 5> candidates = {
             "C:/Windows/Fonts/msyh.ttc",
             "C:/Windows/Fonts/simhei.ttf",
             "C:/Windows/Fonts/simsun.ttc",
             "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/calibri.ttf"
-        };
+            "C:/Windows/Fonts/calibri.ttf"};
 
-        for (const auto& path : candidates) {
-            if (font.openFromFile(path)) {
+        for (const auto &path : candidates)
+        {
+            if (font.openFromFile(path))
+            {
                 return true;
             }
         }
 
         std::cout << "Failed to load system font. Text UI will be hidden.\n";
         return false;
-} 
+    }
 
-    const sf::Texture& getTexture(TextureType type, size_t index = 0) const {
+    const sf::Texture &getTexture(TextureType type, size_t index = 0) const
+    {
         static sf::Texture emptyTexture;
-        if(type == TextureType::None){
+        if (type == TextureType::None)
+        {
             return emptyTexture;
         }
         auto found = textures.find(type);
-        if (found == textures.end() || index >= found->second.size()) {
+        if (found == textures.end() || index >= found->second.size())
+        {
             std::cerr << "ResourceManager::getTexture missing texture for type "
                       << static_cast<int>(type) << " index " << index << std::endl;
             return emptyTexture;
@@ -300,17 +342,21 @@ public:
         return found->second[index];
     }
 
-    const sf::Texture& GetSettingsPanelTexture() const {
+    const sf::Texture &GetSettingsPanelTexture() const
+    {
         return getTexture(TextureType::SettingsPanel);
     }
 
-    const sf::Texture& GetDialogBoxTexture() const {
+    const sf::Texture &GetDialogBoxTexture() const
+    {
         return getTexture(TextureType::DialogBox);
     }
 
-    const sf::SoundBuffer& getSound(SoundEffect effect) const {
+    const sf::SoundBuffer &getSound(SoundEffect effect) const
+    {
         auto found = soundEffectBuffers.find(effect);
-        if (found == soundEffectBuffers.end()) {
+        if (found == soundEffectBuffers.end())
+        {
             std::cerr << "ResourceManager::getSound missing sound effect for type "
                       << static_cast<int>(effect) << std::endl;
             static sf::SoundBuffer emptySound;
@@ -319,14 +365,26 @@ public:
         return found->second;
     }
 
-    const sf::Font& getFont() const { return font; }
+    const sf::Font &getFont() const { return font; }
 
-    bool HasSound(SoundEffect effect) const {
+    bool HasSound(SoundEffect effect) const
+    {
         return soundEffectBuffers.find(effect) != soundEffectBuffers.end();
     }
 
-    int getTextureCount(TextureType type) const {
+    int getTextureCount(TextureType type) const
+    {
         auto found = textures.find(type);
         return found == textures.end() ? 0 : static_cast<int>(found->second.size());
+    }
+
+    std::string GetSoundPath(SoundEffect effect) const
+    {
+        auto found = soundEffectPath.find(effect);
+        if (found == soundEffectPath.end())
+        {
+            return "";
+        }
+        return ResolveAudioPath(found->second);
     }
 };

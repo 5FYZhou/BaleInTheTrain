@@ -6,6 +6,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "UI/TextPromptManager.h"
+#include "Tools/AudioManager.h"
 
 
 #include <iostream>

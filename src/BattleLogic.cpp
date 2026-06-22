@@ -176,6 +176,7 @@ void BattleLogic::PlayerStatusSettlement()
 
 void BattleLogic::ClickPlayer(int idx)
 {
+    std::cout << "BattleLogic: GlobalaudioMgr address = " << &GlobalaudioMgr << std::endl;
     if (idx < 0 || idx >= static_cast<int>(state.handCards.size()))
         return;
 
@@ -260,6 +261,8 @@ void BattleLogic::ClickPlayer(int idx)
         break;
 
     default:
+        std::cout << "shit" << std::endl;
+        GlobalaudioMgr.PlaySound(SoundEffect::ObjectError);
         break;
     }
 }
@@ -325,6 +328,8 @@ void BattleLogic::ClickEnemy(int idx)
         break;
 
     default:
+        std::cout << "shit+" << std::endl;
+        GlobalaudioMgr.PlaySound(SoundEffect::ObjectError);
         break;
     }
 }

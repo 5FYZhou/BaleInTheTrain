@@ -17,6 +17,9 @@ Game::Game()
     audioMgr.Initialize(rm);
     audioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
     audioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
+    GlobalaudioMgr.Initialize(rm);
+    GlobalaudioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
+    GlobalaudioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
     textHintMgr.Initialize(&audioMgr);
     renderer.Init();
     sceneMgr.SetCurScene(SceneType::Menu);
@@ -30,6 +33,8 @@ Game::Game()
     btLogic.textPrompt = &uiMgr.textPrompt;
 
     player.Init(rm.getTextureCount(TextureType::Player));
+
+    std::cout << "Game: GlobalaudioMgr address = " << &GlobalaudioMgr << std::endl;
 }
 
 Game::~Game()
@@ -65,6 +70,8 @@ void Game::Init()
     sceneMgr.Init();
     uiMgr.rewardAni.hasInit = false;
     textHintMgr.ResetState();
+   
+
 }
 
 void Game::HandleInput(float dt)
@@ -112,7 +119,7 @@ void Game::HandleInput(float dt)
                      (key->scancode == sf::Keyboard::Scancode::Space ||
                       key->scancode == sf::Keyboard::Scancode::Enter))
             {
-                textHintMgr.AdvanceDialog();
+                textHintMgr.AdvanceDialog();              
             }
         }
 
@@ -239,6 +246,7 @@ void Game::HandleEvents(const GameEvent &event)
         sceneMgr.LoadScene(SceneType::Game);
         textHintMgr.StartDialog();
         audioMgr.PlaySound(SoundEffect::MenuButton);
+        audioMgr.PlayMusic(SoundEffect::Background);
         break;
     // 退出游戏
     case EventType::ExitGame:
@@ -439,7 +447,7 @@ void Game::HandleEvents(const GameEvent &event)
         // 胜利
         if (event.val == 0)
         {
-            player.currentHP += player.relic_data;
+            player.currentHP = std::min( player.relic_data+player.currentHP, player.maxHP);
             sceneMgr.LoadGameBeforeBattle([this]
                                           {
                 player.SetFacing(playerFaceBeforeBattle);
