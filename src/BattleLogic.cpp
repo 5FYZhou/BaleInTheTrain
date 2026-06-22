@@ -186,8 +186,8 @@ void BattleLogic::turnsOver()
 
 void BattleLogic::PlayerStatusSettlement()
 {
+    if(state.temporaryStrength > 0)      state.buff_debuff_vec.Add({-2, BuffDebuffType::power_up});
     state.temporaryStrength = 0;
-    state.buff_debuff_vec.Add({-2, BuffDebuffType::power_up});
     if (!state.barricade)
         state.defend_num = 0;
 
