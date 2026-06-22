@@ -348,8 +348,8 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
-                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+                auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
             }
         }
         break;
@@ -367,8 +367,8 @@ void Game::HandleEvents(const GameEvent &event)
                 // 重新绘制
                 panel->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
                 panel->SetHasSelected(false);
-                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+                auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
             }
         }
         break;
@@ -418,8 +418,8 @@ void Game::HandleEvents(const GameEvent &event)
             // 打开 初始化buff
             uiMgr.Open(PanelType::Buff);
             uiMgr.Get<BuffPanel>()->SetContext(player.feet, enemy->position, enemy->bound, enemy->HPDrawOffset);
-            auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-            uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+            auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+            uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
         });
         std::cout << "Event:beginBattle" << std::endl;
     }
@@ -437,8 +437,8 @@ void Game::HandleEvents(const GameEvent &event)
         btLogic.ShowTurnCounts();
         //std::cout << "uiMgr.Getqian" << std::endl;
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
-                auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-                uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+        auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+        uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
         //std::cout << "uiMgr.Gethou" << std::endl;
     }
         break;
@@ -452,8 +452,8 @@ void Game::HandleEvents(const GameEvent &event)
         uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints);
         btLogic.EnemyTurn();
         
-        auto [intent, num, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-        uiMgr.Get<BuffPanel>()->SetBuff(intent, num, eBuff, pBuff, def);
+        auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+        uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
     }
         break;
     // 结束对局

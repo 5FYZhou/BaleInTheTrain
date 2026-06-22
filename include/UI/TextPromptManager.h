@@ -184,9 +184,7 @@ public:
 
         float spacing = cfg.size * 1.2f;
 
-        PushExistingPrompts(
-            style,
-            spacing);
+        PushExistingPrompts(style, spacing);
 
         //----------------------------------
         // 创建新提示

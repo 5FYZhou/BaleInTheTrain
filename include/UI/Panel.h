@@ -322,6 +322,7 @@ private:
     // ===== 数据 =====
     PlanType enemyIntent = PlanType::None;
     int enemyIntentNum = 0;
+    int enemyDefend = 0;
 
     std::vector<BuffIcon> enemyBuffs;
     std::vector<BuffIcon> playerBuffs;
@@ -345,17 +346,10 @@ private:
     const BuffIcon* hoveredBuff = nullptr;
 
 private:
-    void DrawIcon(sf::RenderWindow& window,
-                  TextureType tex,
-                  sf::Vector2f pos,
-                  sf::Vector2f size);
+    void DrawIcon(sf::RenderWindow& window, TextureType tex, sf::Vector2f pos, sf::Vector2f size);
 
-    void DrawIconWithNum(sf::RenderWindow& window,
-                         TextureType tex,
-                         int num,
-                         sf::Vector2f pos,
-                         sf::Vector2f size,
-                         int offset);
+    void DrawIconWithNum(sf::RenderWindow& window, TextureType tex, int num, sf::Vector2f pos,
+                         sf::Vector2f size, int offset, int offsetY = 0, int fontsize = 30);
     void DrawTooltip(sf::RenderWindow& window);
 
 public:
@@ -386,7 +380,7 @@ public:
 
     void SetBuff(
         PlanType enemyIntent,
-        int enemyIntentNum,
+        int enemyIntentNum, int enemyDefendNum,
         const std::vector<std::pair<BuffDebuffType,int>>& enemyBuff,
         const std::vector<std::pair<BuffDebuffType,int>>& playerBuff,
         int playerDefendNum = 0);

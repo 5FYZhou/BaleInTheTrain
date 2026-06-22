@@ -866,13 +866,14 @@ void CardsInHandPanel::Draw(sf::RenderWindow &window)
 
 #pragma region buff显示
 void BuffPanel::SetBuff(
-    PlanType intent, int intentNum,
+    PlanType intent, int intentNum, int enemyDefendNum,
     const std::vector<std::pair<BuffDebuffType, int>> &enemyBuff,
     const std::vector<std::pair<BuffDebuffType, int>> &playerBuff,
     int playerDefendNum)
 {
     enemyIntent = intent;
     enemyIntentNum = intentNum;
+    enemyDefend = enemyDefendNum;
 
     playerDefend = playerDefendNum;
 
@@ -885,10 +886,9 @@ void BuffPanel::SetBuff(
         for (auto &b : src)
         {
             BuffIcon icon;
-            icon.value = b.second;
-
-            icon.tex = buffTexMap.at(b.first); // 你原来的映射
             icon.type = b.first;
+            icon.value = b.second;
+            icon.tex = buffTexMap.at(b.first);
             dst.push_back(icon);
         }
     };
@@ -926,30 +926,30 @@ void BuffPanel::DrawIcon(sf::RenderWindow &window, TextureType tex, sf::Vector2f
 {
     sf::Sprite sp(rm->getTexture(tex));
     CenterOrigin(sp);
-    sp.setPosition(pos);
     FitSprite(sp, scope);
+    sp.setPosition(pos);
     if (tex == TextureType::p_power_up_player)
-        sp.setRotation(sf::radians(45));
+        sp.setRotation(sf::degrees(45));
 
     window.draw(sp);
 }
 
 void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int num, sf::Vector2f pos,
-                                sf::Vector2f size, int offset)
+                                sf::Vector2f size, int offsetX, int offsetY, int fontsize)
 {
     DrawIcon(window, tex, pos, size);
 
     sf::Text text(*font);
     text.setString(std::to_string(num));
 
-    text.setCharacterSize(30);
+    text.setCharacterSize(fontsize);
     text.setFillColor(sf::Color::White);
 
     auto b = text.getLocalBounds();
     text.setOrigin({b.position.x + b.size.x / 2.f,
                     b.position.y + b.size.y / 2.f});
 
-    text.setPosition({pos.x + offset, pos.y});
+    text.setPosition({pos.x + offsetX, pos.y + offsetY});
 
     window.draw(text);
 }
@@ -1020,21 +1020,21 @@ void BuffPanel::Draw(sf::RenderWindow &window)
     intentPos.x += 70;
     intentPos.y -= 30;
 
-    DrawIconWithNum(
-        window,
-        planTexMap.at(enemyIntent),
-        enemyIntentNum,
-        intentPos,
-        {50, 50},
-        40);
-
-    // 2. 敌人 buff
-    int col = 0;
+    DrawIconWithNum(window, planTexMap.at(enemyIntent),
+        enemyIntentNum, intentPos, {50, 50}, 40);
 
     sf::Vector2f enemyBuffPos = enemyBound.position;
     enemyBuffPos.x += 10;
     enemyBuffPos.y = enemyPos.y + enemyBound.size.y + enemyHPDrawOffset + 40;
 
+    // 敌人防御
+    if(enemyDefend > 0){
+        DrawIconWithNum(window, TextureType::p_defend_player, enemyDefend,
+            {enemyBuffPos.x - 20, enemyBuffPos.y - 70}, {50, 50}, 40);
+    }
+    int col = 0;
+
+    // 2. 敌人 buff
     for (auto &b : enemyBuffs)
     {
         sf::Vector2f drawPos{
@@ -1047,7 +1047,7 @@ void BuffPanel::Draw(sf::RenderWindow &window)
             {drawPos.x - 20, drawPos.y - 20},
             {40, 40}};
 
-        DrawIcon(window, b.tex, drawPos, {40, 40});
+        DrawIconWithNum(window, b.tex, b.value, drawPos, {40, 40}, 15, 10, 28);
         col++;
     }
 
@@ -1081,7 +1081,7 @@ void BuffPanel::Draw(sf::RenderWindow &window)
             {drawPos.x - 20, drawPos.y - 20},
             {40, 40}};
 
-        DrawIcon(window, b.tex, drawPos, {40, 40});
+        DrawIconWithNum(window, b.tex, b.value, drawPos, {40, 40}, 15, 10, 28);
 
         col++;
     }

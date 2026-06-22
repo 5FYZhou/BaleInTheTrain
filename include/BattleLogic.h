@@ -106,13 +106,14 @@ public:
     std::vector<PileType> getdisCardPile();
     std::vector<PileType> getdealCardsPile();
 
-    // 敌人意图，敌人意图数字，敌人buff, 玩家buff, 玩家防御值
-    std::tuple<PlanType, int, std::vector<std::pair<BuffDebuffType, int>>, std::vector<std::pair<BuffDebuffType, int>>, int>
+    // 敌人意图，敌人意图数字，敌人防御值，敌人buff, 玩家buff, 玩家防御值
+    std::tuple<PlanType, int, int, std::vector<std::pair<BuffDebuffType, int>>, std::vector<std::pair<BuffDebuffType, int>>, int>
     GetBuffInfo()
     {
         // 1. 敌人意图
         PlanType intent = PlanType::None;
         int intentNum = 0;
+        int eDefend = 0;
 
         std::vector<std::pair<BuffDebuffType, int>> enemyBuff;
         std::vector<std::pair<BuffDebuffType, int>> playerBuff;
@@ -126,6 +127,7 @@ public:
                 intent = enemy->allPlans[idx].plantype;
                 intentNum = enemy->allPlans[idx].data;
             }
+            eDefend = enemy->defend_num;
 
             // 敌人 buff
             enemyBuff = enemy->buff_debuff_vec.getBuffs();
@@ -137,6 +139,6 @@ public:
         // 3. 防御值
         int defend = state.defend_num;
 
-        return std::make_tuple(intent, intentNum, enemyBuff, playerBuff, defend);
+        return std::make_tuple(intent, intentNum, eDefend, enemyBuff, playerBuff, defend);
     }
 };

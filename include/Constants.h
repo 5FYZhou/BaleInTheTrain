@@ -222,7 +222,7 @@ inline const std::unordered_map<BuffDebuffType, TextureType> buffTexMap = {
 // Buff&Debuff映射悬浮显示信息
 inline const std::unordered_map<BuffDebuffType, std::string> buffInfoMap = {
     { BuffDebuffType::None, "TextureType::None" },
-    { BuffDebuffType::easy_to_attack, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" },
+    { BuffDebuffType::easy_to_attack, "AAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" },
     { BuffDebuffType::power_up, "TextureType::p_power_up_player" },
     { BuffDebuffType::rampart, "TextureType::p_rampart" },
     { BuffDebuffType::vulnerable, "TextureType::p_vulnerable" },

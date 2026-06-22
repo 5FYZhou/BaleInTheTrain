@@ -54,7 +54,7 @@ inline const std::vector<std::pair<EnemyType, sf::Vector2f>> enemyInScene = {
     { EnemyType::Train_attendant, { 1500, 440 } },
     { EnemyType::LightMonster, { 1500, 430 } },
     { EnemyType::TicketMonster, { 1500, 510 } },
-    { EnemyType::TyreMosnter, { 1500, 640 } }
+    { EnemyType::TyreMosnter, { 1500, 620 } }
 };
 
 struct SceneInteractable {
