@@ -39,11 +39,11 @@ inline const std::unordered_map<PromptStyle, StyleConfig> styleMap = {
       sf::Color::White}},
 
     {PromptStyle::Top,
-     {sf::Vector2f(0.f, 280.f),
-      36,
-      0.8f,
-      60.f,
-      0.6f,
+     {sf::Vector2f(0.f, 100.f),
+      80,
+      2.f,
+      20.f,
+      1.f,
       sf::Color(255, 220, 120)}},
 
     {PromptStyle::Bottom,
@@ -61,17 +61,38 @@ private:
     {
         std::string text;
 
-        sf::Vector2f position;
+        sf::Vector2f basePosition;
+        sf::Vector2f animOffset;
+
         float alpha = 255.f;
 
         unsigned size = 40;
+
+        PromptStyle style = PromptStyle::Center;
 
         std::string animName;
 
         bool alive = true;
 
-        Prompt(const std::string &t, unsigned s, sf::Vector2f pos)
-            : text(t), size(s), position(pos) {}
+        Prompt(
+            const std::string &t,
+            unsigned s,
+            sf::Vector2f pos,
+            PromptStyle st = PromptStyle::Center)
+            : text(t),
+              size(s),
+              basePosition(pos),
+              animOffset(0.f, 0.f),
+              style(st)
+        {
+        }
+
+        sf::Vector2f GetPosition() const
+        {
+            return {
+                basePosition.x + animOffset.x,
+                basePosition.y + animOffset.y};
+        }
     };
 
     AnimationManager *animationManager = nullptr;
@@ -79,6 +100,22 @@ private:
     float screenWidth = 1920.f;
 
     int nextId = 0;
+
+    void PushExistingPrompts(
+        PromptStyle style,
+        float offset)
+    {
+        for (auto &p : prompts)
+        {
+            if (!p->alive)
+                continue;
+
+            if (p->style != style)
+                continue;
+
+            p->basePosition.y -= offset;
+        }
+    }
 
 public:
     std::vector<std::unique_ptr<Prompt>> prompts;
@@ -115,9 +152,11 @@ public:
         // 上移动画
         anim->AddVec2(
             0,
-            p->position,
-            {p->position.x, p->position.y - moveDistance},
-            static_cast<int>(fadeDuration * 1000.f),
+            p->animOffset,
+            {0.f,
+             -moveDistance},
+            static_cast<int>(
+                fadeDuration * 1000.f),
             EaseType::QuadraticInOut);
 
         // 淡出动画
@@ -133,46 +172,87 @@ public:
         prompts.push_back(std::move(p));
     }
 
-    void Show(const std::string &text, PromptStyle style)
+    void Show(
+        const std::string &text,
+        PromptStyle style)
     {
+        std::cout
+            << "Create Prompt "
+            << text
+            << std::endl;
         const auto &cfg = styleMap.at(style);
 
+        //----------------------------------
+        // 把同类型旧提示顶上去
+        //----------------------------------
+
+        float spacing = cfg.size * 1.2f;
+
+        PushExistingPrompts(
+            style,
+            spacing);
+
+        //----------------------------------
+        // 创建新提示
+        //----------------------------------
+
         auto p = std::make_unique<Prompt>(
-            utf8(text),
+            (text),
             cfg.size,
-            sf::Vector2f(screenWidth * 0.5f + cfg.positionOffset.x,
-                         cfg.positionOffset.y));
+            sf::Vector2f(
+                screenWidth * 0.5f +
+                    cfg.positionOffset.x,
+                cfg.positionOffset.y),
+            style);
 
         p->alpha = 255.f;
 
-        p->animName = "TextPrompt_" + std::to_string(nextId++);
+        p->animName =
+            "TextPrompt_" +
+            std::to_string(nextId++);
 
-        auto anim = animationManager->Create(p->animName);
+        auto anim =
+            animationManager->Create(
+                p->animName);
+
         anim->Reset();
 
-        // 使用 style 自带参数（关键）
+        //----------------------------------
+        // 停留
+        //----------------------------------
+
         anim->SetDelay(cfg.stayTime);
+
+        //----------------------------------
+        // 上移
+        //----------------------------------
 
         anim->AddVec2(
             0,
-            p->position,
-            {p->position.x,
-             p->position.y - cfg.moveDistance},
-            static_cast<int>(cfg.fadeDuration * 1000.f),
+            p->animOffset,
+            {0.f,
+             -cfg.moveDistance},
+            static_cast<int>(
+                cfg.fadeDuration * 1000.f),
             EaseType::QuadraticInOut);
+        //----------------------------------
+        // 淡出
+        //----------------------------------
 
         anim->AddFloat(
             1,
             p->alpha,
             0.f,
-            static_cast<int>(cfg.fadeDuration * 1000.f),
+            static_cast<int>(
+                cfg.fadeDuration *
+                1000.f),
             EaseType::Linear);
 
         anim->Start();
 
-        prompts.push_back(std::move(p));
+        prompts.push_back(
+            std::move(p));
     }
-
     // 更新逻辑（只管生命周期）
     void Update(float /*dt*/)
     {
@@ -205,5 +285,44 @@ public:
     size_t Count() const
     {
         return prompts.size();
+    }
+
+    void Clear(PromptStyle style)
+    {
+        prompts.erase(
+            std::remove_if(
+                prompts.begin(),
+                prompts.end(),
+                [&](const auto &p)
+                {
+                    if (p->style != style)
+                        return false;
+
+                    if (auto anim =
+                            animationManager->Get(
+                                p->animName))
+                    {
+                        anim->Reset();
+                    }
+
+                    return true;
+                }),
+            prompts.end());
+    }
+
+    void ClearAll()
+    {
+        for (auto &p : prompts)
+        {
+            std::cout << p->text << std::endl;
+            if (auto anim =
+                    animationManager->Get(
+                        p->animName))
+            {
+                anim->Reset();
+            }
+        }
+
+        prompts.clear();
     }
 };

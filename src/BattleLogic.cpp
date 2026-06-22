@@ -388,7 +388,7 @@ void BattleLogic::EnemyTurn()
     {
         int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
-        ShowEnemyDamage(enemy);
+        ShowEnemyDamage(*enemy);
         if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
         break;
     }
@@ -485,7 +485,7 @@ void BattleLogic::UpdateHP(Enemy* p, int add){
 
 void BattleLogic::ShowTurnCounts(){
     std::string turnsText = "第" + std::to_string(state.TurnCount) + "回合";
-    textPrompt->Show((turnsText), PromptStyle::Center);
+    textPrompt->Show((turnsText), PromptStyle::Top);
 }
 
 void BattleLogic::ShowEnemyDamage(Enemy &enemy){
