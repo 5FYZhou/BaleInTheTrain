@@ -20,6 +20,8 @@ Game::Game()
     GlobalaudioMgr.Initialize(rm);
     GlobalaudioMgr.SetSfxVolume(DEFAULT_SFX_VOLUME);
     GlobalaudioMgr.SetMusicVolume(DEFAULT_MUSIC_VOLUME);
+    //std::cout<<audioMgr.rm<<std::endl;
+    //std::cout<<GlobalaudioMgr.rm<<std::endl;
     textHintMgr.Initialize(&audioMgr);
     renderer.Init();
     sceneMgr.Init();

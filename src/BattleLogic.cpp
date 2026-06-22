@@ -262,6 +262,7 @@ void BattleLogic::ClickPlayer(int idx)
 
     default:
         std::cout << "shit" << std::endl;
+        std::cout<<"BBB"<<GlobalaudioMgr.rm<<std::endl;
         GlobalaudioMgr.PlaySound(SoundEffect::ObjectError);
         break;
     }
@@ -329,6 +330,7 @@ void BattleLogic::ClickEnemy(int idx)
 
     default:
         std::cout << "shit+" << std::endl;
+        std::cout<<"AAA"<<GlobalaudioMgr.rm<<std::endl;
         GlobalaudioMgr.PlaySound(SoundEffect::ObjectError);
         break;
     }

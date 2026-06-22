@@ -307,11 +307,16 @@ class BuffPanel : public Panel
 {
 public:
     struct BuffIcon
-    {
-        TextureType tex;
-        int value = 0;
-        bool hasValue = false;
-    };
+{
+    TextureType tex;
+    BuffDebuffType type;
+
+    int value = 0;
+    bool hasValue = false;
+
+    sf::Vector2f pos;      // 实际绘制位置
+    sf::FloatRect bounds;  // 鼠标检测区域
+};
 
 private:
     // ===== 数据 =====
@@ -335,6 +340,9 @@ private:
 
     // ===== layout =====
     float space = 50.f;
+
+    // 悬浮显示信息
+    const BuffIcon* hoveredBuff = nullptr;
 
 private:
     void DrawIcon(sf::RenderWindow& window,
@@ -381,6 +389,8 @@ public:
         const std::vector<std::pair<BuffDebuffType,int>>& enemyBuff,
         const std::vector<std::pair<BuffDebuffType,int>>& playerBuff,
         int playerDefendNum = 0);
+
+    bool HandleMouseMoved(const sf::Vector2f& pos) override ;
 
     void Draw(sf::RenderWindow& window) override;
 };

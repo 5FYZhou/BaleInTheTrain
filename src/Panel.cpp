@@ -866,8 +866,7 @@ void CardsInHandPanel::Draw(sf::RenderWindow &window)
 
 #pragma region buff显示
 void BuffPanel::SetBuff(
-    PlanType intent,
-    int intentNum,
+    PlanType intent, int intentNum,
     const std::vector<std::pair<BuffDebuffType, int>> &enemyBuff,
     const std::vector<std::pair<BuffDebuffType, int>> &playerBuff,
     int playerDefendNum)
@@ -896,10 +895,33 @@ void BuffPanel::SetBuff(
     convert(enemyBuff, enemyBuffs);
     convert(playerBuff, playerBuffs);
 }
-void BuffPanel::DrawIcon(sf::RenderWindow &window,
-                         TextureType tex,
-                         sf::Vector2f pos,
-                         sf::Vector2f scope)
+
+bool BuffPanel::HandleMouseMoved(const sf::Vector2f& pos)
+{
+    hoveredBuff = nullptr;
+
+    for(auto& buff : enemyBuffs)
+    {
+        if(buff.bounds.contains(pos))
+        {
+            hoveredBuff = &buff;
+            return false;
+        }
+    }
+
+    for(auto& buff : playerBuffs)
+    {
+        if(buff.bounds.contains(pos))
+        {
+            hoveredBuff = &buff;
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void BuffPanel::DrawIcon(sf::RenderWindow &window, TextureType tex, sf::Vector2f pos, sf::Vector2f scope)
 {
     sf::Sprite sp(rm->getTexture(tex));
     CenterOrigin(sp);
@@ -909,12 +931,9 @@ void BuffPanel::DrawIcon(sf::RenderWindow &window,
 
     window.draw(sp);
 }
-void BuffPanel::DrawIconWithNum(sf::RenderWindow &window,
-                                TextureType tex,
-                                int num,
-                                sf::Vector2f pos,
-                                sf::Vector2f size,
-                                int offset)
+
+void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int num, sf::Vector2f pos,
+                                sf::Vector2f size, int offset)
 {
     DrawIcon(window, tex, pos, size);
 
@@ -932,6 +951,7 @@ void BuffPanel::DrawIconWithNum(sf::RenderWindow &window,
 
     window.draw(text);
 }
+
 void BuffPanel::Draw(sf::RenderWindow &window)
 {
     if (!visible)

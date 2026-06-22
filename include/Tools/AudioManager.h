@@ -13,7 +13,6 @@ class AudioManager
 {
 private:
 
-    ResourceManager *rm = nullptr;
 
     std::deque<sf::Sound> activeSounds;
 
@@ -44,6 +43,7 @@ private:
         {SoundEffect::PlayerAttack, 1}};
 
 public:
+    ResourceManager *rm = nullptr;
     
     // 播放背景音乐（使用 SoundEffect 枚举）
     inline bool PlayMusic(SoundEffect effect, float volumeScale = 1.0f){
@@ -163,6 +163,8 @@ public:
 
     inline void PlaySound(SoundEffect effect, float volumeScale = 1.0f)
     {
+        //std::cout << "this = " << this << std::endl;
+        //std::cout << "rm   = " << rm << std::endl;
         if(rm == nullptr)  std::cout <<"!rm" << std::endl;
         //std::cout << "HasSound: " << rm->HasSound(effect) << std::endl;
         std::cout << "1PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
@@ -234,4 +236,4 @@ private:
     }
 };
 
-inline static AudioManager GlobalaudioMgr;
+extern AudioManager GlobalaudioMgr;
