@@ -164,7 +164,7 @@ public:
     inline void PlaySound(SoundEffect effect, float volumeScale = 1.0f)
     {
         if(rm == nullptr)  std::cout <<"!rm" << std::endl;
-        std::cout << "HasSound: " << rm->HasSound(effect) << std::endl;
+        //std::cout << "HasSound: " << rm->HasSound(effect) << std::endl;
         std::cout << "1PlaySound called, effect: " << static_cast<int>(effect) << std::endl;
         if (effect == SoundEffect::None || !rm || !rm->HasSound(effect))
             return;
