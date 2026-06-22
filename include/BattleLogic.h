@@ -81,6 +81,13 @@ public:
     TextPromptManager* textPrompt;
     Player* player;
     Enemy* enemy;
+    
+    bool isWaitingForPlayerTurn = false;
+    sf::Clock playerTurnDelayClock;
+    const float PLAYER_TURN_DELAY_MS = 500.0f; // 1000ms = 1秒
+    void Update(); //与时间有关的更新
+    bool IsWaitingForPlayerTurn() const { return isWaitingForPlayerTurn; }
+
 
     void StartBattle(Enemy* e, Player* p);
     bool BattleFinished();

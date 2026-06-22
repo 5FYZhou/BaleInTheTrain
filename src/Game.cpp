@@ -434,6 +434,7 @@ void Game::HandleEvents(const GameEvent &event)
         // 胜利
         if (event.val == 0)
         {
+            player.currentHP += player.relic_data;
             sceneMgr.LoadGameBeforeBattle([this]
                                           {
                 uiMgr.CloseAll();
@@ -482,6 +483,8 @@ void Game::HandleEvents(const GameEvent &event)
     default:
         break;
     }
+     // 延迟检查
+    btLogic.Update(); 
 }
 
 void Game::Draw()

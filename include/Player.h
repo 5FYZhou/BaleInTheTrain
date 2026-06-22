@@ -28,6 +28,9 @@ public:
 
     sf::FloatRect bound;//{ 195.f, 330.f };
 
+    //遗物
+    int relic_data = 6;
+
 public:
     Player();
     ~Player();

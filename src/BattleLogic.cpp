@@ -378,8 +378,9 @@ void BattleLogic::EnemyTurn()
     enemy->defend_num = 0;
     const int planIndex = std::max(0, state.TurnCount - 1) % static_cast<int>(enemy->allPlans.size());
     //std::cout << "planIndex:" << planIndex << std::endl;
-    //std::cout << "diren:" << static_cast<int>(enemy.allPlans[planIndex].plantype) << std::endl;
+    
     const Plan &plan = enemy->allPlans[planIndex];
+    //std::cout << "diren:" << static_cast<int>(plan.plantype) << std::endl;
 
     switch (plan.plantype)
     {
@@ -387,7 +388,7 @@ void BattleLogic::EnemyTurn()
     {
         int damage = std::max(0, plan.data);
         DealDamage(damage,enemy);
-        ShowEnemyDamage(enemy);
+        ShowEnemyDamage(*enemy);
         if(state.thornsdata > 0) sufferThorns(enemy, state.thornsdata);
         break;
     }
@@ -415,8 +416,12 @@ void BattleLogic::EnemyTurn()
     enemy->buff_debuff_vec.update();
     
     if(state.battleEnded) return;
-    state.isPlayerTurn = true;
-    events.push_back({EventType::PlayerTurn});
+    
+    // 不立即设置 isPlayerTurn，而是启动延迟
+    state.isPlayerTurn = false;
+    isWaitingForPlayerTurn = true;
+    playerTurnDelayClock.restart();
+    std::cout << "Enemy turn finished, waiting 1s before PlayerTurn" << std::endl;
 }
 
 int getRandomInt(int min, int max)
@@ -484,10 +489,21 @@ void BattleLogic::UpdateHP(Enemy* p, int add){
 
 void BattleLogic::ShowTurnCounts(){
     std::string turnsText = "第" + std::to_string(state.TurnCount) + "回合";
-    textPrompt->Show((turnsText), PromptStyle::Center);
+    textPrompt->Show((turnsText), PromptStyle::Top);
 }
 
 void BattleLogic::ShowEnemyDamage(Enemy &enemy){
     std::string Enemy_damage = enemy.name + "对玩家造成了" + std::to_string(state.final_damage) +"点伤害!";
     textPrompt->Show((Enemy_damage), PromptStyle::Center);
+}
+
+void BattleLogic::Update()
+{
+    if (isWaitingForPlayerTurn && playerTurnDelayClock.getElapsedTime().asMilliseconds() >= PLAYER_TURN_DELAY_MS)
+    {
+        isWaitingForPlayerTurn = false;
+        state.isPlayerTurn = true;
+        events.push_back({EventType::PlayerTurn});
+        std::cout << "PlayerTurn event pushed after delay" << std::endl;
+    }
 }
