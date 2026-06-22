@@ -176,6 +176,8 @@ void Game::Logic(float dt)
     textHintMgr.Update(dt);
     audioMgr.Update();
     uiMgr.Update(dt);
+     // 延迟检查
+    btLogic.Update(); 
     if (!sceneMgr.IsFading() && !textHintMgr.IsActive() && !uiMgr.BlockInput())
     {
         if (sceneMgr.GetCurSceneType() == SceneType::Game)
@@ -478,8 +480,7 @@ void Game::HandleEvents(const GameEvent &event)
     default:
         break;
     }
-     // 延迟检查
-    btLogic.Update(); 
+    
 }
 
 void Game::Draw()
