@@ -238,11 +238,16 @@ private:
     int selectedIndex = -1;
 
     int points = 0;
-
     std::optional<sf::Sprite> pointsBG;
     std::optional<sf::Text> pointText;
+
     const sf::Font *font = nullptr;
     bool hasFont = false;
+
+    bool draggingCard = false;
+    sf::Vector2f currentMousePos;
+    sf::FloatRect playerCollider;
+    sf::FloatRect enemyCollider;
 
     float Smooth(float t) { return t * t * (3.f - 2.f * t); }
     sf::Vector2f Lerp(sf::Vector2f a, sf::Vector2f b, float t) { return a + (b - a) * t; }
@@ -269,6 +274,27 @@ private:
         rot = offset * (maxAngle / (n > 1 ? (n - 1) / 2.f : 1.f));
     }
 
+    void DrawArrow(
+    sf::RenderWindow& window,
+    const sf::Vector2f& start,
+    const sf::Vector2f& end);
+    bool ShouldShowArrow() const
+{
+    if (!draggingCard)
+        return false;
+
+    if (hoveredIndex != -1)
+        return false; // ⭐关键：在卡牌上不显示箭头
+
+    if (selectedIndex < 0 || selectedIndex >= cards.size())
+        return false;
+
+    return true;
+}
+
+    bool CanPlayer(PileType card){
+
+    }
 public:
     CardsInHandPanel(std::vector<GameEvent> &e) : Panel(e)
     {
@@ -289,6 +315,7 @@ public:
             return;
         }
         hasSelectedCard = f;
+        draggingCard = f;
         selectedIndex = -1;
         hoveredIndex = -1;
     }
@@ -307,16 +334,16 @@ class BuffPanel : public Panel
 {
 public:
     struct BuffIcon
-{
-    TextureType tex;
-    BuffDebuffType type;
+    {
+        TextureType tex;
+        BuffDebuffType type;
 
-    int value = 0;
-    bool hasValue = false;
+        int value = 0;
+        bool hasValue = false;
 
-    sf::Vector2f pos;      // 实际绘制位置
-    sf::FloatRect bounds;  // 鼠标检测区域
-};
+        sf::Vector2f pos;     // 实际绘制位置
+        sf::FloatRect bounds; // 鼠标检测区域
+    };
 
 private:
     // ===== 数据 =====
@@ -336,61 +363,78 @@ private:
     float enemyHPDrawOffset = 0.f;
 
     // ===== 资源 =====
-    ResourceManager* rm = nullptr;
-    const sf::Font* font = nullptr;
+    ResourceManager *rm = nullptr;
+    const sf::Font *font = nullptr;
 
     // ===== layout =====
     float space = 50.f;
 
     // 悬浮显示信息
-    const BuffIcon* hoveredBuff = nullptr;
+    const BuffIcon *hoveredBuff = nullptr;
+
+    // 魔方
+    std::optional<sf::Sprite> defaultBuff;
+    std::string defaultBuffInfo = "战斗结束后，玩家回六滴血";
+    bool hoveredDefaultBuff = false;
+
+    // 新增
+    bool hoveredIntent = false;
+    sf::FloatRect intentBounds;
 
 private:
-    void DrawIcon(sf::RenderWindow& window, TextureType tex, sf::Vector2f pos, sf::Vector2f size);
+    void DrawIcon(sf::RenderWindow &window, TextureType tex, sf::Vector2f pos, sf::Vector2f size);
 
-    void DrawIconWithNum(sf::RenderWindow& window, TextureType tex, int num, sf::Vector2f pos,
+    void DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int num, sf::Vector2f pos,
                          sf::Vector2f size, int offset, int offsetY = 0, int fontsize = 30);
-    void DrawTooltip(sf::RenderWindow& window);
+    void DrawTooltip(sf::RenderWindow &window);
 
 public:
-    BuffPanel(std::vector<GameEvent>& e)
+    BuffPanel(std::vector<GameEvent> &e)
         : Panel(e)
     {
         type = PanelType::Buff;
         layer = PanelLayer::Bottom;
     }
 
-    void Init(ResourceManager& res, const sf::Font* f)
+    void Init(ResourceManager &res, const sf::Font *f)
     {
         rm = &res;
         font = f;
+        defaultBuff.emplace(rm->getTexture(TextureType::Cube));
+        defaultBuff->setScale({0.72f, 0.72f});
+        defaultBuff->setPosition({30.f, 30.f});
     }
 
     void SetContext(
-        const sf::Vector2f& playerPos,
-        const sf::Vector2f& enemyPos,
-        const sf::FloatRect& enemyBound,
+        const sf::Vector2f &playerPos,
+        const sf::Vector2f &enemyPos,
+        const sf::FloatRect &enemyBound,
         float enemyHPOffset)
     {
         this->playerPos = playerPos;
         this->enemyPos = enemyPos;
         this->enemyBound = enemyBound;
         this->enemyHPDrawOffset = enemyHPOffset;
+        sf::Vector2f intentPos = enemyPos;
+        intentPos.x += 70.f;
+        intentPos.y -= 30.f;
+        intentBounds = {
+            {intentPos.x - 25.f, intentPos.y - 25.f},
+            {50.f, 50.f}};
     }
 
     void SetBuff(
         PlanType enemyIntent,
         int enemyIntentNum, int enemyDefendNum,
-        const std::vector<std::pair<BuffDebuffType,int>>& enemyBuff,
-        const std::vector<std::pair<BuffDebuffType,int>>& playerBuff,
+        const std::vector<std::pair<BuffDebuffType, int>> &enemyBuff,
+        const std::vector<std::pair<BuffDebuffType, int>> &playerBuff,
         int playerDefendNum = 0);
 
-    bool HandleMouseMoved(const sf::Vector2f& pos) override ;
+    bool HandleMouseMoved(const sf::Vector2f &pos) override;
 
-    void Draw(sf::RenderWindow& window) override;
+    void Draw(sf::RenderWindow &window) override;
 };
 #pragma endregion
-
 
 class PanelManager
 {
@@ -465,7 +509,8 @@ public:
 
         Panel *panel = it->second;
 
-        if (!panel->IsVisible()) return;
+        if (!panel->IsVisible())
+            return;
 
         panel->Close();
 

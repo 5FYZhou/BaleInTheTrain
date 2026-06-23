@@ -11,7 +11,6 @@
 #include "Tools/TimeSystem.h"
 #include "BattleLogic.h"
 #include "UI/UIManager.h"
-#include "GameContext.h"
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <unordered_map>

@@ -12,8 +12,8 @@ public:
     float speed = 430.f;        // Movement speed in pixels per second
     float nextX;
 
-    int currentHP = 100;
-    int maxHP = 100;
+    int currentHP = 50;
+    int maxHP = 50;
 
     // Animation
     float walkTimer = 0.f;      // Timer for walking animation

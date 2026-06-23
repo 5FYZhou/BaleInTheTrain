@@ -40,7 +40,7 @@ void Player::ResetExceptCard(){
     SetFeet({PlayerStartX, PlayerGroundY});
     SetFacing(1);
     ResetToStand();
-    currentHP = 100;
+    currentHP = maxHP;
 }
 
 void Player::InitCards()

@@ -754,7 +754,9 @@ bool CardsInHandPanel::HandleMousePressed(const sf::Vector2f &mousePos)
 
         selectedIndex = hoveredIndex;
         selectedCard = cards[selectedIndex].cardType;
+
         hasSelectedCard = true;
+        draggingCard = true; // 开始拖拽
         return true;
     }
     return false;
@@ -766,6 +768,7 @@ bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f &mousePos)
         return false;
 
     hoveredIndex = -1;
+    currentMousePos = mousePos;
 
     for (int i = (int)cards.size() - 1; i >= 0; --i)
     {
@@ -806,6 +809,130 @@ bool CardsInHandPanel::HandleMouseMoved(const sf::Vector2f &mousePos)
     }
 
     return false;
+}
+
+void DrawSegment(
+    sf::RenderWindow &window,
+    sf::Vector2f a,
+    sf::Vector2f b,
+    float thickness,
+    sf::Color color)
+{
+    sf::Vector2f dir = b - a;
+
+    float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+    if (len < 0.001f)
+        return;
+
+    dir /= len;
+
+    sf::RectangleShape rect;
+    rect.setSize({len, thickness});
+    rect.setOrigin({0.f, thickness * 0.5f});
+    rect.setPosition(a);
+
+    rect.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
+
+    rect.setFillColor(color);
+
+    window.draw(rect);
+}
+
+void CardsInHandPanel::DrawArrow(
+    sf::RenderWindow &window,
+    const sf::Vector2f &start,
+    const sf::Vector2f &end)
+{
+    sf::Vector2f delta = end - start;
+
+    float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    if (dist < 10.f)
+        return;
+
+    // =========================
+    // 贝塞尔控制点
+    // =========================
+    sf::Vector2f p0 = start;
+    sf::Vector2f p2 = end;
+
+    sf::Vector2f p1(
+        (start.x + end.x) * 0.5f,
+        std::min(start.y, end.y) - 180.f);
+
+    // =========================
+    // 采样曲线点
+    // =========================
+    constexpr int SEGMENTS = 30;
+
+    std::vector<sf::Vector2f> pts;
+    pts.reserve(SEGMENTS + 1);
+
+    for (int i = 0; i <= SEGMENTS; i++)
+    {
+        float t = (float)i / SEGMENTS;
+        float u = 1.f - t;
+
+        sf::Vector2f p(
+            u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+            u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y);
+
+        pts.push_back(p);
+    }
+
+    // =========================
+    // 粗线绘制（核心）
+    // =========================
+    constexpr float thickness = 8.f;
+
+    for (size_t i = 1; i < pts.size(); i++)
+    {
+        float t = (float)i / pts.size();
+
+        sf::Color c(
+            255,
+            220,
+            50,
+            static_cast<std::uint8_t>(80 + 175 * t));
+
+        DrawSegment(
+            window,
+            pts[i - 1],
+            pts[i],
+            thickness,
+            c);
+    }
+
+    // =========================
+    // 箭头方向
+    // =========================
+    sf::Vector2f dir = pts.back() - pts[pts.size() - 2];
+
+    float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+    if (len < 0.001f)
+        return;
+
+    dir /= len;
+
+    sf::Vector2f normal(-dir.y, dir.x);
+
+    // =========================
+    // 箭头头（加粗版本）
+    // =========================
+    constexpr float arrowLength = 30.f;
+    constexpr float arrowWidth = 16.f;
+
+    sf::ConvexShape arrow;
+    arrow.setPointCount(3);
+
+    arrow.setPoint(0, p2);
+    arrow.setPoint(1,
+                   p2 - dir * arrowLength + normal * arrowWidth);
+    arrow.setPoint(2,
+                   p2 - dir * arrowLength - normal * arrowWidth);
+
+    arrow.setFillColor(sf::Color(255, 220, 50));
+
+    window.draw(arrow);
 }
 
 void CardsInHandPanel::Draw(sf::RenderWindow &window)
@@ -861,6 +988,16 @@ void CardsInHandPanel::Draw(sf::RenderWindow &window)
         sprite.setScale({scale, scale});
         window.draw(sprite);
     }
+
+    if (ShouldShowArrow())
+    {
+        sf::Vector2f start =
+            cards[selectedIndex].basePosition;
+
+        start.y -= 120.f;
+
+        DrawArrow(window, start, currentMousePos);
+    }
 }
 #pragma endregion
 
@@ -900,6 +1037,25 @@ void BuffPanel::SetBuff(
 bool BuffPanel::HandleMouseMoved(const sf::Vector2f &pos)
 {
     hoveredBuff = nullptr;
+    hoveredDefaultBuff = false;
+    hoveredIntent = false;
+
+    // defaultBuff
+    if (defaultBuff)
+    {
+        if (defaultBuff->getGlobalBounds().contains(pos))
+        {
+            hoveredDefaultBuff = true;
+            return false;
+        }
+    }
+
+    // 敌人意图
+    if (intentBounds.contains(pos))
+    {
+        hoveredIntent = true;
+        return false;
+    }
 
     for (auto &buff : enemyBuffs)
     {
@@ -954,17 +1110,51 @@ void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int n
     window.draw(text);
 }
 
-void BuffPanel::DrawTooltip(sf::RenderWindow& window)
+void BuffPanel::DrawTooltip(sf::RenderWindow &window)
 {
-    if (!hoveredBuff)
-        return;
+    std::string info;
+    sf::Vector2f anchor;
+    bool showBelow = false;
 
-    auto it = buffInfoMap.find(hoveredBuff->type);
-    if (it == buffInfoMap.end())
+    if (hoveredDefaultBuff)
+    {
+        info = defaultBuffInfo;
+        anchor = defaultBuff->getPosition();
+        showBelow = true;
+    }
+    else if (hoveredIntent)
+    {
+        auto it = planInfoMap.find(enemyIntent);
+
+        if (it == planInfoMap.end())
+            return;
+
+        info = it->second;
+
+        anchor = {
+            intentBounds.position.x +
+                intentBounds.size.x * 0.5f,
+
+            intentBounds.position.y +
+                intentBounds.size.y * 0.5f};
+    }
+    else if (hoveredBuff)
+    {
+        auto it = buffInfoMap.find(hoveredBuff->type);
+
+        if (it == buffInfoMap.end())
+            return;
+
+        info = it->second;
+        anchor = hoveredBuff->pos;
+    }
+    else
+    {
         return;
+    }
 
     sf::Text text(*font);
-    text.setString(utf8(it->second));
+    text.setString(utf8(info));
     text.setCharacterSize(22);
     text.setFillColor(sf::Color::Black);
 
@@ -972,45 +1162,49 @@ void BuffPanel::DrawTooltip(sf::RenderWindow& window)
 
     constexpr float padding = 10.f;
 
-    float width  = tb.size.x + padding * 2.f;
-    float height = tb.size.y + padding * 2.f;
+    float width =
+        tb.size.x + padding * 2.f;
 
-    sf::Vector2f pos = {
-        hoveredBuff->pos.x,
-        hoveredBuff->pos.y - 50.f
-    };
+    float height =
+        tb.size.y + padding * 2.f;
 
-    const float screenW = 1920.f;
-    const float screenH = 1080.f;
+    sf::Vector2f pos{anchor.x,
+                     showBelow ? anchor.y + 120.f : anchor.y - 60.f};
 
-    // ===== 屏幕限制 =====
+    constexpr float screenW = 1920.f;
+    constexpr float screenH = 1080.f;
+
+    // 左边界
     if (pos.x - width * 0.5f < 0.f)
         pos.x = width * 0.5f;
+
+    // 右边界
     if (pos.x + width * 0.5f > screenW)
         pos.x = screenW - width * 0.5f;
 
-    if (pos.y - height < 0.f)
-        pos.y = height;
+    // 上边界
+    if (pos.y - height * 0.5f < 0.f)
+        pos.y = height * 0.5f;
 
-    if (pos.y > screenH)
-        pos.y = screenH;
+    // 下边界
+    if (pos.y + height * 0.5f > screenH)
+        pos.y = screenH - height * 0.5f;
 
-    // ======================
-    // 背景（中心对齐）
-    // ======================
     sf::RectangleShape bg;
-    bg.setSize({width, height});
-    bg.setFillColor(sf::Color(255,255,255,255));
-    bg.setOrigin({width * 0.5f, height * 0.5f});
+
+    bg.setSize({width,
+                height});
+
+    bg.setFillColor(
+        sf::Color(255, 255, 255, 240));
+
+    bg.setOrigin({width * 0.5f,
+                  height * 0.5f});
+
     bg.setPosition(pos);
 
-    // ======================
-    // 文字（关键修复）
-    // ======================
-    text.setOrigin({
-        tb.size.x * 0.5f,
-        tb.size.y * 0.5f
-    });
+    text.setOrigin({tb.position.x + tb.size.x * 0.5f,
+                    tb.position.y + tb.size.y * 0.5f});
 
     text.setPosition(pos);
 
@@ -1023,22 +1217,33 @@ void BuffPanel::Draw(sf::RenderWindow &window)
     if (!visible)
         return;
 
+    if (defaultBuff)
+    {
+        defaultBuff->setColor(
+            hoveredDefaultBuff
+                ? sf::Color(255, 255, 255, 180)
+                : sf::Color::White);
+
+        window.draw(*defaultBuff);
+    }
+
     // 1. 敌人意图
     sf::Vector2f intentPos = enemyPos;
     intentPos.x += 70;
     intentPos.y -= 30;
 
     DrawIconWithNum(window, planTexMap.at(enemyIntent),
-        enemyIntentNum, intentPos, {50, 50}, 40);
+                    enemyIntentNum, intentPos, {50, 50}, 40);
 
     sf::Vector2f enemyBuffPos = enemyBound.position;
     enemyBuffPos.x += 10;
     enemyBuffPos.y = enemyPos.y + enemyBound.size.y + enemyHPDrawOffset + 40;
 
     // 敌人防御
-    if(enemyDefend > 0){
+    if (enemyDefend > 0)
+    {
         DrawIconWithNum(window, TextureType::p_defend_player, enemyDefend,
-            {enemyBuffPos.x - 20, enemyBuffPos.y - 70}, {50, 50}, 40);
+                        {enemyBuffPos.x - 20, enemyBuffPos.y - 70}, {50, 50}, 40);
     }
     int col = 0;
 

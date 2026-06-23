@@ -314,6 +314,8 @@ public:
         }
         enemy = e; 
         enemy->SetPosX(1500.f);
+        std::cout<<"BattleScene补丁：初始化时将敌人血量设为最大血量"<<std::endl;
+        enemy->cur_health = enemy->sum_health;
         ev.clear();
         ev.push_back(*e);
     }

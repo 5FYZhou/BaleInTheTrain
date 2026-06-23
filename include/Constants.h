@@ -208,6 +208,17 @@ inline const std::unordered_map<PlanType, TextureType> planTexMap = {
     { PlanType::vulnerable, TextureType::p_vulnerable },
 };
 
+// 敌人意图映射悬浮显示信息
+inline const std::unordered_map<PlanType, std::string> planInfoMap = {
+    { PlanType::None, "TextureType::None" },
+    { PlanType::attack, "TextureType::p_attack" },
+    { PlanType::defend, "TextureType::p_defend" },
+    { PlanType::easy_to_attack, "TextureType::p_easy_to_attack" },
+    { PlanType::power_up, "TextureType::p_power_up" },
+    { PlanType::thorns, "TextureType::p_thorns" },
+    { PlanType::vulnerable, "TextureType::p_vulnerable" },
+};
+
 // Buff&Debuff映射纹理类型
 inline const std::unordered_map<BuffDebuffType, TextureType> buffTexMap = {
     { BuffDebuffType::None, TextureType::None },

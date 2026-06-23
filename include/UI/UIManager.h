@@ -116,18 +116,23 @@ public:
 
     void Open(PanelType type){ panels.Open(type); }
     void Close(PanelType type){ panels.Close(type); }
-    void CloseAll(){ panels.CloseAll(); textPrompt.ClearAll(); }
     bool IsOpen(PanelType type){ return panels.IsOpen(type); }
     template<typename T>
     T* Get() { return panels.Get<T>(); }
     #pragma endregion
+
+    void CloseAll(){ 
+        panels.CloseAll(); 
+        textPrompt.ClearAll(); 
+        rewardAni.cards.clear(); 
+    }
 
     void PushNotification(const std::string& text, TextureType icon){
         notifications.emplace_back(*font);
         Notification& n = notifications.back();
 
         n.text.setFont(*font);
-        n.text.setString(text);
+        n.text.setString(utf8(text));
         n.text.setCharacterSize(24);
 
         n.icon.emplace(resourceManager->getTexture(icon));

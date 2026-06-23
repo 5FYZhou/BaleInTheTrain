@@ -84,6 +84,7 @@ void Game::HandleInput(float dt)
         {
             window.close();
         }
+        
         // 切场景时禁用输入
         if(sceneMgr.IsFading()) return;
 
@@ -376,7 +377,7 @@ void Game::HandleEvents(const GameEvent &event)
         case ItemType::Key:
             std::cout << "Event: get one key" << std::endl;
             keyCnt++;
-            uiMgr.PushNotification("Obtain a key", itemTexMap.at(itemtype));
+            uiMgr.PushNotification("获得钥匙", itemTexMap.at(itemtype));
             GlobalaudioMgr.PlaySound(SoundEffect::Pickup);
             break;
 
@@ -397,7 +398,7 @@ void Game::HandleEvents(const GameEvent &event)
             std::cout << "Event : hitcard:" << event.val << std::endl;
             // 给玩家加卡牌
             player.AddCards(itemPileMap.at(itemtype));
-            uiMgr.PushNotification("Obtain a card", itemTexMap.at(itemtype));
+            uiMgr.PushNotification("获得一张卡牌", itemTexMap.at(itemtype));
             GlobalaudioMgr.PlaySound(SoundEffect::Pickup);
             break;
         default:
@@ -415,14 +416,14 @@ void Game::HandleEvents(const GameEvent &event)
             Enemy* enemy = sceneMgr.GetScene().GetClickEnemy();
             btLogic.StartBattle(enemy, &player);
             player.SetFacing(1); 
+            // 打开 初始化buff
+            uiMgr.Open(PanelType::Buff);
+            uiMgr.Get<BuffPanel>()->SetContext({BattleX, PlayerGroundY}, enemy->position, enemy->bound, enemy->HPDrawOffset);
+            auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
+            uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
             // 打开 初始化手牌
             uiMgr.Open(PanelType::CardsInHand);
             uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
-            // 打开 初始化buff
-            uiMgr.Open(PanelType::Buff);
-            uiMgr.Get<BuffPanel>()->SetContext(player.feet, enemy->position, enemy->bound, enemy->HPDrawOffset);
-            auto [intent, num, edef, eBuff, pBuff, def] = btLogic.GetBuffInfo();
-            uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
         });
         std::cout << "Event:beginBattle" << std::endl;
     }
@@ -469,7 +470,7 @@ void Game::HandleEvents(const GameEvent &event)
         if (event.val == 0)
         {
             GlobalaudioMgr.PlaySound(SoundEffect::BattleVictory);
-            player.currentHP = std::min(player.currentHP, player.currentHP + player.relic_data);
+            player.currentHP = std::min(player.maxHP, player.currentHP + player.relic_data);
             sceneMgr.LoadGameBeforeBattle([this]{
                 player.SetFacing(playerFaceBeforeBattle);
                 player.SetFeet({playerXBeforeBattle, PlayerGroundY});
