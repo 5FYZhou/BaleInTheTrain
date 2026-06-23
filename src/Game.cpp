@@ -423,6 +423,7 @@ void Game::HandleEvents(const GameEvent &event)
             uiMgr.Get<BuffPanel>()->SetBuff(intent, num, edef, eBuff, pBuff, def);
             // 打开 初始化手牌
             uiMgr.Open(PanelType::CardsInHand);
+            uiMgr.Get<CardsInHandPanel>()->SetCollider({{357, 508}, {-195, 352}}, enemy->bound);
             uiMgr.Get<CardsInHandPanel>()->SetCards(btLogic.getHandCardsPile(), btLogic.state.actionPoints, true);
         });
         std::cout << "Event:beginBattle" << std::endl;

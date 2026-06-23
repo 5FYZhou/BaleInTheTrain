@@ -246,6 +246,7 @@ private:
 
     bool draggingCard = false;
     sf::Vector2f currentMousePos;
+
     sf::FloatRect playerCollider;
     sf::FloatRect enemyCollider;
 
@@ -275,26 +276,64 @@ private:
     }
 
     void DrawArrow(
-    sf::RenderWindow& window,
-    const sf::Vector2f& start,
-    const sf::Vector2f& end);
+        sf::RenderWindow &window,
+        const sf::Vector2f &start,
+        const sf::Vector2f &end);
     bool ShouldShowArrow() const
+    {
+        if (!draggingCard)
+            return false;
+
+        if (hoveredIndex != -1)
+            return false; // ⭐关键：在卡牌上不显示箭头
+
+        if (selectedIndex < 0 || selectedIndex >= cards.size())
+            return false;
+
+        return true;
+    }
+
+    bool CanPlayer(PileType card)
+    {
+        return card == PileType::Defend ||
+               card == PileType::Shrug_off ||
+               card == PileType::Activate_muscles ||
+               card == PileType::Revitalize_spirit ||
+               card == PileType::Metallization ||
+               card == PileType::Unstoppable ||
+               card == PileType::Rampart ||
+               card == PileType::Sacrifice;
+    }
+
+    bool CanEnemy(PileType card)
+    {
+        return card == PileType::Strike ||
+               card == PileType::Rage ||
+               card == PileType::Heavy_strike ||
+               card == PileType::Anger ||
+               card == PileType::Continuous_punches ||
+               card == PileType::Observe_weaknesses;
+    }
+    enum class AimTarget
+    {
+        None,
+        Player,
+        Enemy
+    };
+
+    AimTarget GetAimTarget(PileType card)
+    {
+        if (CanPlayer(card))
+            return AimTarget::Player;
+        if (CanEnemy(card))
+            return AimTarget::Enemy;
+        return AimTarget::None;
+    }
+    bool IsMouseOnRect(const sf::FloatRect& rect, const sf::Vector2f& mouse) const
 {
-    if (!draggingCard)
-        return false;
-
-    if (hoveredIndex != -1)
-        return false; // ⭐关键：在卡牌上不显示箭头
-
-    if (selectedIndex < 0 || selectedIndex >= cards.size())
-        return false;
-
-    return true;
+    return rect.contains(mouse);
 }
 
-    bool CanPlayer(PileType card){
-
-    }
 public:
     CardsInHandPanel(std::vector<GameEvent> &e) : Panel(e)
     {
@@ -304,6 +343,11 @@ public:
     void Init(ResourceManager &resource, const sf::Font *uiFont);
     void Update(float dt) override;
 
+    void SetCollider(sf::FloatRect player, sf::FloatRect enemy)
+    {
+        playerCollider = player;
+        enemyCollider = enemy;
+    }
     void SetCards(const std::vector<PileType> &c, int point, bool first = false);
     std::pair<PileType, int> GetSelectedCard() { return {selectedCard, selectedIndex}; }
     bool HasSelectedCard() { return visible && hasSelectedCard; }
@@ -374,7 +418,7 @@ private:
 
     // 魔方
     std::optional<sf::Sprite> defaultBuff;
-    std::string defaultBuffInfo = "战斗结束后，玩家回六滴血";
+    std::string defaultBuffInfo = "玩家的金手指，战斗结束后，玩家回六滴血";
     bool hoveredDefaultBuff = false;
 
     // 新增

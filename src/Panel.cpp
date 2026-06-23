@@ -850,6 +850,45 @@ void CardsInHandPanel::DrawArrow(
         return;
 
     // =========================
+    // 默认颜色（黄色）
+    // =========================
+    sf::Color arrowColor = sf::Color(255, 220, 50);
+
+    // =========================
+    // 当前卡牌
+    // =========================
+    if (selectedIndex < 0 || selectedIndex >= (int)cards.size())
+        return;
+
+    PileType card = cards[selectedIndex].cardType;
+
+    // =========================
+    // 判断卡牌目标类型
+    // =========================
+    bool canPlayer = CanPlayer(card);
+    bool canEnemy = CanEnemy(card);
+
+    // =========================
+    // 当前鼠标命中目标
+    // =========================
+    bool onPlayer = playerCollider.contains(end);
+    bool onEnemy = enemyCollider.contains(end);
+
+    // =========================
+    // 规则：合法 => 绿色，否则红色
+    // =========================
+    if ((canPlayer && onPlayer) ||
+        (canEnemy && onEnemy))
+    {
+        arrowColor = sf::Color(80, 255, 120); // 绿色（合法）
+    }
+    else if((canPlayer && onEnemy) ||
+        (canEnemy && onPlayer))
+    {
+        arrowColor = sf::Color(255, 80, 80); // 红色（非法）
+    }
+
+    // =========================
     // 贝塞尔控制点
     // =========================
     sf::Vector2f p0 = start;
@@ -860,7 +899,7 @@ void CardsInHandPanel::DrawArrow(
         std::min(start.y, end.y) - 180.f);
 
     // =========================
-    // 采样曲线点
+    // 采样曲线
     // =========================
     constexpr int SEGMENTS = 30;
 
@@ -880,7 +919,7 @@ void CardsInHandPanel::DrawArrow(
     }
 
     // =========================
-    // 粗线绘制（核心）
+    // 粗线绘制
     // =========================
     constexpr float thickness = 8.f;
 
@@ -889,9 +928,9 @@ void CardsInHandPanel::DrawArrow(
         float t = (float)i / pts.size();
 
         sf::Color c(
-            255,
-            220,
-            50,
+            arrowColor.r,
+            arrowColor.g,
+            arrowColor.b,
             static_cast<std::uint8_t>(80 + 175 * t));
 
         DrawSegment(
@@ -916,7 +955,7 @@ void CardsInHandPanel::DrawArrow(
     sf::Vector2f normal(-dir.y, dir.x);
 
     // =========================
-    // 箭头头（加粗版本）
+    // 箭头头
     // =========================
     constexpr float arrowLength = 30.f;
     constexpr float arrowWidth = 16.f;
@@ -930,7 +969,7 @@ void CardsInHandPanel::DrawArrow(
     arrow.setPoint(2,
                    p2 - dir * arrowLength - normal * arrowWidth);
 
-    arrow.setFillColor(sf::Color(255, 220, 50));
+    arrow.setFillColor(arrowColor);
 
     window.draw(arrow);
 }
@@ -1095,6 +1134,8 @@ void BuffPanel::DrawIconWithNum(sf::RenderWindow &window, TextureType tex, int n
 {
     DrawIcon(window, tex, pos, size);
 
+    if (num < 0)
+        return;
     sf::Text text(*font);
     text.setString(std::to_string(num));
 
